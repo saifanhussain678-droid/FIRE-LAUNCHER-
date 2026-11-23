@@ -1,9 +1,8 @@
 /* ============================================================================
- * FIRE LAUNCHER — Interactive Website Engine (UI Simulator + RAM/FPS Lab)
+ * FIRE LAUNCHER — Frameless Editorial Interactive Engine (Zero Box Fill)
  * ============================================================================ */
 
 (function () {
-  // 1. Mobile Navigation Toggle
   const toggle = document.getElementById('navToggle');
   const links = document.getElementById('navLinks');
   if (toggle && links) {
@@ -13,11 +12,12 @@
     });
   }
 
-  // 2. Interactive 8-Screen FIRE LAUNCHER UI Explorer
   const uiStage = document.getElementById('fireUiStage');
   const uiTabs = document.querySelectorAll('[data-ui-tab]');
   let dlProgress = 68;
   let dlPaused = false;
+
+  const rowStyle = 'padding:9px 0;border-bottom:1px solid rgba(2,132,199,0.18);display:flex;justify-content:space-between;align-items:center;font-size:12.5px;font-weight:700';
 
   const UI_SCREENS = {
     hq: () => `
@@ -25,16 +25,16 @@
         <div class="sim-pane">
           <div style="display:flex;justify-content:space-between;align-items:center">
             <span class="tag">OPERATOR STUDIO</span>
-            <span style="font-size:11px;font-weight:800;color:#10B981">● CLOUD ID ✓</span>
+            <span style="font-size:11px;font-weight:800;color:#0284C7">● CLOUD ID ✓</span>
           </div>
-          <div style="flex:1;display:grid;place-items:center;padding:14px;border-radius:14px;background:radial-gradient(circle,rgba(56,189,248,0.22),rgba(236,72,153,0.12),transparent 72%)">
+          <div style="flex:1;display:grid;place-items:center;padding:18px 8px">
             <div style="text-align:center">
-              <div style="width:68px;height:68px;margin:0 auto 8px;border-radius:18px;background:linear-gradient(135deg,#0EA5E9,#4F46E5,#EC4899);display:grid;place-items:center;color:#FFF;font-weight:900;font-size:22px;box-shadow:0 10px 24px rgba(37,99,235,0.28)">3D</div>
-              <div style="font-weight:900;font-size:14px">Saifan_OP</div>
-              <div style="font-size:11px;color:#527199">360° Interactive Skin &amp; Cape Doll</div>
+              <img src="assets/branding/fire-mark.png" alt="" style="width:62px;height:62px;margin:0 auto 8px;filter:drop-shadow(0 8px 18px rgba(14,165,233,0.30))">
+              <div style="font-weight:900;font-size:15px">Player_OP</div>
+              <div style="font-size:11.5px;color:#55789E">360° Interactive 3D Skin &amp; Cape Studio</div>
             </div>
           </div>
-          <div style="display:flex;gap:6px">
+          <div style="display:flex;gap:8px">
             <span class="sim-mini-btn" style="flex:1;text-align:center">SKIN WARDROBE</span>
             <span class="sim-mini-btn" style="flex:1;text-align:center">CAPES</span>
           </div>
@@ -42,30 +42,30 @@
 
         <div class="sim-pane">
           <div style="display:flex;justify-content:space-between;align-items:center">
-            <span class="tag">2×2 TACTICAL BENTO DECK</span>
-            <span style="font-size:11px;font-weight:800;color:#2563EB">VULKAN · 120HZ READY</span>
+            <span class="tag">2×2 TACTICAL DECK</span>
+            <span style="font-size:11px;font-weight:800;color:#0284C7">VULKAN · 120HZ</span>
           </div>
           <div class="pastel-grid-2x2">
-            <div class="pastel-tile pt-sky">◉ CREW &amp; PARTY<div style="font-size:10.5px;font-weight:600;margin-top:3px">Friends &amp; World Invites</div></div>
-            <div class="pastel-tile pt-pink">✦ MOD ARMORY<div style="font-size:10.5px;font-weight:600;margin-top:3px">Modrinth &amp; CurseForge</div></div>
-            <div class="pastel-tile pt-mint">🎮 CONTROL RIG<div style="font-size:10.5px;font-weight:600;margin-top:3px">Touch, Mouse &amp; Gamepad</div></div>
-            <div class="pastel-tile pt-amber">⚙ RUN .JAR<div style="font-size:10.5px;font-weight:600;margin-top:3px">OptiFine &amp; Forge Installer</div></div>
+            <div class="pastel-tile">◉ CREW &amp; PARTY<div style="font-size:10.5px;font-weight:600;color:#55789E;margin-top:2px">Friends &amp; World Invites</div></div>
+            <div class="pastel-tile">✦ MOD ARMORY<div style="font-size:10.5px;font-weight:600;color:#55789E;margin-top:2px">Modrinth &amp; CurseForge</div></div>
+            <div class="pastel-tile">🎮 CONTROL RIG<div style="font-size:10.5px;font-weight:600;color:#55789E;margin-top:2px">Touch, Mouse &amp; Gamepad</div></div>
+            <div class="pastel-tile">⚙ RUN .JAR<div style="font-size:10.5px;font-weight:600;color:#55789E;margin-top:2px">OptiFine &amp; Forge Installer</div></div>
           </div>
-          <div style="margin-top:auto;padding:9px 12px;border-radius:12px;background:#EFF6FF;font-size:11.5px;font-weight:800;color:#0F2544;display:flex;justify-content:space-between">
+          <div style="margin-top:auto;padding-top:10px;border-top:1px solid rgba(2,132,199,0.18);font-size:11.5px;font-weight:800;display:flex;justify-content:space-between">
             <span>⚡ ENGINE READY · OpenJDK 21 ARM64</span>
-            <span style="color:#2563EB">MobileGlues 1.21.4</span>
+            <span style="color:#0284C7">MobileGlues 1.21.4</span>
           </div>
         </div>
 
         <div class="sim-pane">
           <span class="tag">ACTIVE INSTANCE &amp; RACK</span>
-          <div style="padding:12px;border-radius:14px;background:linear-gradient(135deg,#EFF6FF,#DBEAFE);border:1px solid rgba(37,99,235,0.25)">
-            <div style="font-weight:900;font-size:14.5px">Prism PvP 1.21.4</div>
-            <div style="font-size:11.5px;color:#2C4870">Fabric 0.16.9 · Sodium + Lithium + Iris · 48 Mods</div>
+          <div style="padding:8px 0;border-bottom:1.5px solid rgba(2,132,199,0.32)">
+            <div style="font-weight:900;font-size:15px">Prism PvP 1.21.4</div>
+            <div style="font-size:12px;color:#2B4C73">Fabric 0.16.9 · Sodium + Lithium + Iris · 48 Mods</div>
           </div>
-          <div style="display:grid;gap:6px;font-size:12px;font-weight:800">
-            <div style="padding:8px 10px;border-radius:10px;background:#F8FAFC;border:1px solid rgba(37,99,235,0.14)">🌈 Aurora Shaders Ultra · NeoForge 1.21.1</div>
-            <div style="padding:8px 10px;border-radius:10px;background:#F8FAFC;border:1px solid rgba(37,99,235,0.14)">⚔️ Competitive Bedwars · 1.8.9 OptiFine</div>
+          <div>
+            <div style="${rowStyle}"><span>🌈 Aurora Shaders Ultra</span><span style="color:#0284C7">NeoForge 1.21.1</span></div>
+            <div style="${rowStyle};border-bottom:none"><span>⚔️ Competitive Bedwars</span><span style="color:#0284C7">1.8.9 OptiFine</span></div>
           </div>
         </div>
       </div>`,
@@ -74,22 +74,22 @@
       <div class="sim-stage-body" style="grid-template-columns:1fr 1fr">
         <div class="sim-pane">
           <span class="tag">TOP FLOATING DOWNLOAD ENGINE</span>
-          <h3>Relocated Top Prism Downloading Bar</h3>
-          <p style="font-size:13px;color:#2C4870">Downloads never block your screen: Pause, Cancel &amp; Sub-Task Drawer sit on the Left; Multi-Color Cyan → Indigo → Pink progress bar + live MB/s speed + ETA sit in the Center; bold % readout sits on the Right.</p>
-          <div style="display:grid;gap:7px;margin-top:6px;font-size:12px;font-weight:800">
-            <div style="padding:9px 12px;border-radius:10px;background:#ECFDF5;color:#047857">✓ OpenJDK 21 ARM64 Runtime — Verified (SHA-1 OK)</div>
-            <div style="padding:9px 12px;border-radius:10px;background:#EFF6FF;color:#1D4ED8">⟳ Minecraft 1.21.4 Client + 208 Libraries — 24.8 MB/s</div>
-            <div style="padding:9px 12px;border-radius:10px;background:#FDF2F8;color:#BE185D">⟳ Sodium 0.6.5 + Fabric API — Auto-Resolved</div>
+          <h3>Relocated Top Downloading Bar</h3>
+          <p style="font-size:13px;color:#2B4C73">Pause, Cancel &amp; Sub-Task Drawer sit on the Left; smooth sky-blue gradient progress bar + live MB/s speed + ETA sit in the Center; bold % readout sits on the Right.</p>
+          <div>
+            <div style="${rowStyle}"><span>✓ OpenJDK 21 ARM64 Runtime</span><span style="color:#0284C7">SHA-1 Verified</span></div>
+            <div style="${rowStyle}"><span>⟳ Minecraft 1.21.4 + 208 Libraries</span><span style="color:#0284C7">24.8 MB/s</span></div>
+            <div style="${rowStyle};border-bottom:none"><span>⟳ Sodium 0.6.5 + Fabric API</span><span style="color:#0284C7">Auto-Resolved</span></div>
           </div>
         </div>
         <div class="sim-pane">
           <span class="tag">MOD &amp; MODPACK INSTALL QUEUE</span>
-          <h3>Minimizable Background Queue Pill</h3>
-          <p style="font-size:13px;color:#2C4870">Install 10+ mods or a 150-mod CurseForge/Modrinth pack in the background while editing controls or skins. Minimize into a floating glass pill anytime.</p>
-          <div style="padding:12px;border-radius:14px;background:#EFF6FF;border:1px solid rgba(37,99,235,0.22);display:grid;gap:6px">
-            <div style="display:flex;justify-content:space-between;font-size:12.5px;font-weight:900"><span>Complementary Reimagined v5.3</span><span style="color:#DB2777">92%</span></div>
+          <h3>Background Multi-File Queue</h3>
+          <p style="font-size:13px;color:#2B4C73">Install 10+ mods or a 150-mod CurseForge/Modrinth pack in the background while editing controls or skins.</p>
+          <div style="padding-top:8px;border-top:1px solid rgba(2,132,199,0.22);display:grid;gap:6px">
+            <div style="display:flex;justify-content:space-between;font-size:12.5px;font-weight:900"><span>Complementary Reimagined v5.3</span><span style="color:#0284C7">92%</span></div>
             <div class="sim-progress-track"><div class="sim-progress-fill" style="width:92%"></div></div>
-            <div style="font-size:11px;color:#527199">Installing into: Prism PvP 1.21.4 + Aurora Shaders</div>
+            <div style="font-size:11.5px;color:#55789E">Target: Prism PvP 1.21.4 + Aurora Shaders</div>
           </div>
         </div>
       </div>`,
@@ -99,16 +99,16 @@
         <div class="sim-pane">
           <span class="tag">INSTANCE VAULT</span>
           <h3>Isolated Per-Instance Worlds, Mods &amp; Renderers</h3>
-          <div style="display:grid;gap:8px;font-size:12.5px">
-            <div style="padding:10px 12px;border-radius:12px;background:#EFF6FF;border:1px solid rgba(37,99,235,0.25);display:flex;justify-content:space-between"><b>💎 Prism PvP 1.21.4</b><span>Fabric · Java 21 · MobileGlues</span></div>
-            <div style="padding:10px 12px;border-radius:12px;background:#F8FAFC;border:1px solid rgba(37,99,235,0.14);display:flex;justify-content:space-between"><b>🔥 RLCraft Mobile</b><span>Forge 1.12.2 · Java 8 · GL4ES</span></div>
-            <div style="padding:10px 12px;border-radius:12px;background:#F8FAFC;border:1px solid rgba(37,99,235,0.14);display:flex;justify-content:space-between"><b>⚡ Cobblemon 1.21.1</b><span>NeoForge · Java 21 · Vulkan Zink</span></div>
+          <div>
+            <div style="${rowStyle}"><b>💎 Prism PvP 1.21.4</b><span>Fabric · Java 21 · MobileGlues</span></div>
+            <div style="${rowStyle}"><b>🔥 RLCraft Mobile</b><span>Forge 1.12.2 · Java 8 · GL4ES</span></div>
+            <div style="${rowStyle};border-bottom:none"><b>⚡ Cobblemon 1.21.1</b><span>NeoForge · Java 21 · Vulkan Zink</span></div>
           </div>
         </div>
         <div class="sim-pane">
           <span class="tag">+ FORGE INSTANCE CREATOR</span>
           <h3>1-Click Version &amp; Loader Builder</h3>
-          <p style="font-size:12.5px;color:#2C4870">Every release from Minecraft 1.0 to 1.21.4+ &amp; Snapshots with automatic loader installation:</p>
+          <p style="font-size:13px;color:#2B4C73">Every release from Minecraft 1.0 to 1.21.4+ &amp; Snapshots with automatic loader installation:</p>
           <div class="tag-row">
             <span class="tag">Vanilla</span><span class="tag">Fabric</span><span class="tag">Quilt</span><span class="tag">Forge</span><span class="tag">NeoForge</span><span class="tag">OptiFine</span><span class="tag">Legacy Fabric</span><span class="tag">BTA 1.7.3</span>
           </div>
@@ -120,19 +120,19 @@
         <div class="sim-pane">
           <span class="tag">MODRINTH + CURSEFORGE</span>
           <h3>⚡ Sodium + Lithium</h3>
-          <p style="font-size:12.5px;color:#2C4870">2.5× to 3.5× higher FPS on 4GB, 6GB &amp; 8GB phones. Auto-selects exact Minecraft &amp; Loader version.</p>
+          <p style="font-size:13px;color:#2B4C73">2.5× to 3.5× higher FPS on 4GB, 6GB &amp; 8GB phones. Auto-selects exact Minecraft &amp; Loader version.</p>
           <span class="sim-mini-btn" style="margin-top:auto;text-align:center">1-TAP INSTALL ✓</span>
         </div>
         <div class="sim-pane">
           <span class="tag">SHADERPACKS</span>
           <h3>🌈 Iris + Complementary</h3>
-          <p style="font-size:12.5px;color:#2C4870">Real-time water reflections, volumetric clouds &amp; dynamic shadows via MobileGlues OpenGL 4.x.</p>
+          <p style="font-size:13px;color:#2B4C73">Real-time water reflections, volumetric clouds &amp; dynamic shadows via MobileGlues OpenGL 4.x.</p>
           <span class="sim-mini-btn" style="margin-top:auto;text-align:center">1-TAP INSTALL ✓</span>
         </div>
         <div class="sim-pane">
           <span class="tag">FULL MODPACKS</span>
           <h3>📦 .mrpack &amp; CurseForge ZIP</h3>
-          <p style="font-size:12.5px;color:#2C4870">Search &amp; install complete modpacks with parallel multi-file download &amp; override extraction.</p>
+          <p style="font-size:13px;color:#2B4C73">Search &amp; install complete modpacks with parallel multi-file download &amp; override extraction.</p>
           <span class="sim-mini-btn" style="margin-top:auto;text-align:center">BROWSE PACKS →</span>
         </div>
       </div>`,
@@ -143,16 +143,16 @@
           <span class="tag">BUILT-IN FIRE CLIENT HUD</span>
           <h3>Competitive PvP &amp; FPS Overlay Suite</h3>
           <div class="pastel-grid-2x2">
-            <div class="pastel-tile pt-sky">FPS &amp; Frame-Time Pill</div>
-            <div class="pastel-tile pt-pink">RGB Keystrokes + CPS</div>
-            <div class="pastel-tile pt-mint">ToggleSprint &amp; Zoom</div>
-            <div class="pastel-tile pt-amber">Armor HUD &amp; Crosshair</div>
+            <div class="pastel-tile">FPS &amp; Frame-Time Pill</div>
+            <div class="pastel-tile">RGB Keystrokes + CPS</div>
+            <div class="pastel-tile">ToggleSprint &amp; Zoom</div>
+            <div class="pastel-tile">Armor HUD &amp; Crosshair</div>
           </div>
         </div>
         <div class="sim-pane">
           <span class="tag">IN-GAME RECORDER &amp; MENU</span>
           <h3>🎥 1080p60 Screen + Internal Audio Recorder</h3>
-          <p style="font-size:12.5px;color:#2C4870">Tap the floating in-game FIRE LAUNCHER crystal flame button to record lag-free MP4 gameplay with internal game sound, live FPS counter, and instant log overlay.</p>
+          <p style="font-size:13px;color:#2B4C73">Tap the floating in-game FIRE LAUNCHER crystal flame button to record lag-free MP4 gameplay with internal game sound, live FPS counter, and instant log overlay.</p>
         </div>
       </div>`,
 
@@ -161,13 +161,13 @@
         <div class="sim-pane">
           <span class="tag">TOUCH &amp; GYRO STUDIO</span>
           <h3>11 Animated Control Themes + Custom Macros</h3>
-          <p style="font-size:12.5px;color:#2C4870">Drag, resize, set opacity, bind multi-key combos, customize virtual mouse cursor PNG/SVG, and enable precision Gyroscope aiming.</p>
+          <p style="font-size:13px;color:#2B4C73">Drag, resize, set opacity, bind multi-key combos, customize virtual mouse cursor PNG/SVG, and enable precision Gyroscope aiming.</p>
           <div class="tag-row"><span class="tag">Aurora</span><span class="tag">Comet</span><span class="tag">Nebula</span><span class="tag">Galaxy</span><span class="tag">Stardust</span></div>
         </div>
         <div class="sim-pane">
           <span class="tag">GAMEPAD + KEYBOARD/MOUSE</span>
           <h3>Xbox, DualSense PS5 &amp; USB/BT Mouse Lock</h3>
-          <p style="font-size:12.5px;color:#2C4870">Full native pointer capture for USB OTG / Bluetooth mice &amp; keyboards plus customizable analog deadzones for Bluetooth controllers.</p>
+          <p style="font-size:13px;color:#2B4C73">Full native pointer capture for USB OTG / Bluetooth mice &amp; keyboards plus customizable analog deadzones for Bluetooth controllers.</p>
         </div>
       </div>`,
 
@@ -176,13 +176,13 @@
         <div class="sim-pane">
           <span class="tag">12 GRAPHICS RENDERERS</span>
           <h3>MobileGlues, Vulkan Zink, Turnip &amp; GL4ES</h3>
-          <p style="font-size:12.5px;color:#2C4870">Pick a global renderer or override per instance. Supports OpenGL 4.6 translation over Vulkan for modern Minecraft 1.21.4 + Iris Shaders.</p>
+          <p style="font-size:13px;color:#2B4C73">Pick a global renderer or override per instance. Supports OpenGL 4.6 translation over Vulkan for modern Minecraft 1.21.4 + Iris Shaders.</p>
           <div class="tag-row"><span class="tag">MobileGlues</span><span class="tag">Vulkan Zink</span><span class="tag">Holy GL4ES</span><span class="tag">VirGL</span><span class="tag">ANGLE</span></div>
         </div>
         <div class="sim-pane">
           <span class="tag">CUSTOM GPU DRIVER IMPORTER</span>
           <h3>Import Adreno / Freedreno Turnip .ZIP Drivers</h3>
-          <p style="font-size:12.5px;color:#2C4870">Snapdragon users can import custom Mesa Turnip Vulkan drivers directly in Settings → Video for massive shader stability &amp; +40% extra FPS.</p>
+          <p style="font-size:13px;color:#2B4C73">Snapdragon users can import custom Mesa Turnip Vulkan drivers directly in Settings → Video for massive shader stability &amp; +40% extra FPS.</p>
         </div>
       </div>`,
 
@@ -191,12 +191,12 @@
         <div class="sim-pane">
           <span class="tag">ACCOUNTS &amp; SKIN WARDROBE</span>
           <h3>Microsoft OAuth, Ely.by &amp; Offline Profiles</h3>
-          <p style="font-size:12.5px;color:#2C4870">Sign in securely with official Microsoft Xbox Live tokens, Ely.by skin servers, or instant Offline usernames — with full 3D Skin &amp; Cape preview.</p>
+          <p style="font-size:13px;color:#2B4C73">Sign in securely with official Microsoft Xbox Live tokens, Ely.by skin servers, or instant Offline usernames — with full 3D Skin &amp; Cape preview.</p>
         </div>
         <div class="sim-pane">
           <span class="tag">FILES, CODE EDITOR &amp; LOGS</span>
           <h3>Built-In File Manager + Crash Log Analyzer</h3>
-          <p style="font-size:12.5px;color:#2C4870">Edit options.txt &amp; mod configs with line numbers &amp; search/replace, zip/unzip worlds, share crash logs in 1 tap, and show live status on Discord Rich Presence.</p>
+          <p style="font-size:13px;color:#2B4C73">Edit options.txt &amp; mod configs with line numbers &amp; search/replace, zip/unzip worlds, share crash logs in 1 tap, and show live status on Discord Rich Presence.</p>
         </div>
       </div>`
   };
@@ -214,7 +214,6 @@
     renderUiScreen('hq');
   }
 
-  // Live Top Downloading Bar animation inside UI Simulator
   const simFill = document.getElementById('simDlFill');
   const simPct = document.getElementById('simDlPct');
   const simPause = document.getElementById('simDlPause');
@@ -233,7 +232,7 @@
     }, 950);
   }
 
-  // 3. Interactive RAM & FPS Performance Calculator (4GB / 6GB / 8GB / 12GB+)
+  // Interactive RAM & FPS Performance Calculator
   const calcState = { ram: '6', soc: 'mid', mode: 'sodium' };
 
   const RAM_PROFILES = {

@@ -29,7 +29,7 @@ RELEASES_LATEST_URL = f"{REPO_URL}/releases/latest"
 DOWNLOAD_PRIMARY_URL = f"{REPO_URL}/releases/latest/download/FIRE-Launcher.apk"
 DOWNLOAD_ARM64_URL = f"{REPO_URL}/releases/latest/download/FIRE-Launcher-arm64-v8a.apk"
 DOWNLOAD_NORUNTIME_URL = f"{REPO_URL}/releases/latest/download/FIRE-Launcher-noruntime.apk"
-SITE_URL = "https://saifanhussain678-droid.github.io/FIRE-LAUNCHER-/"
+SITE_URL = "https://fire-launcher.vercel.app/"
 DISCORD_URL = "https://discord.gg/RS7q9KaCm6"
 
 NAV = [
@@ -202,7 +202,7 @@ def ui_explorer_section() -> str:
             <div style="display:flex;align-items:center;gap:8px">
               <img src="assets/branding/fire-mark.png" alt="" width="24" height="24">
               <strong style="font-size:12.5px;letter-spacing:0.6px">FIRE LAUNCHER</strong>
-              <span class="tag">Saifan_OP · ONLINE</span>
+              <span class="tag">ONLINE ID</span>
             </div>
             <div style="display:flex;gap:6px;flex-wrap:wrap">
               <span class="sim-mini-btn">⚙ CONFIG</span>
@@ -685,11 +685,11 @@ def build_screenshots() -> str:
     ]
     cards = []
     for src, title, desc in shots:
-        cards.append(f"""        <article class="card" style="padding:16px;display:flex;flex-direction:column;gap:12px">
-          <div class="showcase-frame" style="aspect-ratio:16/10;display:grid;place-items:center;background:#EFF6FF">
+        cards.append(f"""        <article class="card" style="padding:16px 0;display:flex;flex-direction:column;gap:12px">
+          <div class="showcase-frame" style="aspect-ratio:16/10;display:grid;place-items:center">
             <img src="{src}" alt="{title}" style="width:100%;height:100%;object-fit:cover">
           </div>
-          <div style="padding:4px 6px">
+          <div style="padding:4px 2px">
             <h3>{title}</h3>
             <p>{desc}</p>
           </div>
