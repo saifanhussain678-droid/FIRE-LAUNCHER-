@@ -1,21 +1,12 @@
 /*
- * Aerix Launcher UI layer for PojavLauncher.
- * Ported from mirai-launcher- (Zalith Launcher 2 fork):
- *   MiraiLauncher/src/main/java/com/movtery/zalithlauncher/ui/screens/main/CaveBackground.kt
- * Zalith Launcher 2 Copyright (C) 2025 MovTery <movtery228@qq.com> and contributors
+ * Fire Launcher — Multi-Color Light Pastel Aurora Background ("Prism Daylight").
+ * Blends 5 soft luminous daylight hues (Sky Cyan, Pastel Lavender, Coral Rose,
+ * Fresh Mint Aqua, and Sunlit Peach-Gold) over a pearl-white canvas.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/gpl-3.0.txt>.
  */
 
 package net.kdt.pojavlaunch.aerix.components
@@ -23,6 +14,7 @@ package net.kdt.pojavlaunch.aerix.components
 import android.content.Context
 import android.graphics.BitmapFactory
 import android.os.Build
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -35,13 +27,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.kdt.pojavlaunch.aerix.bridge.AerixPreferences
@@ -68,9 +63,6 @@ private fun decodeWallpaper(context: Context, id: String, softness: Int = 1): Im
     val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
     BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
     val metrics = context.resources.displayMetrics
-    // softness > 1 decodes the picture at a fraction of the screen resolution. Drawn back up with
-    // bilinear filtering that reads as a blur, which is the only way to offer the blur meter on
-    // devices below Android 12, where a real blur effect does not exist.
     val target = (maxOf(metrics.widthPixels, metrics.heightPixels) / softness).coerceAtLeast(1)
     var sample = 1
     while (maxOf(bounds.outWidth, bounds.outHeight) / (sample * 2) >= target) sample *= 2
@@ -78,18 +70,12 @@ private fun decodeWallpaper(context: Context, id: String, softness: Int = 1): Im
     return BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)?.asImageBitmap()
 }
 
-/**
- * Full-bleed wallpaper with the Aerix canvas scrim on top. Decoding runs off the main thread and
- * the bitmap is cached process-wide, same as the Aerix CaveBackground.
- */
 @Composable
 fun AerixBackground(modifier: Modifier = Modifier, content: @Composable BoxScope.() -> Unit) {
     val context = LocalContext.current
     val id = AerixPreferences.selectedWallpaper
     val revision = AerixThemeManager.wallpaperRevision
     val blurDp = AerixPreferences.backgroundBlur
-    // Android 12+ blurs with a render effect; below that the bitmap is decoded smaller, so the
-    // meter still does something on every device this launcher supports.
     val renderBlur = blurDp > 0 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
     val softness = if (blurDp > 0 && !renderBlur) (1 + blurDp / 4).coerceIn(1, 6) else 1
     val cacheKey = "$id|$revision|$softness"
@@ -103,46 +89,50 @@ fun AerixBackground(modifier: Modifier = Modifier, content: @Composable BoxScope
             image = decoded
         }
     }
-    // One switch for the whole launcher: the accent motion and everything on this page obey it.
     val motion = ThemeMotion.rememberEnabled()
     val animation = animationById(id)
+    val accent = AerixThemeManager.currentAccent()
+
     Box(modifier.fillMaxSize().background(AerixSurface.canvas)) {
-        // Footage that ships with the launcher: played straight from the APK, no bitmap involved.
+        // Always paint the 5-color luminous pastel aurora mesh base first!
+        PrismLightAuroraMesh(modifier = Modifier.fillMaxSize())
+
         if (AerixThemeManager.isBundledClipId(id)) {
             val clip = bundledClipById(id.removePrefix(AerixThemeManager.WALLPAPER_CLIP_ASSET_PREFIX))
             if (clip != null) {
                 RawVideoWallpaper(resId = clip.rawRes, motion = motion, modifier = Modifier.fillMaxSize())
                 Box(Modifier.fillMaxSize().background(AerixThemeManager.screenScrim()))
+                PrismDaylightSheenOverlay(accent = accent)
                 content()
                 return@Box
             }
         }
-        // An imported wallpaper is played, not drawn: a clip or an animated image the user brought.
         if (AerixThemeManager.isClipId(id)) {
             val file = AerixThemeManager.clipFile(context, id)
             if (file != null && file.isFile) {
                 MediaWallpaper(file = file, motion = motion, modifier = Modifier.fillMaxSize())
                 Box(Modifier.fillMaxSize().background(AerixThemeManager.screenScrim()))
+                PrismDaylightSheenOverlay(accent = accent)
                 content()
                 return@Box
             }
         }
-        // An animated wallpaper is drawn, not decoded: it needs no bitmap and no asset.
         if (animation != null) {
             AnimatedScene(
                 animation = animation,
                 motion = motion,
-                modifier = Modifier.fillMaxSize().let { if (renderBlur) it.blur(blurDp.dp * 0.5f) else it }
+                modifier = Modifier
+                    .fillMaxSize()
+                    .alpha(0.58f)
+                    .let { if (renderBlur) it.blur(blurDp.dp * 0.5f) else it }
             )
-            Box(Modifier.fillMaxSize().background(AerixThemeManager.screenScrim()))
+            PrismLightAuroraMesh(modifier = Modifier.fillMaxSize().alpha(0.65f))
+            PrismDaylightSheenOverlay(accent = accent)
             content()
             return@Box
         }
         val bitmap = image
         if (bitmap != null) {
-            // The 25 photographs and any custom picture are still pictures: they are drawn exactly
-            // as they are, with the blur on top when it is set. No drift, no light layer, no
-            // particles over them. Motion belongs to the animations, not to a photograph.
             Image(
                 bitmap = bitmap,
                 contentDescription = null,
@@ -152,13 +142,99 @@ fun AerixBackground(modifier: Modifier = Modifier, content: @Composable BoxScope
                 contentScale = ContentScale.Crop
             )
             Box(Modifier.fillMaxSize().background(AerixThemeManager.screenScrim()))
-        } else {
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .background(Brush.verticalGradient(listOf(AerixSurface.canvas, AerixSurface.panelRaised)))
-            )
         }
+        PrismDaylightSheenOverlay(accent = accent)
         content()
+    }
+}
+
+/**
+ * Multi-color light pastel mesh canvas blending 5 airy daylight hues:
+ * Sky Cyan (#7DD3FC), Pastel Rose-Pink (#F9A8D4), Luminous Lavender (#C4B5FD),
+ * Fresh Mint Aqua (#6EE7B7), and Warm Sunlit Peach-Apricot (#FDBA74).
+ */
+@Composable
+private fun PrismLightAuroraMesh(modifier: Modifier = Modifier) {
+    Canvas(modifier = modifier) {
+        val w = size.width
+        val h = size.height
+        val r = size.maxDimension * 0.66f
+
+        drawRect(
+            brush = Brush.linearGradient(
+                colors = listOf(
+                    Color(0xFFEAF6FF),
+                    Color(0xFFF3EEFF),
+                    Color(0xFFFFF0F6),
+                    Color(0xFFECFDF5)
+                ),
+                start = Offset.Zero,
+                end = Offset(w, h)
+            )
+        )
+        drawRect(
+            brush = Brush.radialGradient(
+                colors = listOf(Color(0xA67DD3FC), Color.Transparent),
+                center = Offset(w * 0.12f, h * 0.16f),
+                radius = r * 0.78f
+            )
+        )
+        drawRect(
+            brush = Brush.radialGradient(
+                colors = listOf(Color(0xA0F9A8D4), Color.Transparent),
+                center = Offset(w * 0.88f, h * 0.18f),
+                radius = r * 0.76f
+            )
+        )
+        drawRect(
+            brush = Brush.radialGradient(
+                colors = listOf(Color(0x96C4B5FD), Color.Transparent),
+                center = Offset(w * 0.50f, h * 0.46f),
+                radius = r * 0.72f
+            )
+        )
+        drawRect(
+            brush = Brush.radialGradient(
+                colors = listOf(Color(0x9E6EE7B7), Color.Transparent),
+                center = Offset(w * 0.16f, h * 0.88f),
+                radius = r * 0.74f
+            )
+        )
+        drawRect(
+            brush = Brush.radialGradient(
+                colors = listOf(Color(0x9EFDBA74), Color(0x70FDE047), Color.Transparent),
+                center = Offset(w * 0.86f, h * 0.86f),
+                radius = r * 0.75f
+            )
+        )
+    }
+}
+
+@Composable
+private fun PrismDaylightSheenOverlay(accent: Color) {
+    Canvas(modifier = Modifier.fillMaxSize()) {
+        val w = size.width
+        val h = size.height
+        drawRect(
+            brush = Brush.verticalGradient(
+                colorStops = arrayOf(
+                    0.00f to Color.White.copy(alpha = 0.24f),
+                    0.50f to Color.White.copy(alpha = 0.10f),
+                    1.00f to accent.copy(alpha = 0.06f)
+                )
+            )
+        )
+        val step = 56.dp.toPx().coerceAtLeast(36f)
+        val gridColor = Color.White.copy(alpha = 0.32f)
+        var x = step
+        while (x < w) {
+            drawLine(gridColor, Offset(x, 0f), Offset(x, h), strokeWidth = 1f)
+            x += step
+        }
+        var y = step
+        while (y < h) {
+            drawLine(gridColor, Offset(0f, y), Offset(w, y), strokeWidth = 1f)
+            y += step
+        }
     }
 }

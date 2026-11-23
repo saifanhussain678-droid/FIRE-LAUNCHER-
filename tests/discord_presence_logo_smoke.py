@@ -10,7 +10,7 @@ url = re.search(r'const val AERIX_LOGO_URL\s*=\s*"([^"]+)"', src).group(1)
 assert url == ('https://raw.githubusercontent.com/entitybrian69-bit/Aerix-launcher/'
                '4a3b1c37a8d4838eaa5cb8933610db7fb6efdec5/assets/aerix-logo.png')
 logo = (root / 'assets/aerix-logo.png').read_bytes()
-assert hashlib.sha256(logo).hexdigest() == '19b955b6c9842c425d8778ca577b2befe991d2517fe929bfb0184c2d6197a03d'
+assert hashlib.sha256(logo).hexdigest() == '6195340a4aa32c5f3e642b0e90b4d759853e265479886c08d1fae833304e090a'
 assert logo == (root / 'app_pojavlauncher/src/main/res/drawable-nodpi/aerix_logo.png').read_bytes()
 activity = src.split('private fun sendActivity()', 1)[1].split('private fun send(frame:', 1)[0]
 assets, links = activity.split('val assets = JSONObject()', 1)[1].split('if (clickable) {', 1)

@@ -1,353 +1,321 @@
 /* ============================================================================
-   Aerix Launcher — site script
-
-   Five small jobs, no dependencies, no build step:
-     1. keep the download links and their sizes true to the newest release,
-     2. open screenshots in a lightbox,
-     3. run the mobile menu and the sticky header,
-     4. reveal sections as they scroll in,
-     5. count the stat band up when it comes into view,
-     6. total the APK downloads GitHub reports for every release.
-
-   Everything degrades: with JavaScript off the buttons still point at GitHub's
-   releases/latest permalinks, which download straight away.
-   ============================================================================ */
+ * FIRE LAUNCHER — Interactive Website Engine (UI Simulator + RAM/FPS Lab)
+ * ============================================================================ */
 
 (function () {
-  'use strict';
-
-  var REPO = 'entitybrian69-bit/Aerix-launcher';
-  var LATEST_API = 'https://api.github.com/repos/' + REPO + '/releases/latest';
-  var API = 'https://api.github.com/repos/' + REPO + '/releases?per_page=15';
-
-  function $(id) { return document.getElementById(id); }
-  function all(selector, root) {
-    return Array.prototype.slice.call((root || document).querySelectorAll(selector));
-  }
-
-  function megabytes(bytes) {
-    if (!bytes || !isFinite(bytes)) return null;
-    var mb = Math.round((bytes / 1048576) * 10) / 10;
-    return (mb % 1 === 0 ? mb : mb.toFixed(1)) + ' MB';
-  }
-
-  function shortDate(iso) {
-    if (!iso) return null;
-    var d = new Date(iso);
-    if (isNaN(d.getTime())) return null;
-    return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
-  }
-
-  /* ── the newest release ─────────────────────────────────────────────────── */
-
-  function isPublicRelease(r) {
-    return !!(r && !r.draft && !r.prerelease && r.tag_name && !/debug/i.test(r.tag_name) &&
-      (r.assets || []).some(function (a) {
-        return /\.apk$/i.test(a.name || '') && !/debug/i.test(a.name || '');
-      }));
-  }
-
-  function newestRelease(releases) {
-    var usable = (releases || []).filter(isPublicRelease);
-    return usable[0] || null;
-  }
-
-  /* Map an asset name to the card it belongs in. */
-  function kindOf(name) {
-    if (!/\.apk$/i.test(name)) return null;
-    var n = name.toLowerCase();
-    if (n.indexOf('debug') !== -1) return null;
-    var noruntime = n.indexOf('noruntime') !== -1;
-    if (n.indexOf('arm64') !== -1) return noruntime ? 'noruntime-arm64' : 'arm64';
-    if (n.indexOf('armeabi') !== -1) return noruntime ? 'noruntime-armv7' : 'armv7';
-    if (noruntime) return 'noruntime-universal';
-    return 'universal';
-  }
-
-  function applyRelease(release) {
-    if (!release) return;
-    var version = (release.tag_name || '').replace(/^v/, '');
-    var date = shortDate(release.published_at);
-
-    all('[data-release-version]').forEach(function (el) { el.textContent = version || ''; });
-    all('[data-release-date]').forEach(function (el) { el.textContent = date || ''; });
-    all('[data-release-link]').forEach(function (el) { el.href = release.html_url; });
-
-    var byKind = {};
-    (release.assets || []).forEach(function (asset) {
-      var kind = kindOf(asset.name);
-      if (kind && !byKind[kind]) byKind[kind] = asset;
+  // 1. Mobile Navigation Toggle
+  const toggle = document.getElementById('navToggle');
+  const links = document.getElementById('navLinks');
+  if (toggle && links) {
+    toggle.addEventListener('click', () => {
+      const open = links.classList.toggle('open');
+      toggle.setAttribute('aria-expanded', String(open));
     });
+  }
 
-    all('[data-dl]').forEach(function (card) {
-      var kind = card.getAttribute('data-dl');
-      var asset = byKind[kind];
-      if (!asset) {
-        card.setAttribute('aria-disabled', 'true');
-        var size = card.querySelector('.size');
-        if (size) size.textContent = 'not in this release';
-        return;
+  // 2. Interactive 8-Screen FIRE LAUNCHER UI Explorer
+  const uiStage = document.getElementById('fireUiStage');
+  const uiTabs = document.querySelectorAll('[data-ui-tab]');
+  let dlProgress = 68;
+  let dlPaused = false;
+
+  const UI_SCREENS = {
+    hq: () => `
+      <div class="sim-stage-body sim-3col">
+        <div class="sim-pane">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span class="tag">OPERATOR STUDIO</span>
+            <span style="font-size:11px;font-weight:800;color:#10B981">● CLOUD ID ✓</span>
+          </div>
+          <div style="flex:1;display:grid;place-items:center;padding:14px;border-radius:14px;background:radial-gradient(circle,rgba(56,189,248,0.22),rgba(236,72,153,0.12),transparent 72%)">
+            <div style="text-align:center">
+              <div style="width:68px;height:68px;margin:0 auto 8px;border-radius:18px;background:linear-gradient(135deg,#0EA5E9,#4F46E5,#EC4899);display:grid;place-items:center;color:#FFF;font-weight:900;font-size:22px;box-shadow:0 10px 24px rgba(37,99,235,0.28)">3D</div>
+              <div style="font-weight:900;font-size:14px">Saifan_OP</div>
+              <div style="font-size:11px;color:#527199">360° Interactive Skin &amp; Cape Doll</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:6px">
+            <span class="sim-mini-btn" style="flex:1;text-align:center">SKIN WARDROBE</span>
+            <span class="sim-mini-btn" style="flex:1;text-align:center">CAPES</span>
+          </div>
+        </div>
+
+        <div class="sim-pane">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span class="tag">2×2 TACTICAL BENTO DECK</span>
+            <span style="font-size:11px;font-weight:800;color:#2563EB">VULKAN · 120HZ READY</span>
+          </div>
+          <div class="pastel-grid-2x2">
+            <div class="pastel-tile pt-sky">◉ CREW &amp; PARTY<div style="font-size:10.5px;font-weight:600;margin-top:3px">Friends &amp; World Invites</div></div>
+            <div class="pastel-tile pt-pink">✦ MOD ARMORY<div style="font-size:10.5px;font-weight:600;margin-top:3px">Modrinth &amp; CurseForge</div></div>
+            <div class="pastel-tile pt-mint">🎮 CONTROL RIG<div style="font-size:10.5px;font-weight:600;margin-top:3px">Touch, Mouse &amp; Gamepad</div></div>
+            <div class="pastel-tile pt-amber">⚙ RUN .JAR<div style="font-size:10.5px;font-weight:600;margin-top:3px">OptiFine &amp; Forge Installer</div></div>
+          </div>
+          <div style="margin-top:auto;padding:9px 12px;border-radius:12px;background:#EFF6FF;font-size:11.5px;font-weight:800;color:#0F2544;display:flex;justify-content:space-between">
+            <span>⚡ ENGINE READY · OpenJDK 21 ARM64</span>
+            <span style="color:#2563EB">MobileGlues 1.21.4</span>
+          </div>
+        </div>
+
+        <div class="sim-pane">
+          <span class="tag">ACTIVE INSTANCE &amp; RACK</span>
+          <div style="padding:12px;border-radius:14px;background:linear-gradient(135deg,#EFF6FF,#DBEAFE);border:1px solid rgba(37,99,235,0.25)">
+            <div style="font-weight:900;font-size:14.5px">Prism PvP 1.21.4</div>
+            <div style="font-size:11.5px;color:#2C4870">Fabric 0.16.9 · Sodium + Lithium + Iris · 48 Mods</div>
+          </div>
+          <div style="display:grid;gap:6px;font-size:12px;font-weight:800">
+            <div style="padding:8px 10px;border-radius:10px;background:#F8FAFC;border:1px solid rgba(37,99,235,0.14)">🌈 Aurora Shaders Ultra · NeoForge 1.21.1</div>
+            <div style="padding:8px 10px;border-radius:10px;background:#F8FAFC;border:1px solid rgba(37,99,235,0.14)">⚔️ Competitive Bedwars · 1.8.9 OptiFine</div>
+          </div>
+        </div>
+      </div>`,
+
+    downloader: () => `
+      <div class="sim-stage-body" style="grid-template-columns:1fr 1fr">
+        <div class="sim-pane">
+          <span class="tag">TOP FLOATING DOWNLOAD ENGINE</span>
+          <h3>Relocated Top Prism Downloading Bar</h3>
+          <p style="font-size:13px;color:#2C4870">Downloads never block your screen: Pause, Cancel &amp; Sub-Task Drawer sit on the Left; Multi-Color Cyan → Indigo → Pink progress bar + live MB/s speed + ETA sit in the Center; bold % readout sits on the Right.</p>
+          <div style="display:grid;gap:7px;margin-top:6px;font-size:12px;font-weight:800">
+            <div style="padding:9px 12px;border-radius:10px;background:#ECFDF5;color:#047857">✓ OpenJDK 21 ARM64 Runtime — Verified (SHA-1 OK)</div>
+            <div style="padding:9px 12px;border-radius:10px;background:#EFF6FF;color:#1D4ED8">⟳ Minecraft 1.21.4 Client + 208 Libraries — 24.8 MB/s</div>
+            <div style="padding:9px 12px;border-radius:10px;background:#FDF2F8;color:#BE185D">⟳ Sodium 0.6.5 + Fabric API — Auto-Resolved</div>
+          </div>
+        </div>
+        <div class="sim-pane">
+          <span class="tag">MOD &amp; MODPACK INSTALL QUEUE</span>
+          <h3>Minimizable Background Queue Pill</h3>
+          <p style="font-size:13px;color:#2C4870">Install 10+ mods or a 150-mod CurseForge/Modrinth pack in the background while editing controls or skins. Minimize into a floating glass pill anytime.</p>
+          <div style="padding:12px;border-radius:14px;background:#EFF6FF;border:1px solid rgba(37,99,235,0.22);display:grid;gap:6px">
+            <div style="display:flex;justify-content:space-between;font-size:12.5px;font-weight:900"><span>Complementary Reimagined v5.3</span><span style="color:#DB2777">92%</span></div>
+            <div class="sim-progress-track"><div class="sim-progress-fill" style="width:92%"></div></div>
+            <div style="font-size:11px;color:#527199">Installing into: Prism PvP 1.21.4 + Aurora Shaders</div>
+          </div>
+        </div>
+      </div>`,
+
+    vault: () => `
+      <div class="sim-stage-body" style="grid-template-columns:1.1fr 0.9fr">
+        <div class="sim-pane">
+          <span class="tag">INSTANCE VAULT</span>
+          <h3>Isolated Per-Instance Worlds, Mods &amp; Renderers</h3>
+          <div style="display:grid;gap:8px;font-size:12.5px">
+            <div style="padding:10px 12px;border-radius:12px;background:#EFF6FF;border:1px solid rgba(37,99,235,0.25);display:flex;justify-content:space-between"><b>💎 Prism PvP 1.21.4</b><span>Fabric · Java 21 · MobileGlues</span></div>
+            <div style="padding:10px 12px;border-radius:12px;background:#F8FAFC;border:1px solid rgba(37,99,235,0.14);display:flex;justify-content:space-between"><b>🔥 RLCraft Mobile</b><span>Forge 1.12.2 · Java 8 · GL4ES</span></div>
+            <div style="padding:10px 12px;border-radius:12px;background:#F8FAFC;border:1px solid rgba(37,99,235,0.14);display:flex;justify-content:space-between"><b>⚡ Cobblemon 1.21.1</b><span>NeoForge · Java 21 · Vulkan Zink</span></div>
+          </div>
+        </div>
+        <div class="sim-pane">
+          <span class="tag">+ FORGE INSTANCE CREATOR</span>
+          <h3>1-Click Version &amp; Loader Builder</h3>
+          <p style="font-size:12.5px;color:#2C4870">Every release from Minecraft 1.0 to 1.21.4+ &amp; Snapshots with automatic loader installation:</p>
+          <div class="tag-row">
+            <span class="tag">Vanilla</span><span class="tag">Fabric</span><span class="tag">Quilt</span><span class="tag">Forge</span><span class="tag">NeoForge</span><span class="tag">OptiFine</span><span class="tag">Legacy Fabric</span><span class="tag">BTA 1.7.3</span>
+          </div>
+        </div>
+      </div>`,
+
+    armory: () => `
+      <div class="sim-stage-body" style="grid-template-columns:repeat(3,1fr)">
+        <div class="sim-pane">
+          <span class="tag">MODRINTH + CURSEFORGE</span>
+          <h3>⚡ Sodium + Lithium</h3>
+          <p style="font-size:12.5px;color:#2C4870">2.5× to 3.5× higher FPS on 4GB, 6GB &amp; 8GB phones. Auto-selects exact Minecraft &amp; Loader version.</p>
+          <span class="sim-mini-btn" style="margin-top:auto;text-align:center">1-TAP INSTALL ✓</span>
+        </div>
+        <div class="sim-pane">
+          <span class="tag">SHADERPACKS</span>
+          <h3>🌈 Iris + Complementary</h3>
+          <p style="font-size:12.5px;color:#2C4870">Real-time water reflections, volumetric clouds &amp; dynamic shadows via MobileGlues OpenGL 4.x.</p>
+          <span class="sim-mini-btn" style="margin-top:auto;text-align:center">1-TAP INSTALL ✓</span>
+        </div>
+        <div class="sim-pane">
+          <span class="tag">FULL MODPACKS</span>
+          <h3>📦 .mrpack &amp; CurseForge ZIP</h3>
+          <p style="font-size:12.5px;color:#2C4870">Search &amp; install complete modpacks with parallel multi-file download &amp; override extraction.</p>
+          <span class="sim-mini-btn" style="margin-top:auto;text-align:center">BROWSE PACKS →</span>
+        </div>
+      </div>`,
+
+    client: () => `
+      <div class="sim-stage-body" style="grid-template-columns:1.1fr 0.9fr">
+        <div class="sim-pane">
+          <span class="tag">BUILT-IN FIRE CLIENT HUD</span>
+          <h3>Competitive PvP &amp; FPS Overlay Suite</h3>
+          <div class="pastel-grid-2x2">
+            <div class="pastel-tile pt-sky">FPS &amp; Frame-Time Pill</div>
+            <div class="pastel-tile pt-pink">RGB Keystrokes + CPS</div>
+            <div class="pastel-tile pt-mint">ToggleSprint &amp; Zoom</div>
+            <div class="pastel-tile pt-amber">Armor HUD &amp; Crosshair</div>
+          </div>
+        </div>
+        <div class="sim-pane">
+          <span class="tag">IN-GAME RECORDER &amp; MENU</span>
+          <h3>🎥 1080p60 Screen + Internal Audio Recorder</h3>
+          <p style="font-size:12.5px;color:#2C4870">Tap the floating in-game FIRE LAUNCHER crystal flame button to record lag-free MP4 gameplay with internal game sound, live FPS counter, and instant log overlay.</p>
+        </div>
+      </div>`,
+
+    controls: () => `
+      <div class="sim-stage-body" style="grid-template-columns:1fr 1fr">
+        <div class="sim-pane">
+          <span class="tag">TOUCH &amp; GYRO STUDIO</span>
+          <h3>11 Animated Control Themes + Custom Macros</h3>
+          <p style="font-size:12.5px;color:#2C4870">Drag, resize, set opacity, bind multi-key combos, customize virtual mouse cursor PNG/SVG, and enable precision Gyroscope aiming.</p>
+          <div class="tag-row"><span class="tag">Aurora</span><span class="tag">Comet</span><span class="tag">Nebula</span><span class="tag">Galaxy</span><span class="tag">Stardust</span></div>
+        </div>
+        <div class="sim-pane">
+          <span class="tag">GAMEPAD + KEYBOARD/MOUSE</span>
+          <h3>Xbox, DualSense PS5 &amp; USB/BT Mouse Lock</h3>
+          <p style="font-size:12.5px;color:#2C4870">Full native pointer capture for USB OTG / Bluetooth mice &amp; keyboards plus customizable analog deadzones for Bluetooth controllers.</p>
+        </div>
+      </div>`,
+
+    renderers: () => `
+      <div class="sim-stage-body" style="grid-template-columns:1fr 1fr">
+        <div class="sim-pane">
+          <span class="tag">12 GRAPHICS RENDERERS</span>
+          <h3>MobileGlues, Vulkan Zink, Turnip &amp; GL4ES</h3>
+          <p style="font-size:12.5px;color:#2C4870">Pick a global renderer or override per instance. Supports OpenGL 4.6 translation over Vulkan for modern Minecraft 1.21.4 + Iris Shaders.</p>
+          <div class="tag-row"><span class="tag">MobileGlues</span><span class="tag">Vulkan Zink</span><span class="tag">Holy GL4ES</span><span class="tag">VirGL</span><span class="tag">ANGLE</span></div>
+        </div>
+        <div class="sim-pane">
+          <span class="tag">CUSTOM GPU DRIVER IMPORTER</span>
+          <h3>Import Adreno / Freedreno Turnip .ZIP Drivers</h3>
+          <p style="font-size:12.5px;color:#2C4870">Snapdragon users can import custom Mesa Turnip Vulkan drivers directly in Settings → Video for massive shader stability &amp; +40% extra FPS.</p>
+        </div>
+      </div>`,
+
+    accounts: () => `
+      <div class="sim-stage-body" style="grid-template-columns:1fr 1fr">
+        <div class="sim-pane">
+          <span class="tag">ACCOUNTS &amp; SKIN WARDROBE</span>
+          <h3>Microsoft OAuth, Ely.by &amp; Offline Profiles</h3>
+          <p style="font-size:12.5px;color:#2C4870">Sign in securely with official Microsoft Xbox Live tokens, Ely.by skin servers, or instant Offline usernames — with full 3D Skin &amp; Cape preview.</p>
+        </div>
+        <div class="sim-pane">
+          <span class="tag">FILES, CODE EDITOR &amp; LOGS</span>
+          <h3>Built-In File Manager + Crash Log Analyzer</h3>
+          <p style="font-size:12.5px;color:#2C4870">Edit options.txt &amp; mod configs with line numbers &amp; search/replace, zip/unzip worlds, share crash logs in 1 tap, and show live status on Discord Rich Presence.</p>
+        </div>
+      </div>`
+  };
+
+  function renderUiScreen(key) {
+    if (!uiStage || !UI_SCREENS[key]) return;
+    uiStage.innerHTML = UI_SCREENS[key]();
+    uiTabs.forEach((b) => b.classList.toggle('active', b.dataset.uiTab === key));
+  }
+
+  if (uiStage && uiTabs.length) {
+    uiTabs.forEach((btn) => {
+      btn.addEventListener('click', () => renderUiScreen(btn.dataset.uiTab));
+    });
+    renderUiScreen('hq');
+  }
+
+  // Live Top Downloading Bar animation inside UI Simulator
+  const simFill = document.getElementById('simDlFill');
+  const simPct = document.getElementById('simDlPct');
+  const simPause = document.getElementById('simDlPause');
+  if (simPause) {
+    simPause.addEventListener('click', () => {
+      dlPaused = !dlPaused;
+      simPause.textContent = dlPaused ? '▶ Resume' : '⏸ Pause';
+    });
+  }
+  if (simFill && simPct) {
+    setInterval(() => {
+      if (dlPaused) return;
+      dlProgress = dlProgress >= 100 ? 18 : dlProgress + 2;
+      simFill.style.width = dlProgress + '%';
+      simPct.textContent = dlProgress + '%';
+    }, 950);
+  }
+
+  // 3. Interactive RAM & FPS Performance Calculator (4GB / 6GB / 8GB / 12GB+)
+  const calcState = { ram: '6', soc: 'mid', mode: 'sodium' };
+
+  const RAM_PROFILES = {
+    '4': {
+      heap: '1792 MB (1.75 GB)',
+      chunks: '6 – 8 Chunks',
+      renderer: 'MobileGlues (Fast) / Holy GL4ES',
+      baseFps: 95,
+      jvm: '-Xms1792M -Xmx1792M -XX:+UseG1GC -XX:MaxGCPauseMillis=50 -Dsodium.checks.issue2561=false'
+    },
+    '6': {
+      heap: '3072 MB (3.0 GB)',
+      chunks: '10 – 12 Chunks',
+      renderer: 'MobileGlues (OpenGL 4.x / Vulkan)',
+      baseFps: 155,
+      jvm: '-Xms3072M -Xmx3072M -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:G1NewSizePercent=20 -XX:MaxGCPauseMillis=45'
+    },
+    '8': {
+      heap: '4352 MB (4.25 GB)',
+      chunks: '12 – 16 Chunks · 120Hz Mode ON',
+      renderer: 'MobileGlues Vulkan + Custom Turnip Driver',
+      baseFps: 245,
+      jvm: '-Xms4352M -Xmx4352M -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=35 -XX:G1HeapRegionSize=16M'
+    },
+    '12': {
+      heap: '6144 MB (6.0 GB)',
+      chunks: '16 – 22 Chunks · 120Hz/144Hz Unlocked',
+      renderer: 'MobileGlues Ultra / Turnip + Vulkan Zink',
+      baseFps: 320,
+      jvm: '-Xms6144M -Xmx6144M -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=30 -XX:G1HeapRegionSize=32M'
+    }
+  };
+
+  const SOC_MULT = { budget: 0.72, mid: 1.0, flagship: 1.38 };
+  const MODE_MULT = {
+    pvp: 1.35,
+    sodium: 1.0,
+    vanilla: 0.62,
+    shaders: 0.42,
+    modpack: 0.48
+  };
+
+  function updateCalculator() {
+    const fpsOut = document.getElementById('calcFpsOut');
+    if (!fpsOut) return;
+    const prof = RAM_PROFILES[calcState.ram];
+    const mult = SOC_MULT[calcState.soc] * MODE_MULT[calcState.mode];
+    const avg = Math.round(prof.baseFps * mult);
+    const low = Math.max(24, Math.round(avg * 0.72));
+    const peak = Math.round(avg * 1.22);
+
+    fpsOut.textContent = `${avg} – ${peak} FPS`;
+    document.getElementById('calcLowOut').textContent = `1% Low: ~${low} FPS · Smooth Frame Pacing`;
+    document.getElementById('calcHeapOut').textContent = prof.heap;
+    document.getElementById('calcChunksOut').textContent = prof.chunks;
+    document.getElementById('calcRendererOut').textContent = prof.renderer;
+    document.getElementById('calcJvmOut').textContent = prof.jvm;
+  }
+
+  document.querySelectorAll('[data-calc-group]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const group = btn.dataset.calcGroup;
+      const val = btn.dataset.calcVal;
+      calcState[group] = val;
+      document.querySelectorAll(`[data-calc-group="${group}"]`).forEach((b) => {
+        b.classList.toggle('active', b === btn);
+      });
+      updateCalculator();
+    });
+  });
+
+  const copyJvmBtn = document.getElementById('copyJvmBtn');
+  if (copyJvmBtn) {
+    copyJvmBtn.addEventListener('click', () => {
+      const code = document.getElementById('calcJvmOut')?.textContent || '';
+      if (navigator.clipboard && code) {
+        navigator.clipboard.writeText(code);
+        copyJvmBtn.textContent = '✓ Copied JVM Flags!';
+        setTimeout(() => { copyJvmBtn.textContent = '📋 Copy Best JVM Flags'; }, 1800);
       }
-      card.href = asset.browser_download_url;
-      card.setAttribute('download', asset.name);
-      var sizeEl = card.querySelector('.size');
-      if (sizeEl) sizeEl.textContent = megabytes(asset.size) || '';
-      var nameEl = card.querySelector('.asset');
-      if (nameEl) nameEl.textContent = asset.name;
-      card.removeAttribute('aria-disabled');
-    });
-
-    // The big button gets the build most phones want; the picker below covers the rest.
-    var primary = byKind.arm64 || byKind.universal;
-    all('[data-primary-download]').forEach(function (btn) {
-      if (!primary) return;
-      btn.href = primary.browser_download_url;
-      btn.setAttribute('download', primary.name);
-      var note = btn.querySelector('.btn-size');
-      if (note) note.textContent = megabytes(primary.size) || '';
-    });
-
-    var facts = $('downloadFacts');
-    if (facts) {
-      var parts = [];
-      if (version) parts.push('v' + version);
-      if (date) parts.push(date);
-      facts.textContent = parts.filter(Boolean).join(' · ');
-    }
-  }
-
-  /* ── downloads, summed from the releases themselves ─────────────────────── */
-
-  function setupDownloads() {
-    var targets = all('[data-downloads]');
-    if (!targets.length || !window.fetch) return;
-
-    var api = 'https://api.github.com/repos/' + REPO + '/releases?per_page=100';
-    var total = 0;
-    var seen = {};
-
-    function paint() {
-      if (!total) return;
-      var text = total.toLocaleString();
-      targets.forEach(function (el) {
-        el.textContent = text;
-        el.classList.add('is-live');
-      });
-    }
-
-    function add(list) {
-      (list || []).forEach(function (release) {
-        if (!release || release.draft || release.prerelease || /debug/i.test(release.tag_name || '')) return;
-        var id = release.id || release.tag_name;
-        if (seen[id]) return;
-        seen[id] = true;
-        (release.assets || []).forEach(function (asset) {
-          if (!/\.apk$/i.test(asset.name || '') || /debug/i.test(asset.name || '')) return;
-          if (typeof asset.download_count === 'number') total += asset.download_count;
-        });
-      });
-    }
-
-    // One page covers 100 releases; that is already more than this project will ever publish,
-    // and a failure only means the counter keeps its placeholder.
-    fetch(api, { headers: { Accept: 'application/vnd.github+json' } })
-      .then(function (response) { return response.ok ? response.json() : []; })
-      .then(function (list) { add(list); paint(); })
-      .catch(function () { /* leave the dashes */ });
-  }
-
-  function loadRelease() {
-    if (!window.fetch) return;
-    fetch(LATEST_API, { headers: { Accept: 'application/vnd.github+json' } })
-      .then(function (r) {
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        return r.json();
-      })
-      .then(function (release) {
-        if (isPublicRelease(release)) {
-          applyRelease(release);
-          return null;
-        }
-        return fetch(API, { headers: { Accept: 'application/vnd.github+json' } })
-          .then(function (r2) { return r2.ok ? r2.json() : []; })
-          .then(function (releases) { applyRelease(newestRelease(releases)); });
-      })
-      .catch(function () {
-        /* Offline, rate limited, or blocked: the static links and sizes stay. */
-      });
-  }
-
-  /* ── lightbox ───────────────────────────────────────────────────────────── */
-
-  function setupLightbox() {
-    var links = all('[data-lightbox]');
-    if (!links.length) return;
-
-    var box = document.createElement('div');
-    box.className = 'lightbox';
-    box.setAttribute('role', 'dialog');
-    box.setAttribute('aria-modal', 'true');
-    box.setAttribute('aria-label', 'Screenshot');
-    box.innerHTML = '<button class="lightbox-close" type="button" aria-label="Close">✕</button>';
-    var image = document.createElement('img');
-    box.appendChild(image);
-    document.body.appendChild(box);
-
-    var lastFocus = null;
-
-    function close() {
-      box.classList.remove('is-open');
-      image.removeAttribute('src');
-      document.body.style.overflow = '';
-      if (lastFocus) lastFocus.focus();
-    }
-
-    function open(link) {
-      var full = link.getAttribute('href');
-      var thumb = link.querySelector('img');
-      image.src = full;
-      image.alt = (thumb && thumb.alt) || 'Screenshot';
-      box.classList.add('is-open');
-      document.body.style.overflow = 'hidden';
-      lastFocus = link;
-      box.querySelector('.lightbox-close').focus();
-    }
-
-    links.forEach(function (link) {
-      link.addEventListener('click', function (event) {
-        if (event.metaKey || event.ctrlKey || event.shiftKey) return; // let "open in new tab" work
-        event.preventDefault();
-        open(link);
-      });
-    });
-
-    box.addEventListener('click', function (event) {
-      if (event.target === box || event.target.classList.contains('lightbox-close')) close();
-    });
-
-    document.addEventListener('keydown', function (event) {
-      if (event.key === 'Escape' && box.classList.contains('is-open')) close();
     });
   }
 
-  /* ── navigation ─────────────────────────────────────────────────────────── */
-
-  function setupNav() {
-    var nav = document.querySelector('.nav');
-    var toggle = $('navToggle');
-    var links = $('navLinks');
-
-    function onScroll() {
-      if (!nav) return;
-      nav.classList.toggle('is-stuck', window.scrollY > 8);
-      var doc = document.documentElement;
-      var span = doc.scrollHeight - window.innerHeight;
-      var done = span > 0 ? Math.min(1, Math.max(0, window.scrollY / span)) : 0;
-      nav.style.setProperty('--progress', done.toFixed(4));
-    }
-
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-
-    if (!toggle || !links) return;
-
-    function setOpen(open) {
-      toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-      toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
-      links.classList.toggle('is-open', open);
-    }
-
-    toggle.addEventListener('click', function () {
-      setOpen(toggle.getAttribute('aria-expanded') !== 'true');
-    });
-
-    all('a', links).forEach(function (link) {
-      link.addEventListener('click', function () { setOpen(false); });
-    });
-
-    document.addEventListener('keydown', function (event) {
-      if (event.key === 'Escape') setOpen(false);
-    });
-
-    window.addEventListener('resize', function () {
-      if (window.innerWidth > 900) setOpen(false);
-    });
-  }
-
-  /* ── reveal on scroll ───────────────────────────────────────────────────── */
-
-  function setupReveal() {
-    var items = all('.reveal');
-    if (!items.length) return;
-
-    var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduced || !('IntersectionObserver' in window)) {
-      items.forEach(function (el) { el.classList.add('is-in'); });
-      return;
-    }
-
-    var observer = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        if (!entry.isIntersecting) return;
-        entry.target.classList.add('is-in');
-        observer.unobserve(entry.target);
-      });
-    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.06 });
-
-    items.forEach(function (el) { observer.observe(el); });
-  }
-
-  /* ── the stat band counts itself in ─────────────────────────────────────── */
-
-  function setupCounters() {
-    var numbers = all('[data-count]');
-    if (!numbers.length) return;
-
-    var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduced || !('IntersectionObserver' in window)) return;
-
-    function run(el) {
-      var target = parseInt(el.getAttribute('data-count'), 10);
-      if (!isFinite(target)) return;
-      var start = null;
-      var seen = 0;
-      function step(now) {
-        if (start === null) start = now;
-        var t = Math.min(1, (now - start) / 900);
-        var eased = 1 - Math.pow(1 - t, 3);
-        var value = Math.round(target * eased);
-        if (value !== seen) { el.textContent = String(value); seen = value; }
-        if (t < 1) requestAnimationFrame(step);
-        else el.textContent = String(target);
-      }
-      requestAnimationFrame(step);
-    }
-
-    var observer = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        if (!entry.isIntersecting) return;
-        observer.unobserve(entry.target);
-        run(entry.target);
-      });
-    }, { threshold: 0.4 });
-
-    numbers.forEach(function (el) { observer.observe(el); });
-  }
-
-  /* ── go ─────────────────────────────────────────────────────────────────── */
-
-  function start() {
-    setupNav();
-    setupReveal();
-    setupCounters();
-    setupLightbox();
-    loadRelease();
-    setupDownloads();
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', start);
-  } else {
-    start();
-  }
+  updateCalculator();
 })();

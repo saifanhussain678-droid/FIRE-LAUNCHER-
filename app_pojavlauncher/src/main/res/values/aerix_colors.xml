@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Aerix glass palette, ported from mirai-launcher- ui/theme/AerixSurface.kt -->
+<!-- FIRE LAUNCHER Prism Light XML resource palette -->
 <resources>
-    <color name="aerix_canvas">#FF07131D</color>
-    <color name="aerix_panel">#9D172B3A</color>
-    <color name="aerix_panel_raised">#B0223B4E</color>
-    <color name="aerix_panel_solid">#FF0F2130</color>
-    <color name="aerix_panel_raised_solid">#FF1B3243</color>
-    <color name="aerix_border">#78E6FAFF</color>
-    <color name="aerix_border_soft">#48E6FAFF</color>
-    <color name="aerix_accent">#FF8DEFE0</color>
-    <color name="aerix_action">#FF2A9D92</color>
-    <color name="aerix_on_accent">#FF06201D</color>
-    <color name="aerix_glass_blue">#FF91E9FF</color>
-    <color name="aerix_glass_violet">#FFB7A9FF</color>
-    <color name="aerix_text_primary">#FFF1F6FA</color>
-    <color name="aerix_text_secondary">#FFA8B9C5</color>
-    <color name="aerix_text_muted">#FF7D909D</color>
-    <color name="aerix_success">#FF73E5B0</color>
-    <color name="aerix_warning">#FFFFC777</color>
-    <color name="aerix_danger">#FFFF7189</color>
+    <color name="aerix_canvas">#FFF5F8FF</color>
+    <color name="aerix_panel">#DBFFFFFF</color>
+    <color name="aerix_panel_raised">#ECFFFFFF</color>
+    <color name="aerix_panel_solid">#FFF8FAFC</color>
+    <color name="aerix_panel_raised_solid">#FFFFFFFF</color>
+    <color name="aerix_border">#99CBD5E1</color>
+    <color name="aerix_border_soft">#5994A3B8</color>
+    <color name="aerix_accent">#FF6366F1</color>
+    <color name="aerix_action">#FF4F46E5</color>
+    <color name="aerix_on_accent">#FFFFFFFF</color>
+    <color name="aerix_glass_blue">#FF38BDF8</color>
+    <color name="aerix_glass_violet">#FFA78BFA</color>
+    <color name="aerix_text_primary">#FF0F172A</color>
+    <color name="aerix_text_secondary">#FF475569</color>
+    <color name="aerix_text_muted">#FF64748B</color>
+    <color name="aerix_success">#FF10B981</color>
+    <color name="aerix_warning">#FFF59E0B</color>
+    <color name="aerix_danger">#FFE11D48</color>
 </resources>

@@ -104,6 +104,7 @@ import net.kdt.pojavlaunch.aerix.theme.AerixRadii
 import net.kdt.pojavlaunch.aerix.theme.AerixSpacing
 import net.kdt.pojavlaunch.aerix.theme.AerixSurface
 import net.kdt.pojavlaunch.aerix.theme.AerixThemeManager
+import net.kdt.pojavlaunch.aerix.theme.FireShapes
 import net.kdt.pojavlaunch.aerix.social.SocialActivity
 
 /** Version tabs, the same grouping Pojav's VersionListAdapter builds. */
@@ -193,7 +194,9 @@ fun CreateInstanceScreen(activity: FragmentActivity, onClose: () -> Unit) {
         verticalArrangement = Arrangement.spacedBy(AerixSpacing.sm)
     ) {
         // ====================================================================================
-        // 1. Compact Single-Line Top Bar
+        // 1. Inverted Forge Command Bar:
+        //    TOP-LEFT = FORGE & INSTALL + IMPORT MODPACK
+        //    TOP-RIGHT = Spec Readout + Title + Close
         // ====================================================================================
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -204,53 +207,6 @@ fun CreateInstanceScreen(activity: FragmentActivity, onClose: () -> Unit) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(AerixSpacing.sm)
             ) {
-                Surface(
-                    modifier = Modifier.size(36.dp),
-                    shape = RoundedCornerShape(AerixRadii.control),
-                    color = AerixSurface.panel,
-                    border = BorderStroke(AerixSpacing.hairline, AerixSurface.borderSoft),
-                    onClick = onClose
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            painter = painterResource(R.drawable.aerix_ic_arrow_back),
-                            contentDescription = stringResource(R.string.aerix_create_close),
-                            tint = Color.White,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
-                }
-                Text(
-                    text = stringResource(R.string.aerix_create_title),
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold),
-                    color = Color.White
-                )
-                ModrinthMetaPill(
-                    text = buildString {
-                        append("MC ")
-                        append(selectedVersion ?: "...")
-                        append(" \u2022 ")
-                        append(loader.displayName)
-                        if (loader.usesGameVersion && loaderBuild != null) {
-                            append(" ")
-                            append(loaderBuild?.label ?: "")
-                        }
-                    },
-                    highlighted = true
-                )
-            }
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(AerixSpacing.sm)
-            ) {
-                AerixGhostButton(
-                    text = stringResource(R.string.aerix_create_import_modpack),
-                    iconRes = R.drawable.aerix_ic_import_modpack,
-                    onClick = {
-                        PojavNavigator.openInstaller(activity, PojavInstaller.MODPACK)
-                    }
-                )
                 AerixPrimaryButton(
                     text = stringResource(
                         if (PojavCreateInstanceBridge.installing) R.string.aerix_create_installing
@@ -272,13 +228,60 @@ fun CreateInstanceScreen(activity: FragmentActivity, onClose: () -> Unit) {
                         }
                     }
                 )
+                AerixGhostButton(
+                    text = stringResource(R.string.aerix_create_import_modpack),
+                    iconRes = R.drawable.aerix_ic_import_modpack,
+                    onClick = {
+                        PojavNavigator.openInstaller(activity, PojavInstaller.MODPACK)
+                    }
+                )
+            }
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(AerixSpacing.sm)
+            ) {
+                ModrinthMetaPill(
+                    text = buildString {
+                        append("MC ")
+                        append(selectedVersion ?: "...")
+                        append(" \u2022 ")
+                        append(loader.displayName)
+                        if (loader.usesGameVersion && loaderBuild != null) {
+                            append(" ")
+                            append(loaderBuild?.label ?: "")
+                        }
+                    },
+                    highlighted = true
+                )
+                Text(
+                    text = "CORE FORGE",
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black, letterSpacing = 1.sp),
+                    color = AerixSurface.textPrimary
+                )
+                Surface(
+                    modifier = Modifier.size(36.dp),
+                    shape = FireShapes.hudChip,
+                    color = AerixSurface.firePanelRaised,
+                    border = BorderStroke(1.dp, accent.copy(alpha = 0.45f)),
+                    onClick = onClose
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            painter = painterResource(R.drawable.aerix_ic_close),
+                            contentDescription = stringResource(R.string.aerix_create_close),
+                            tint = AerixSurface.fireAmber,
+                            modifier = Modifier.size(17.dp)
+                        )
+                    }
+                }
             }
         }
 
         // ====================================================================================
-        // 2. Full-Height Two-Pane Landscape Content
-        //    Left Pane: 100% Dedicated to Minecraft Version Selection (Mirai SelectGameVersionScreen)
-        //    Right Pane: Instance Name & Icon + Mod Loader Grid + Loader Version Picker
+        // 2. Inverted Two-Pane Forge Body:
+        //    LEFT PANE: Instance Identity + Modloader Reactor Grid + Loader Build Picker
+        //    RIGHT PANE: Minecraft Version Matrix + Category Filter Strip
         // ====================================================================================
         Row(
             modifier = Modifier
@@ -287,15 +290,257 @@ fun CreateInstanceScreen(activity: FragmentActivity, onClose: () -> Unit) {
             horizontalArrangement = Arrangement.spacedBy(AerixSpacing.md)
         ) {
             // --------------------------------------------------------------------------------
-            // LEFT PANE: Full-Height Minecraft Version List
+            // LEFT PANE: Instance Identity + Modloader Reactor Grid + Loader Build Picker
             // --------------------------------------------------------------------------------
             Surface(
                 modifier = Modifier
-                    .weight(1.12f)
+                    .weight(0.92f)
                     .fillMaxHeight(),
-                shape = RoundedCornerShape(AerixRadii.panel),
-                color = AerixSurface.panel,
-                border = BorderStroke(AerixSpacing.hairline, AerixSurface.borderSoft)
+                shape = FireShapes.armorCard,
+                color = AerixSurface.firePanel,
+                border = BorderStroke(1.dp, accent.copy(alpha = 0.42f))
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(AerixSpacing.smPlus),
+                    verticalArrangement = Arrangement.spacedBy(AerixSpacing.smPlus)
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text(
+                            text = "// 01 · CARTRIDGE IDENTITY",
+                            color = AerixSurface.fireAmber,
+                            fontSize = 10.sp,
+                            letterSpacing = 1.2.sp,
+                            fontWeight = FontWeight.Black
+                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(AerixSpacing.sm)
+                        ) {
+                            AerixImageWell(
+                                image = icon?.asImageBitmap(),
+                                fallback = R.drawable.aerix_loader_vanilla,
+                                size = 42.dp,
+                                modifier = Modifier.clickable(role = Role.Button) {
+                                    AerixIconCropper.start(activity) { icon = it }
+                                }
+                            )
+                            OutlinedTextField(
+                                value = name,
+                                onValueChange = {
+                                    name = it
+                                    nameEdited = it.isNotEmpty()
+                                },
+                                modifier = Modifier.weight(1f),
+                                singleLine = true,
+                                shape = FireShapes.armorSmall,
+                                placeholder = {
+                                    Text(
+                                        text = stringResource(R.string.aerix_create_name_hint),
+                                        color = AerixSurface.textMuted,
+                                        fontSize = 13.sp
+                                    )
+                                },
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedTextColor = AerixSurface.textPrimary,
+                                    unfocusedTextColor = AerixSurface.textPrimary,
+                                    focusedBorderColor = accent,
+                                    unfocusedBorderColor = AerixSurface.borderSoft,
+                                    cursorColor = accent
+                                )
+                            )
+                        }
+                    }
+
+                    HorizontalDivider(color = AerixSurface.borderSoft)
+
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text(
+                            text = "// 02 · MODLOADER ENGINE",
+                            color = AerixSurface.fireAmber,
+                            fontSize = 10.sp,
+                            letterSpacing = 1.2.sp,
+                            fontWeight = FontWeight.Black
+                        )
+
+                        val tiles = AerixLoader.entries.toList()
+                        tiles.chunked(2).forEach { row ->
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                row.forEach { entry ->
+                                    LoaderTile(
+                                        loader = entry,
+                                        selected = entry == loader,
+                                        accent = accent,
+                                        modifier = Modifier.weight(1f),
+                                        onClick = {
+                                            loader = entry
+                                            onlyStable = true
+                                        }
+                                    )
+                                }
+                                repeat(2 - row.size) { Spacer(Modifier.weight(1f)) }
+                            }
+                        }
+
+                        if (loader.usesGameVersion && !loader.hasBuilds) {
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = stringResource(R.string.aerix_create_vanilla_hint),
+                                color = AerixSurface.textSecondary,
+                                fontSize = 11.sp
+                            )
+                        }
+
+                        if (loader.usesGameVersion && loader.hasBuilds) {
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(AerixSpacing.sm)
+                            ) {
+                                Text(
+                                    text = if (loaderBuild != null) {
+                                        stringResource(
+                                            R.string.aerix_create_loader_version,
+                                            loader.displayName,
+                                            loaderBuild?.label ?: ""
+                                        )
+                                    } else {
+                                        stringResource(R.string.aerix_create_loader_loading)
+                                    },
+                                    color = if (loaderBuild != null) AerixSurface.textPrimary else AerixSurface.textSecondary,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.weight(1f),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                Text(
+                                    text = stringResource(R.string.aerix_create_only_stable),
+                                    color = AerixSurface.textSecondary,
+                                    fontSize = 11.sp
+                                )
+                                Switch(
+                                    checked = onlyStable,
+                                    onCheckedChange = { onlyStable = it },
+                                    colors = SwitchDefaults.colors(
+                                        checkedThumbColor = AerixSurface.onFireAccentDefault,
+                                        checkedTrackColor = accent,
+                                        uncheckedThumbColor = AerixSurface.textSecondary,
+                                        uncheckedTrackColor = AerixSurface.panelTrack
+                                    )
+                                )
+                            }
+
+                            when {
+                                loadingBuilds -> {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 8.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        CircularProgressIndicator(
+                                            color = accent,
+                                            strokeWidth = 2.dp,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                        Text(
+                                            text = stringResource(R.string.aerix_create_loader_loading),
+                                            color = AerixSurface.textSecondary,
+                                            fontSize = 11.sp
+                                        )
+                                    }
+                                }
+                                visibleBuilds.isEmpty() -> {
+                                    Text(
+                                        text = if (buildsFailed) stringResource(R.string.aerix_create_failed)
+                                        else stringResource(
+                                            R.string.aerix_create_loader_empty,
+                                            loader.displayName,
+                                            selectedVersion ?: stringResource(R.string.aerix_create_versions_empty)
+                                        ),
+                                        color = AerixSurface.warning,
+                                        fontSize = 11.sp
+                                    )
+                                }
+                                else -> {
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .heightIn(max = 160.dp)
+                                            .clip(FireShapes.armorSmall)
+                                            .background(AerixSurface.firePanelRaised)
+                                            .border(
+                                                AerixSpacing.hairline,
+                                                AerixSurface.borderSoft,
+                                                FireShapes.armorSmall
+                                            )
+                                            .verticalScroll(rememberScrollState())
+                                            .padding(6.dp),
+                                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        visibleBuilds.forEach { build ->
+                                            val isSelected = build.id == loaderBuild?.id
+                                            Row(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .clip(FireShapes.hudChip)
+                                                    .background(
+                                                        if (isSelected) accent.copy(alpha = 0.20f)
+                                                        else Color.Transparent
+                                                    )
+                                                    .clickable { loaderBuild = build }
+                                                    .padding(horizontal = 8.dp, vertical = 6.dp),
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                            ) {
+                                                RadioButton(
+                                                    selected = isSelected,
+                                                    onClick = { loaderBuild = build },
+                                                    colors = RadioButtonDefaults.colors(
+                                                        selectedColor = accent,
+                                                        unselectedColor = AerixSurface.textSecondary
+                                                    ),
+                                                    modifier = Modifier.size(18.dp)
+                                                )
+                                                Text(
+                                                    text = build.label,
+                                                    color = if (isSelected) accent else AerixSurface.textPrimary,
+                                                    fontSize = 12.sp,
+                                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                                    maxLines = 1,
+                                                    overflow = TextOverflow.Ellipsis,
+                                                    modifier = Modifier.weight(1f)
+                                                )
+                                                if (build.stable) {
+                                                    ModrinthMetaPill(text = "Stable", highlighted = isSelected)
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // --------------------------------------------------------------------------------
+            // RIGHT PANE: Full-Height Minecraft Version Matrix
+            // --------------------------------------------------------------------------------
+            Surface(
+                modifier = Modifier
+                    .weight(1.08f)
+                    .fillMaxHeight(),
+                shape = FireShapes.armorCard,
+                color = AerixSurface.firePanel,
+                border = BorderStroke(1.dp, AerixSurface.borderSoft)
             ) {
                 Column(
                     modifier = Modifier
@@ -303,7 +548,13 @@ fun CreateInstanceScreen(activity: FragmentActivity, onClose: () -> Unit) {
                         .padding(AerixSpacing.smPlus),
                     verticalArrangement = Arrangement.spacedBy(AerixSpacing.smCompact)
                 ) {
-                    // Category filter pills
+                    Text(
+                        text = "// 03 · MINECRAFT VERSION MATRIX",
+                        color = AerixSurface.fireAmber,
+                        fontSize = 10.sp,
+                        letterSpacing = 1.2.sp,
+                        fontWeight = FontWeight.Black
+                    )
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -314,26 +565,26 @@ fun CreateInstanceScreen(activity: FragmentActivity, onClose: () -> Unit) {
                         versionTabs.forEachIndexed { index, (_, labelRes) ->
                             val active = index == tab
                             Surface(
-                                shape = CircleShape,
-                                color = if (active) accent.copy(alpha = 0.22f) else AerixSurface.panelRaised,
+                                shape = FireShapes.hudChip,
+                                color = if (active) accent else AerixSurface.firePanelRaised,
                                 border = BorderStroke(
                                     width = 1.dp,
-                                    color = if (active) accent else AerixSurface.borderSoft
+                                    color = if (active) AerixSurface.fireAmber else AerixSurface.borderSoft
                                 ),
                                 onClick = { tab = index }
                             ) {
                                 Text(
-                                    text = stringResource(labelRes),
-                                    color = if (active) accent else AerixSurface.textSecondary,
-                                    fontSize = 11.sp,
-                                    fontWeight = if (active) FontWeight.Bold else FontWeight.Medium,
-                                    modifier = Modifier.padding(horizontal = 11.dp, vertical = 5.dp)
+                                    text = stringResource(labelRes).uppercase(),
+                                    color = if (active) AerixSurface.onFireAccentDefault else AerixSurface.textSecondary,
+                                    fontSize = 10.sp,
+                                    letterSpacing = 0.6.sp,
+                                    fontWeight = if (active) FontWeight.Black else FontWeight.Bold,
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
                                 )
                             }
                         }
                     }
 
-                    // Compact 36dp search field
                     ModrinthCompactSearchField(
                         value = filter,
                         onValueChange = { filter = it },
@@ -380,253 +631,6 @@ fun CreateInstanceScreen(activity: FragmentActivity, onClose: () -> Unit) {
                                     accent = accent,
                                     onClick = { selectedVersion = id }
                                 )
-                            }
-                        }
-                    }
-                }
-            }
-
-            // --------------------------------------------------------------------------------
-            // RIGHT PANE: Instance Name & Icon + Mod Loader Grid + Loader Version Picker
-            // --------------------------------------------------------------------------------
-            Surface(
-                modifier = Modifier
-                    .weight(0.88f)
-                    .fillMaxHeight(),
-                shape = RoundedCornerShape(AerixRadii.panel),
-                color = AerixSurface.panel,
-                border = BorderStroke(AerixSpacing.hairline, AerixSurface.borderSoft)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
-                        .padding(AerixSpacing.smPlus),
-                    verticalArrangement = Arrangement.spacedBy(AerixSpacing.smPlus)
-                ) {
-                    // 1. Instance Name & Icon
-                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Text(
-                            text = stringResource(R.string.aerix_create_instance_info).uppercase(),
-                            color = accent,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.ExtraBold
-                        )
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(AerixSpacing.sm)
-                        ) {
-                            AerixImageWell(
-                                image = icon?.asImageBitmap(),
-                                fallback = R.drawable.aerix_loader_vanilla,
-                                size = 42.dp,
-                                modifier = Modifier.clickable(role = Role.Button) {
-                                    AerixIconCropper.start(activity) { icon = it }
-                                }
-                            )
-                            OutlinedTextField(
-                                value = name,
-                                onValueChange = {
-                                    name = it
-                                    nameEdited = it.isNotEmpty()
-                                },
-                                modifier = Modifier.weight(1f),
-                                singleLine = true,
-                                shape = RoundedCornerShape(14.dp),
-                                placeholder = {
-                                    Text(
-                                        text = stringResource(R.string.aerix_create_name_hint),
-                                        color = AerixSurface.textMuted,
-                                        fontSize = 13.sp
-                                    )
-                                },
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedTextColor = AerixSurface.textPrimary,
-                                    unfocusedTextColor = AerixSurface.textPrimary,
-                                    focusedBorderColor = accent,
-                                    unfocusedBorderColor = AerixSurface.borderSoft,
-                                    cursorColor = accent
-                                )
-                            )
-                        }
-                    }
-
-                    HorizontalDivider(color = AerixSurface.borderSoft)
-
-                    // 2. Mod Loader Grid
-                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Text(
-                            text = stringResource(R.string.aerix_create_loader_heading).uppercase(),
-                            color = accent,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.ExtraBold
-                        )
-
-                        val tiles = AerixLoader.entries.toList()
-                        tiles.chunked(2).forEach { row ->
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
-                            ) {
-                                row.forEach { entry ->
-                                    LoaderTile(
-                                        loader = entry,
-                                        selected = entry == loader,
-                                        accent = accent,
-                                        modifier = Modifier.weight(1f),
-                                        onClick = {
-                                            loader = entry
-                                            onlyStable = true
-                                        }
-                                    )
-                                }
-                                repeat(2 - row.size) { Spacer(Modifier.weight(1f)) }
-                            }
-                        }
-
-                        // Vanilla has nothing to choose, so the pane says so instead of leaving
-                        // the empty space where every other loader lists its builds.
-                        if (loader.usesGameVersion && !loader.hasBuilds) {
-                            Spacer(modifier = Modifier.height(2.dp))
-                            Text(
-                                text = stringResource(R.string.aerix_create_vanilla_hint),
-                                color = AerixSurface.textSecondary,
-                                fontSize = 11.sp
-                            )
-                        }
-
-                        // 3. Inline Loader Version List when a mod loader is selected. Vanilla has
-                        // nothing to choose - there is one Minecraft version and nothing on top of
-                        // it - so the list, its switch and its loading line are left out.
-                        if (loader.usesGameVersion && loader.hasBuilds) {
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(AerixSpacing.sm)
-                            ) {
-                                Text(
-                                    text = if (loaderBuild != null) {
-                                        stringResource(
-                                            R.string.aerix_create_loader_version,
-                                            loader.displayName,
-                                            loaderBuild?.label ?: ""
-                                        )
-                                    } else {
-                                        stringResource(R.string.aerix_create_loader_loading)
-                                    },
-                                    color = if (loaderBuild != null) AerixSurface.textPrimary else AerixSurface.textSecondary,
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.weight(1f),
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                                Text(
-                                    text = stringResource(R.string.aerix_create_only_stable),
-                                    color = AerixSurface.textSecondary,
-                                    fontSize = 11.sp
-                                )
-                                Switch(
-                                    checked = onlyStable,
-                                    onCheckedChange = { onlyStable = it },
-                                    colors = SwitchDefaults.colors(
-                                        checkedThumbColor = AerixSurface.onAccent,
-                                        checkedTrackColor = accent,
-                                        uncheckedThumbColor = AerixSurface.textSecondary,
-                                        uncheckedTrackColor = AerixSurface.panelTrack
-                                    )
-                                )
-                            }
-
-                            when {
-                                loadingBuilds -> {
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(vertical = 8.dp),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                    ) {
-                                        CircularProgressIndicator(
-                                            color = accent,
-                                            strokeWidth = 2.dp,
-                                            modifier = Modifier.size(16.dp)
-                                        )
-                                        Text(
-                                            text = stringResource(R.string.aerix_create_loader_loading),
-                                            color = AerixSurface.textSecondary,
-                                            fontSize = 11.sp
-                                        )
-                                    }
-                                }
-                                visibleBuilds.isEmpty() -> {
-                                    Text(
-                                        text = if (buildsFailed) stringResource(R.string.aerix_create_failed)
-                                        else stringResource(
-                                            R.string.aerix_create_loader_empty,
-                                            loader.displayName,
-                                            selectedVersion ?: stringResource(R.string.aerix_create_versions_empty)
-                                        ),
-                                        color = AerixSurface.warning,
-                                        fontSize = 11.sp
-                                    )
-                                }
-                                else -> {
-                                    Column(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .heightIn(max = 160.dp)
-                                            .clip(RoundedCornerShape(12.dp))
-                                            .background(AerixSurface.panelRaised.copy(alpha = 0.3f))
-                                            .border(
-                                                AerixSpacing.hairline,
-                                                AerixSurface.borderSoft,
-                                                RoundedCornerShape(12.dp)
-                                            )
-                                            .verticalScroll(rememberScrollState())
-                                            .padding(6.dp),
-                                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                                    ) {
-                                        visibleBuilds.forEach { build ->
-                                            val isSelected = build.id == loaderBuild?.id
-                                            Row(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .clip(RoundedCornerShape(10.dp))
-                                                    .background(
-                                                        if (isSelected) accent.copy(alpha = 0.16f)
-                                                        else Color.Transparent
-                                                    )
-                                                    .clickable { loaderBuild = build }
-                                                    .padding(horizontal = 8.dp, vertical = 6.dp),
-                                                verticalAlignment = Alignment.CenterVertically,
-                                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                            ) {
-                                                RadioButton(
-                                                    selected = isSelected,
-                                                    onClick = { loaderBuild = build },
-                                                    colors = RadioButtonDefaults.colors(
-                                                        selectedColor = accent,
-                                                        unselectedColor = AerixSurface.textSecondary
-                                                    ),
-                                                    modifier = Modifier.size(18.dp)
-                                                )
-                                                Text(
-                                                    text = build.label,
-                                                    color = if (isSelected) Color.White else AerixSurface.textPrimary,
-                                                    fontSize = 12.sp,
-                                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                                    maxLines = 1,
-                                                    overflow = TextOverflow.Ellipsis,
-                                                    modifier = Modifier.weight(1f)
-                                                )
-                                                if (build.stable) {
-                                                    ModrinthMetaPill(text = "Stable", highlighted = isSelected)
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
                             }
                         }
                     }

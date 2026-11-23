@@ -1,30 +1,21 @@
 /*
- * Aerix Launcher UI layer for PojavLauncher.
- * Ported from mirai-launcher- (Zalith Launcher 2 fork):
- *   MiraiLauncher/src/main/java/com/movtery/zalithlauncher/ui/theme/Theme.kt (aerixDark scheme)
- *   MiraiLauncher/src/main/java/com/movtery/zalithlauncher/ui/theme/Type.kt
- * Zalith Launcher 2 Copyright (C) 2025 MovTery <movtery228@qq.com> and contributors
+ * Fire Launcher — Prism Light Aurora Material3 Theme.
+ * Pairs bright multi-color pastel daylight surfaces with frosted pearl-white glass,
+ * deep slate typography, and vibrant Indigo-Violet-Rose-Sky accents.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/gpl-3.0.txt>.
  */
 
 package net.kdt.pojavlaunch.aerix.theme
 
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
 import androidx.compose.material3.Typography
-import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
@@ -61,59 +52,58 @@ private fun aerixTypography(family: FontFamily) = Typography(
     labelSmall = defaults.labelSmall.aerixText(family, FontWeight.Medium),
 )
 
-/**
- * Built as a function, not a val: its surface roles come from `AerixSurface.panel*`, which follow
- * the "Layout transparency" setting, so the scheme has to be assembled on every pass rather than
- * baked once into a top-level property.
- */
-private fun aerixDark(): ColorScheme = darkColorScheme(
-    primary = AerixSurface.accentDefault,
-    onPrimary = AerixSurface.onAccentDefault,
+private val fireMaterialShapes = Shapes(
+    extraSmall = FireShapes.hudChip,
+    small = FireShapes.armorSmall,
+    medium = FireShapes.armorMedium,
+    large = FireShapes.armorCard,
+    extraLarge = FireShapes.armorCard
+)
+
+private fun aerixDark(): ColorScheme = lightColorScheme(
+    primary = AerixSurface.fireAccentDefault,
+    onPrimary = AerixSurface.onFireAccentDefault,
     primaryContainer = AerixSurface.accentContainerDefault,
     onPrimaryContainer = AerixSurface.onAccentContainer,
-    secondary = AerixSurface.accentSecondary,
-    onSecondary = AerixSurface.canvas,
-    secondaryContainer = AerixSurface.panelRaised,
+    secondary = AerixSurface.fireAmber,
+    onSecondary = Color.White,
+    secondaryContainer = AerixSurface.firePanelRaised,
     onSecondaryContainer = AerixSurface.textPrimary,
-    tertiary = AerixSurface.success,
-    onTertiary = AerixSurface.canvas,
-    tertiaryContainer = AerixSurface.panelRaised,
+    tertiary = AerixSurface.fireCrimson,
+    onTertiary = Color.White,
+    tertiaryContainer = AerixSurface.firePanelRaised,
     onTertiaryContainer = AerixSurface.textPrimary,
     error = AerixSurface.danger,
-    onError = AerixSurface.canvas,
+    onError = Color.White,
     errorContainer = AerixSurface.errorDarkContainer,
     onErrorContainer = AerixSurface.textPrimary,
     background = AerixSurface.canvas,
     onBackground = AerixSurface.textPrimary,
-    surface = AerixSurface.panel,
+    surface = AerixSurface.firePanel,
     onSurface = AerixSurface.textPrimary,
-    surfaceVariant = AerixSurface.panelRaised,
+    surfaceVariant = AerixSurface.firePanelRaised,
     onSurfaceVariant = AerixSurface.textSecondary,
     outline = AerixSurface.textMuted,
     outlineVariant = AerixSurface.border,
-    scrim = Color.Black,
+    scrim = Color(0x660F172A),
     inverseSurface = AerixSurface.lightTextPrimary,
     inverseOnSurface = AerixSurface.lightPanel,
     inversePrimary = AerixSurface.accentLight,
     surfaceDim = AerixSurface.canvas,
-    surfaceBright = AerixSurface.panelRaised,
+    surfaceBright = AerixSurface.firePanelRaised,
     surfaceContainerLowest = AerixSurface.canvas,
     surfaceContainerLow = AerixSurface.panelTrack,
-    surfaceContainer = AerixSurface.canvas,
-    surfaceContainerHigh = AerixSurface.panel,
-    surfaceContainerHighest = AerixSurface.panelRaised
+    surfaceContainer = AerixSurface.firePanel,
+    surfaceContainerHigh = AerixSurface.firePanelRaised,
+    surfaceContainerHighest = AerixSurface.firePanelStrong
 )
 
-/**
- * The CUSTOM theme in Zalith builds a full tonal palette through MaterialKolor. The port keeps the
- * Aerix glass surfaces and swaps only the accent roles, which is what the Aerix shell renders.
- */
 private fun customAccentScheme(accent: Color): ColorScheme {
-    val onAccent = if (accent.luminance() > 0.45f) AerixSurface.onAccentDefault else Color.White
+    val onAccent = if (accent.luminance() > 0.62f) Color(0xFF0F172A) else Color.White
     return aerixDark().copy(
         primary = accent,
         onPrimary = onAccent,
-        primaryContainer = accent.copy(alpha = 0.33f),
+        primaryContainer = accent.copy(alpha = 0.22f),
         onPrimaryContainer = AerixSurface.textPrimary,
         inversePrimary = accent
     )
@@ -123,8 +113,6 @@ private fun customAccentScheme(accent: Color): ColorScheme {
 fun AerixLauncherTheme(content: @Composable () -> Unit) {
     val theme = AerixPreferences.colorTheme
     val custom = AerixPreferences.customColor
-    // aerixDark() reads AerixPreferences.layoutTransparency, so Material's surface roles follow the
-    // "Layout transparency" slider the same way the Aerix cards do.
     val scheme = when (theme) {
         AerixColorTheme.AERIX -> aerixDark()
         AerixColorTheme.CUSTOM -> customAccentScheme(Color(custom))
@@ -135,6 +123,7 @@ fun AerixLauncherTheme(content: @Composable () -> Unit) {
     MaterialTheme(
         colorScheme = scheme,
         typography = typography,
+        shapes = fireMaterialShapes,
         content = content
     )
 }

@@ -3,378 +3,315 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Features — Aerix Launcher</title>
-<meta name="description" content="Everything in Aerix Launcher: instances for every modloader, twelve renderers, accounts and skin wardrobe, animated control themes, custom controls, 31 wallpapers, a content browser and an in-game menu built around your character.">
-<meta name="theme-color" content="#c8102e">
+<title>All Systems & Engine Architecture — FIRE LAUNCHER</title>
+<meta name="description" content="Complete technical breakdown of FIRE LAUNCHER: 12 graphics renderers, OpenJDK 8/17/21, Top Downloading Bar, Modrinth/CurseForge Armory, Fire Client HUD, and Controls Studio.">
+<meta name="theme-color" content="#2563EB">
 <meta name="color-scheme" content="light">
 <link rel="icon" href="assets/aerix-logo.png">
 <link rel="apple-touch-icon" href="assets/aerix-logo.png">
-<link rel="canonical" href="https://entitybrian69-bit.github.io/Aerix-launcher/features.html">
+<link rel="canonical" href="https://saifanhussain678-droid.github.io/FIRE-LAUNCHER-/features.html">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="Aerix Launcher">
-<meta property="og:title" content="Features — Aerix Launcher">
-<meta property="og:description" content="Everything in Aerix Launcher: instances for every modloader, twelve renderers, accounts and skin wardrobe, animated control themes, custom controls, 31 wallpapers, a content browser and an in-game menu built around your character.">
-<meta property="og:url" content="https://entitybrian69-bit.github.io/Aerix-launcher/features.html">
-<meta property="og:image" content="https://entitybrian69-bit.github.io/Aerix-launcher/assets/screenshots/shot-home.jpg">
-<meta property="og:image:alt" content="The Aerix Launcher home screen">
+<meta property="og:site_name" content="FIRE LAUNCHER">
+<meta property="og:title" content="All Systems & Engine Architecture — FIRE LAUNCHER">
+<meta property="og:description" content="Complete technical breakdown of FIRE LAUNCHER: 12 graphics renderers, OpenJDK 8/17/21, Top Downloading Bar, Modrinth/CurseForge Armory, Fire Client HUD, and Controls Studio.">
+<meta property="og:url" content="https://saifanhussain678-droid.github.io/FIRE-LAUNCHER-/features.html">
+<meta property="og:image" content="https://saifanhussain678-droid.github.io/FIRE-LAUNCHER-/assets/screenshots/fire-launcher-prism-light-ui.png">
+<meta property="og:image:alt" content="FIRE LAUNCHER Prism Light UI">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="site.css">
 </head>
 <body>
 <div class="bg" aria-hidden="true">
+  <span class="bg-orb o1"></span>
+  <span class="bg-orb o2"></span>
+  <span class="bg-orb o3"></span>
   <span class="bg-grid"></span>
-  <span class="bg-ribbon r1"></span>
-  <span class="bg-ribbon r2"></span>
-  <span class="bg-ribbon r3"></span>
-  <span class="bg-dots"></span>
-  <span class="bg-arc a1"></span>
-  <span class="bg-arc a2"></span>
 </div>
 <a class="skip" href="#main">Skip to content</a>
 
 <header class="nav">
   <div class="wrap nav-inner">
     <a class="brand" href="index.html">
-      <img src="assets/aerix-logo.png" alt="" width="34" height="34">
-      <span>AERIX<small>LAUNCHER</small></span>
+      <img src="assets/branding/fire-mark.png" alt="FIRE LAUNCHER logo" width="36" height="36">
+      <span>FIRE LAUNCHER<small>MINECRAFT JAVA · ANDROID</small></span>
     </a>
-    <nav class="nav-links" id="navLinks" aria-label="Pages">
+    <nav class="nav-links" id="navLinks" aria-label="Primary">
       <a href="index.html">Home</a>
-      <a href="features.html" aria-current="page">Features</a>
-      <a href="renderers.html">Renderers</a>
-      <a href="screenshots.html">Gallery</a>
-      <a href="install.html">Install</a>
+      <a href="screenshots.html">All UIs</a>
+      <a href="features.html" aria-current="page">All Systems</a>
+      <a href="renderers.html">RAM & FPS</a>
+      <a href="install.html">Download & Install</a>
       <a href="faq.html">FAQ</a>
     </nav>
-    <a class="nav-cta" href="index.html#download">Download</a>
-    <button class="nav-toggle" id="navToggle" type="button" aria-expanded="false" aria-controls="navLinks" aria-label="Open menu">
-      <span></span>
-    </button>
+    <a class="nav-cta" href="index.html#download">⬇ Download APK</a>
+    <button class="nav-toggle" id="navToggle" type="button" aria-expanded="false" aria-controls="navLinks" aria-label="Menu">☰</button>
   </div>
 </header>
 
-  <section class="page-head">
+  <section class="page-hero">
     <div class="wrap">
-      <span class="kicker">Features</span>
-      <h1>Everything in the box</h1>
-      <p>Aerix is one app: it installs Minecraft, runs it, and gets out of the way. Here is what is actually in it — no roadmap, no promises, just the shipped build.</p>
+      <div class="glass-box page-hero-box">
+        <span class="kicker">⚙ Engine & Subsystems</span>
+        <h1>What Powers FIRE LAUNCHER</h1>
+        <p class="lede" style="margin-bottom:0">From native Vulkan/OpenGL translation and automatic multi-Java switching to built-in PvP HUD mods and 1080p60 internal-audio recording.</p>
+      </div>
     </div>
   </section>
-
 <main id="main">
-
-  <section class="section" id="instances">
+  <section class="section" id="systems">
     <div class="wrap">
-      <div class="section-head reveal">
-        <span class="kicker">Instances</span>
-        <h2>One per world, one per setup</h2>
-        <p>Every instance is a sealed box: its own game version, loader, mods, configs, renderer
-           and memory. Break one and the others do not care.</p>
-      </div>
-      <div class="grid grid-3 reveal">
-        <article class="card"><h3>Every loader</h3><p>Vanilla, Fabric, Forge, NeoForge, Quilt and OptiFine, with the loader version chosen for you when there is a sensible default.</p></article>
-        <article class="card"><h3>Every version</h3><p>Releases, snapshots and old betas, from the newest 1.21+ back to the versions people still build on.</p></article>
-        <article class="card"><h3>Its own renderer</h3><p>An old phone can run one instance on GL4ES and a newer one on Zink, without changing anything globally.</p></article>
-        <article class="card"><h3>Its own memory</h3><p>Allocate what the mods need per instance instead of one global number that suits none of them.</p></article>
-        <article class="card"><h3>Its own controls</h3><p>Different layouts for different games: a PvP pad on one instance, a modded keyboard-heavy layout on another.</p></article>
-        <article class="card"><h3>Loader's own mark</h3><p>Instance cards show the loader's logo, and packs installed from Discover carry the publisher's artwork.</p></article>
-      </div>
-    </div>
-  </section>
-
-  <section class="section" id="renderers">
-    <div class="wrap">
-      <div class="section-head reveal">
-        <span class="kicker">Renderers</span>
-        <h2>Twelve backends, one picker</h2>
-        <p>
-          Android GPUs and drivers vary wildly, so no single renderer suits every phone. Aerix
-          ships several and lets you change them per instance — and in 1.5.5 a renderer whose
-          library is missing is replaced instead of taking the launch down with it.
+      <div class="section-head">
+        <span class="kicker">🛠 Complete System Architecture</span>
+        <h2>Every Engine &amp; Subsystem Inside <span class="gradient-text">FIRE LAUNCHER</span></h2>
+        <p class="lede">
+          Everything you need to run modern Minecraft: Java Edition on Android is built straight into one unified glass launcher — zero external helper apps required.
         </p>
       </div>
-      <div class="grid grid-2 reveal">
-        <article class="card spotlight">
-          <h3>Emesis, bundled</h3>
-          <p>The default. A GL-to-GLES translation layer that works on the widest range of
-             Adreno and Mali devices, and needs no plugin APK to be installed.</p>
+      <div class="grid grid-3">
+        <article class="card sys-card">
+          <div class="sys-icon">🔬</div>
+          <h3>12 Graphics Renderers</h3>
+          <p>Switch seamlessly between MobileGlues (OpenGL 4.6 over Vulkan), Vulkan Zink, Freedreno Turnip, Holy GL4ES, VirGL, and ANGLE globally or per instance.</p>
+          <div class="tag-row"><span class="tag">MobileGlues</span><span class="tag">Vulkan 1.3</span><span class="tag">GL4ES</span></div>
         </article>
-        <article class="card">
-          <h3>Then, if it does not run</h3>
-          <p>Try <b>Zink</b> on a phone with a solid Vulkan driver, <b>LTW</b> for modern
-             versions, or <b>GL4ES</b> for older ones. The full lineup and what each is for is
-             on the renderer page.</p>
-          <p class="mt-32"><a href="renderers.html">Compare the renderers →</a></p>
+        <article class="card sys-card">
+          <div class="sys-icon">🧩</div>
+          <h3>Custom GPU Driver Loader</h3>
+          <p>Snapdragon / Adreno devices can import custom Mesa Turnip .zip Vulkan drivers directly inside Settings → Video for massive shader & FPS gains.</p>
+          <div class="tag-row"><span class="tag">Turnip .ZIP</span><span class="tag">Adreno</span><span class="tag">Zero Root</span></div>
+        </article>
+        <article class="card sys-card">
+          <div class="sys-icon">☕</div>
+          <h3>Auto OpenJDK 8 / 17 / 21</h3>
+          <p>Automatically selects Java 8 for 1.7–1.16.5, Java 17 for 1.17–1.20.4, and Java 21 ARM64 for Minecraft 1.20.5–1.21.4+ with custom runtime import.</p>
+          <div class="tag-row"><span class="tag">Java 8</span><span class="tag">Java 17</span><span class="tag">Java 21</span></div>
+        </article>
+        <article class="card sys-card">
+          <div class="sys-icon">⬇️</div>
+          <h3>Top Prism Downloading Bar</h3>
+          <p>Relocated top multi-threaded download dock with Pause/Cancel, expandable sub-task list, real-time MB/s speed, ETA, and SHA-1 integrity checks.</p>
+          <div class="tag-row"><span class="tag">Multi-Thread</span><span class="tag">Pause/Resume</span><span class="tag">SHA-1</span></div>
+        </article>
+        <article class="card sys-card">
+          <div class="sys-icon">🛠️</div>
+          <h3>Every Mod Loader Built-In</h3>
+          <p>1-click automatic installation for Vanilla, Fabric, Quilt, Forge, NeoForge, OptiFine, Legacy Fabric, Better Than Adventure, plus .jar execution.</p>
+          <div class="tag-row"><span class="tag">Fabric</span><span class="tag">Forge</span><span class="tag">NeoForge</span><span class="tag">Quilt</span></div>
+        </article>
+        <article class="card sys-card">
+          <div class="sys-icon">📦</div>
+          <h3>Modrinth & CurseForge Armory</h3>
+          <p>Browse and install Mods, Full Modpacks (.mrpack & CurseForge), Shaders, Resource Packs, and Worlds with automatic dependency resolution.</p>
+          <div class="tag-row"><span class="tag">Modrinth</span><span class="tag">CurseForge</span><span class="tag">Auto-Deps</span></div>
+        </article>
+        <article class="card sys-card">
+          <div class="sys-icon">⚡</div>
+          <h3>Built-In Fire Client HUD</h3>
+          <p>Zero-setup competitive HUD overlays: FPS Pill, CPS Counter, RGB Keystrokes, ToggleSprint, Zoom, Armor Status, Crosshair Editor & Fullbright.</p>
+          <div class="tag-row"><span class="tag">PvP HUD</span><span class="tag">Keystrokes</span><span class="tag">CPS</span></div>
+        </article>
+        <article class="card sys-card">
+          <div class="sys-icon">🎥</div>
+          <h3>1080p60 Screen + Audio Recorder</h3>
+          <p>Record smooth gameplay with internal game audio directly from the floating in-game FIRE LAUNCHER crystal flame menu — no extra recorder app needed.</p>
+          <div class="tag-row"><span class="tag">60 FPS MP4</span><span class="tag">Internal Audio</span></div>
+        </article>
+        <article class="card sys-card">
+          <div class="sys-icon">📱</div>
+          <h3>120Hz / 144Hz Display Unlocker</h3>
+          <p>Requests native high-refresh display modes on 90Hz, 120Hz, and 144Hz gaming phones with frame-pacing tuning and resolution scaler (25%–100%).</p>
+          <div class="tag-row"><span class="tag">120Hz</span><span class="tag">144Hz</span><span class="tag">Resolution Scale</span></div>
+        </article>
+        <article class="card sys-card">
+          <div class="sys-icon">🎮</div>
+          <h3>Controls Rig, Gyro & Gamepad</h3>
+          <p>Full touch layout studio with 11 animated button themes, custom macros, Gyroscope aiming, Xbox/PS5 Bluetooth gamepads, and OTG Keyboard/Mouse capture.</p>
+          <div class="tag-row"><span class="tag">Touch Studio</span><span class="tag">Gyro</span><span class="tag">Mouse/KB</span></div>
+        </article>
+        <article class="card sys-card">
+          <div class="sys-icon">👤</div>
+          <h3>Accounts & 3D Skin Wardrobe</h3>
+          <p>Sign in with official Microsoft Xbox Live OAuth, Ely.by skin servers, or unlimited Offline accounts — complete with 3D rotatable Skin & Cape preview.</p>
+          <div class="tag-row"><span class="tag">Microsoft</span><span class="tag">Ely.by</span><span class="tag">Offline</span></div>
+        </article>
+        <article class="card sys-card">
+          <div class="sys-icon">📁</div>
+          <h3>File Manager, Code Editor & Logs</h3>
+          <p>Built-in .minecraft file browser with ZIP/Unzip, multi-select, syntax-friendly config editor, live crash log analyzer, Crew invites & Discord Presence.</p>
+          <div class="tag-row"><span class="tag">File Manager</span><span class="tag">Log Viewer</span><span class="tag">Discord RPC</span></div>
         </article>
       </div>
     </div>
   </section>
 
-  <section class="section" id="controls">
+  <section class="section" id="requirements">
     <div class="wrap">
-      <div class="section-head reveal">
-        <span class="kicker">Controls</span>
-        <h2>Eleven themes, and an editor that respects them</h2>
-        <p>
-          Every control can wear a piece of animated pixel art, with its own press effect, haptic
-          and key sound. The theme travels with the layout file, so a setup you share arrives
-          looking the way you made it.
+      <div class="section-head">
+        <span class="kicker">📋 Hardware &amp; OS Compatibility</span>
+        <h2>System Requirements</h2>
+        <p class="lede">Runs across budget 4GB phones, mid-range 6GB phones, and 8GB–16GB flagship Android devices &amp; tablets.</p>
+      </div>
+
+      <div class="glass-box table-wrap">
+        <table class="spec-table">
+          <thead>
+            <tr>
+              <th>Component</th>
+              <th>Minimum (Playable)</th>
+              <th>Recommended (High FPS)</th>
+              <th>Ultra 120Hz + Shaders</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>Android Version</b></td>
+              <td>Android 8.0 (Oreo, API 26)+</td>
+              <td>Android 11 – Android 15</td>
+              <td>Android 13 – Android 15</td>
+            </tr>
+            <tr>
+              <td><b>Device RAM</b></td>
+              <td><b>4 GB RAM</b> (1.5–2.0 GB Heap)</td>
+              <td><b>6 GB RAM</b> (2.8–3.3 GB Heap)</td>
+              <td><b>8 GB – 16 GB RAM</b> (4.2–6.0 GB Heap)</td>
+            </tr>
+            <tr>
+              <td><b>CPU Architecture</b></td>
+              <td>64-bit <code>arm64-v8a</code> / <code>armeabi-v7a</code></td>
+              <td>Octa-core <code>arm64-v8a</code> (2.2 GHz+)</td>
+              <td>Snapdragon 8 Gen 2/3/Elite or Dimensity 9200+</td>
+            </tr>
+            <tr>
+              <td><b>GPU &amp; Graphics API</b></td>
+              <td>OpenGL ES 3.1+</td>
+              <td>OpenGL ES 3.2 + Vulkan 1.1+</td>
+              <td>Vulkan 1.3 + Adreno Turnip / MobileGlues</td>
+            </tr>
+            <tr>
+              <td><b>Free Storage</b></td>
+              <td>2.5 GB free space</td>
+              <td>6 GB+ free (for mods &amp; worlds)</td>
+              <td>12 GB+ UFS 3.1 / UFS 4.0 storage</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="download">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="kicker">⬇ Official Release Downloads · v2.4.4</span>
+        <h2>Download <span class="gradient-text">FIRE LAUNCHER</span></h2>
+        <p class="lede">
+          Free, open-source (GPL-3.0), zero ads, zero telemetry. Pick the APK build that matches your Android device below.
         </p>
       </div>
-      <div class="reveal"><div class="theme-strip">
-      <figure class="theme" title="Tea Party — drifts, ripples">
-        <img src="assets/themes/teapots.jpg" alt="Tea Party control theme" loading="lazy" width="420" height="420">
-        <span>Tea Party</span>
-      </figure>
-      <figure class="theme" title="Rocket Ride — climbs, lifts">
-        <img src="assets/themes/rockets.jpg" alt="Rocket Ride control theme" loading="lazy" width="420" height="420">
-        <span>Rocket Ride</span>
-      </figure>
-      <figure class="theme" title="Nebula — drifts, glows">
-        <img src="assets/themes/nebula.jpg" alt="Nebula control theme" loading="lazy" width="420" height="420">
-        <span>Nebula</span>
-      </figure>
-      <figure class="theme" title="Stardust — twinkles">
-        <img src="assets/themes/stardust.jpg" alt="Stardust control theme" loading="lazy" width="420" height="420">
-        <span>Stardust</span>
-      </figure>
-      <figure class="theme" title="Aurora — slides, sweeps">
-        <img src="assets/themes/aurora.jpg" alt="Aurora control theme" loading="lazy" width="420" height="420">
-        <span>Aurora</span>
-      </figure>
-      <figure class="theme" title="Galaxy — turns, glows">
-        <img src="assets/themes/galaxy.jpg" alt="Galaxy control theme" loading="lazy" width="420" height="420">
-        <span>Galaxy</span>
-      </figure>
-      <figure class="theme" title="Moonrise — breathes">
-        <img src="assets/themes/moonrise.jpg" alt="Moonrise control theme" loading="lazy" width="420" height="420">
-        <span>Moonrise</span>
-      </figure>
-      <figure class="theme" title="Event Horizon — ring turns">
-        <img src="assets/themes/horizon.jpg" alt="Event Horizon control theme" loading="lazy" width="420" height="420">
-        <span>Event Horizon</span>
-      </figure>
-      <figure class="theme" title="Static — jitters">
-        <img src="assets/themes/static.jpg" alt="Static control theme" loading="lazy" width="420" height="420">
-        <span>Static</span>
-      </figure>
-      <figure class="theme" title="Star Cross — twinkles">
-        <img src="assets/themes/starcross.jpg" alt="Star Cross control theme" loading="lazy" width="420" height="420">
-        <span>Star Cross</span>
-      </figure>
-      <figure class="theme" title="Comet Grid — comet crosses">
-        <img src="assets/themes/comet.jpg" alt="Comet Grid control theme" loading="lazy" width="420" height="420">
-        <span>Comet Grid</span>
-      </figure>
-    </div></div>
-      <div class="grid grid-3 reveal mt-32">
-        <article class="card"><h3>Theme, or not</h3><p><b>Off</b> is a chip like any other, and <b>Move it</b> freezes the animation entirely if you want a still control.</p></article>
-        <article class="card"><h3>Feel and sound</h3><p>Each theme carries a haptic pattern and a system key click, both switchable, neither needing a permission or an asset.</p></article>
-        <article class="card"><h3>Apply to all</h3><p>Pick one for the control you are editing, then push it across the whole layout in one tap.</p></article>
-      </div>
-    </div>
-  </section>
 
-  <section class="section" id="controls-editor">
-    <div class="wrap">
-      <div class="section-head reveal">
-        <span class="kicker">Custom controls</span>
-        <h2>Every button is yours</h2>
-      </div>
-      <div class="grid grid-3 reveal">
-        <article class="card"><h3>Place and size</h3><p>Drag to move, drag the handle to resize, with snapping to edges and to other controls.</p></article>
-        <article class="card"><h3>Keys and specials</h3><p>Up to four keycodes per button, plus mouse buttons, scroll, keyboard toggles, GUI and menu.</p></article>
-        <article class="card"><h3>Drawers and sticks</h3><p>Sub-buttons in pull-out drawers, and joysticks with deadzone, size and absolute tracking.</p></article>
-        <article class="card"><h3>Pictures</h3><p>Crop an image into any button as its background, or style it with a colour, stroke and corner radius.</p></article>
-        <article class="card"><h3>Sharing</h3><p>Layouts are plain JSON, so they import and export cleanly between devices and other launchers.</p></article>
-        <article class="card"><h3>Per-instance</h3><p>Keep a keyboard-heavy layout for modded packs and a thumb-friendly pad for vanilla survival.</p></article>
-      </div>
-    </div>
-  </section>
+      <div class="grid grid-3">
+        <article class="card dl-card primary-dl">
+          <div class="ram-badge"><span>⭐ RECOMMENDED FOR ALL PHONES</span><span>v2.4.4</span></div>
+          <h3>FIRE LAUNCHER — Full Universal APK</h3>
+          <p>Includes bundled OpenJDK runtime, all 12 renderers (MobileGlues, Vulkan Zink, GL4ES), Fire Client HUD, and Modrinth/CurseForge Armory ready out of the box.</p>
+          <div class="tag-row">
+            <span class="tag">Android 8.0+</span>
+            <span class="tag">ARM64 + ARMv7 + x86_64</span>
+            <span class="tag">Bundled Java</span>
+          </div>
+          <a class="btn btn-primary mt-20" data-primary-download href="https://github.com/saifanhussain678-droid/FIRE-LAUNCHER-/releases/latest/download/FIRE-Launcher.apk">
+            ⬇ Download FIRE-Launcher.apk (v2.4.4)
+          </a>
+        </article>
 
-  <section class="section" id="accounts">
-    <div class="wrap">
-      <div class="section-head reveal">
-        <span class="kicker">Accounts</span>
-        <h2>Sign in once, switch whenever</h2>
-        <p>Microsoft, Ely.by and offline accounts live side by side, each with its own skin,
-           cape and model. In game, the account panel can switch: confirm the restart and the
-           launcher comes back as the account you picked, with the game already starting.</p>
-      </div>
-      <div class="grid grid-3 reveal">
-        <article class="card"><h3>Microsoft</h3><p>The official sign-in, in the browser or in-app, with the token stored on your device only.</p></article>
-        <article class="card"><h3>Ely.by</h3><p>For the skins and capes people use outside the official service.</p></article>
-        <article class="card"><h3>Offline</h3><p>Any username, for testing modpacks and for playing without a network.</p></article>
-      </div>
-    </div>
-  </section>
+        <article class="card dl-card">
+          <div class="ram-badge"><span>⚡ 64-BIT OPTIMIZED</span><span>arm64-v8a</span></div>
+          <h3>FIRE LAUNCHER — ARM64 Edition</h3>
+          <p>Smaller APK stripped of legacy 32-bit libraries — built specifically for modern 4GB, 6GB, 8GB, and 12GB+ 64-bit Android smartphones.</p>
+          <div class="tag-row">
+            <span class="tag">64-bit Phones</span>
+            <span class="tag">Fast Install</span>
+            <span class="tag">Full Renderers</span>
+          </div>
+          <a class="btn btn-ghost mt-20" href="https://github.com/saifanhussain678-droid/FIRE-LAUNCHER-/releases/latest/download/FIRE-Launcher-arm64-v8a.apk">
+            ⬇ Download ARM64 APK
+          </a>
+        </article>
 
-  <section class="section" id="skins">
-    <div class="wrap">
-      <div class="section-head reveal">
-        <span class="kicker">Skin wardrobe</span>
-        <h2>Skins, capes and a character that turns</h2>
-        <p>Equip a skin from storage or from the skin search, change Wide/Slim, add a cape, and
-           keep saved presets per account. The character on the right of the in-game menu is that
-           same skin — drag it and it spins under your thumb.</p>
+        <article class="card dl-card">
+          <div class="ram-badge"><span>🪶 ULTRA-LIGHT DOWNLOAD</span><span>No-Runtime</span></div>
+          <h3>FIRE LAUNCHER — Lightweight APK</h3>
+          <p>Smallest initial APK size. Downloads the exact OpenJDK 8 / 17 / 21 runtime automatically through the Top Downloading Bar on first launch.</p>
+          <div class="tag-row">
+            <span class="tag">Minimal APK</span>
+            <span class="tag">Auto Runtime Fetch</span>
+          </div>
+          <a class="btn btn-ghost mt-20" href="https://github.com/saifanhussain678-droid/FIRE-LAUNCHER-/releases/latest/download/FIRE-Launcher-noruntime.apk">
+            ⬇ Download Lightweight APK
+          </a>
+        </article>
       </div>
-      <div class="grid grid-2 reveal">
-        <article class="card"><h3>Presets per account</h3><p>Keep several looks and switch between them without re-importing the file.</p></article>
-        <article class="card"><h3>It reaches the game</h3><p>The skin, cape and model are written where the game reads them, so what you pick is what you see in game.</p></article>
-      </div>
-    </div>
-  </section>
 
-  <section class="section" id="look">
-    <div class="wrap">
-      <div class="section-head reveal">
-        <span class="kicker">Look</span>
-        <h2>31 wallpapers, no seams</h2>
-        <p>25 photographs and six recorded HD clips, plus any clip you import yourself. The
-           accent colour follows what you choose, and nothing is stretched over the interface
-           with a strip of blur down the middle.</p>
-      </div>
-      <div class="reveal"><div class="clips">
-      <figure class="clip">
-        <img src="assets/hd/autumn-mountains.jpg" alt="Autumn Mountains animation" loading="lazy" width="1200" height="675">
-        <em>4K</em>
-        <span>Autumn Mountains</span>
-      </figure>
-      <figure class="clip">
-        <img src="assets/hd/butterfly-garden.jpg" alt="Butterfly Garden animation" loading="lazy" width="1200" height="675">
-        <em>1440p</em>
-        <span>Butterfly Garden</span>
-      </figure>
-      <figure class="clip">
-        <img src="assets/hd/sakura-field.jpg" alt="Sakura Field animation" loading="lazy" width="1200" height="675">
-        <em>1440p</em>
-        <span>Sakura Field</span>
-      </figure>
-      <figure class="clip">
-        <img src="assets/hd/flower-forest-train.jpg" alt="Flower Forest Train animation" loading="lazy" width="1200" height="675">
-        <em>1440p</em>
-        <span>Flower Forest Train</span>
-      </figure>
-      <figure class="clip">
-        <img src="assets/hd/night-sky.jpg" alt="Night Sky animation" loading="lazy" width="1200" height="675">
-        <em>1080p</em>
-        <span>Night Sky</span>
-      </figure>
-      <figure class="clip">
-        <img src="assets/hd/wisteria-lake.jpg" alt="Wisteria Lake animation" loading="lazy" width="1200" height="675">
-        <em>1080p</em>
-        <span>Wisteria Lake</span>
-      </figure>
-    </div></div>
-    </div>
-  </section>
-
-  <section class="section" id="browser">
-    <div class="wrap">
-      <div class="section-head reveal">
-        <span class="kicker">Content</span>
-        <h2>A browser that installs</h2>
-        <p>Search CurseForge and Modrinth from inside the launcher, filter by version, loader and
-           category, then install straight into the instance you are building.</p>
-      </div>
-      <div class="grid grid-4 reveal">
-        <article class="card"><h3>Mods</h3><p>With the loader it needs and its dependencies.</p></article>
-        <article class="card"><h3>Modpacks</h3><p>Publisher artwork, resolved loader and version.</p></article>
-        <article class="card"><h3>Shaders</h3><p>For the versions and renderers that can use them.</p></article>
-        <article class="card"><h3>Resource packs</h3><p>Installed into the selected instance.</p></article>
-      </div>
-    </div>
-  </section>
-
-  <section class="section" id="ingame">
-    <div class="wrap">
-      <div class="section-head reveal">
-        <span class="kicker">In game</span>
-        <h2>A menu you can actually use</h2>
-        <p>Two halves, nothing in the way: actions down the left, and the account you are playing
-           as down the right, on a character you can spin. The FPS readout hides while it is open.</p>
-      </div>
-      <div class="grid grid-3 reveal">
-        <article class="card"><h3>Resume first</h3><p>The way out is the first, largest target — not buried under nine other buttons.</p></article>
-        <article class="card"><h3>Log output, in game</h3><p>Read the log without leaving the game, which is what you want when a mod misbehaves.</p></article>
-        <article class="card"><h3>Screen recorder</h3><p>Capture a clip of the game from the same menu.</p></article>
-        <article class="card"><h3>Custom keycode</h3><p>Send a key the layout does not have, without editing anything.</p></article>
-        <article class="card"><h3>Quick settings</h3><p>The handful of things worth changing mid-session.</p></article>
-        <article class="card"><h3>Force close</h3><p>When a world will not let go, close the game cleanly instead of fighting the task switcher.</p></article>
-      </div>
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="wrap">
-      <div class="download reveal">
-        <span class="kicker">Ready?</span>
-        <h2>Install it in about a minute</h2>
-        <p class="muted" style="max-width:52ch">Download the APK, allow the install, pick an account, make an instance. The guide walks through each step.</p>
+      <div class="glass-box center mt-20" style="padding:18px 24px;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px">
+        <span style="font-size:13.5px;font-weight:800;color:#0F2544">
+          Looking for release notes, SHA-256 checksums, or older versions?
+        </span>
         <div class="btn-row">
-          <a class="btn btn-primary" href="index.html#download">Download Aerix Launcher</a>
-          <a class="btn btn-ghost" href="install.html">Install guide</a>
+          <a class="btn btn-ghost" href="https://github.com/saifanhussain678-droid/FIRE-LAUNCHER-/releases/latest" target="_blank" rel="noopener">All GitHub Releases ↗</a>
+          <a class="btn btn-ghost" href="install.html">Step-by-Step Install Guide →</a>
         </div>
       </div>
     </div>
   </section>
-
 </main>
-
 <footer class="footer">
   <div class="wrap">
-    <div class="footer-grid">
-      <div>
-        <a class="brand" href="index.html">
-          <img src="assets/aerix-logo.png" alt="" width="34" height="34">
-          <span>AERIX<small>LAUNCHER</small></span>
-        </a>
-        <p class="small" style="max-width:32ch">
-          Minecraft: Java Edition on Android — instances, renderers, accounts and a
-          content browser in one launcher.
-        </p>
+    <div class="glass-box footer-box">
+      <div class="footer-grid">
+        <div>
+          <a class="brand" href="index.html">
+            <img src="assets/branding/fire-mark.png" alt="FIRE LAUNCHER" width="36" height="36">
+            <span>FIRE LAUNCHER<small>VERSION 2.4.4</small></span>
+          </a>
+          <p style="margin-top:10px;font-size:13.5px;color:#2C4870;max-width:36ch">
+            Next-generation Minecraft: Java Edition launcher for Android — featuring the inverted
+            3-Wing Bento UI, Top Downloading Engine, 12 Renderers, OpenJDK 8/17/21, and built-in Modrinth &amp; CurseForge Armory.
+          </p>
+        </div>
+        <div>
+          <h4>Explore UI &amp; Engine</h4>
+          <ul>
+            <li><a href="screenshots.html">All 8 Launcher UIs</a></li>
+            <li><a href="features.html">All 12 Subsystems</a></li>
+            <li><a href="renderers.html">4GB / 6GB / 8GB FPS Guide</a></li>
+            <li><a href="renderers.html#calculator">Interactive FPS Calculator</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Get Started</h4>
+          <ul>
+            <li><a href="install.html">Download APK (v2.4.4)</a></li>
+            <li><a href="install.html#steps">4-Step Setup Guide</a></li>
+            <li><a href="install.html#requirements">System Requirements</a></li>
+            <li><a href="faq.html">Troubleshooting &amp; FAQ</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Project &amp; Community</h4>
+          <ul>
+            <li><a href="https://github.com/saifanhussain678-droid/FIRE-LAUNCHER-/releases/latest" target="_blank" rel="noopener">GitHub Releases</a></li>
+            <li><a href="https://github.com/saifanhussain678-droid/FIRE-LAUNCHER-" target="_blank" rel="noopener">Source Code (GPL-3.0)</a></li>
+            <li><a href="https://discord.gg/RS7q9KaCm6" target="_blank" rel="noopener">Discord Community</a></li>
+          </ul>
+        </div>
       </div>
-      <div>
-        <h4>The launcher</h4>
-        <ul>
-          <li><a href="features.html">Features</a></li>
-          <li><a href="renderers.html">Renderers</a></li>
-          <li><a href="screenshots.html">Gallery</a></li>
-          <li><a href="install.html">Install guide</a></li>
-        </ul>
+      <div class="footer-bottom">
+        <span>© 2026 FIRE LAUNCHER · Licensed under GNU GPL v3.0</span>
+        <span>Not an official Minecraft product · Not approved by or associated with Mojang or Microsoft.</span>
       </div>
-      <div>
-        <h4>Get it</h4>
-        <ul>
-          <li><a href="index.html#download">Download</a></li>
-          <li><a href="https://github.com/entitybrian69-bit/Aerix-launcher/releases" target="_blank" rel="noopener">All releases</a></li>
-          <li><a href="https://github.com/entitybrian69-bit/Aerix-launcher/releases/latest/download/SHA256SUMS" target="_blank" rel="noopener">Checksums</a></li>
-          <li><a href="faq.html">FAQ</a></li>
-        </ul>
-      </div>
-      <div>
-        <h4>Project</h4>
-        <ul>
-          <li><a href="https://github.com/entitybrian69-bit/Aerix-launcher" target="_blank" rel="noopener">GitHub</a></li>
-          <li><a href="https://discord.gg/RS7q9KaCm6" target="_blank" rel="noopener">Discord</a></li>
-          <li><a href="https://github.com/entitybrian69-bit/Aerix-launcher/issues" target="_blank" rel="noopener">Report a bug</a></li>
-          <li><a href="https://github.com/entitybrian69-bit/Aerix-launcher/blob/v3_openjdk/PRIVACY_POLICY.md" target="_blank" rel="noopener">Privacy</a></li>
-        </ul>
-      </div>
-    </div>
-    <div class="footer-credit">
-      <img src="assets/creator-entitybrian.jpg" alt="" width="48" height="48" loading="lazy">
-      <p>
-        <b>entitybrian</b> — Owner · Core developer · Tester · Maintainer<br>
-        <a href="index.html#creator">Who builds Aerix</a> · <a href="https://github.com/entitybrian69-bit" target="_blank" rel="noopener">GitHub profile</a>
-      </p>
-    </div>
-    <div class="footer-bottom">
-      <span>© <span id="year">2026</span> Aerix Launcher. Not affiliated with Mojang or Microsoft.</span>
-      <span>Minecraft is a trademark of Mojang Synergies AB.</span>
     </div>
   </div>
 </footer>
-<script src="site.js" defer></script>
+<script src="site.js"></script>
 </body>
 </html>

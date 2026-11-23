@@ -184,7 +184,7 @@ public class ProgressLayout extends ConstraintLayout implements View.OnClickList
         LayoutProgressListener(String key) {
             this.key = key;
             row = new LinearLayout(getContext()); row.setOrientation(LinearLayout.VERTICAL); row.setPadding(dp(8), dp(8), dp(8), dp(12));
-            label = new TextView(getContext()); label.setTextSize(13); label.setTextColor(Color.parseColor("#D6E4ED"));
+            label = new TextView(getContext()); label.setTextSize(13); label.setTextColor(Color.parseColor("#0F172A"));
             bar = new ProgressBar(getContext(), null, android.R.attr.progressBarStyleHorizontal);
             bar.setProgressDrawable(getContext().getDrawable(R.drawable.aerix_download_progress));
             row.addView(label, new LinearLayout.LayoutParams(-1, -2));

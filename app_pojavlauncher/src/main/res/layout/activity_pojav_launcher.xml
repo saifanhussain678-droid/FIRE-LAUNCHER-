@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Aerix launcher host. The Aerix Compose UI (AerixMainFragment) is the root of container_fragment;
-  Pojav screens are pushed on top of it with Tools.swapFragment. ProgressLayout keeps Pojav's task
-  list at the bottom, and the floating button returns to the Aerix home when the back stack is not empty.
+  FIRE LAUNCHER host layout.
+  ProgressLayout (the main game/runtime/modpack downloading bar) is relocated to the TOP
+  in Prism Light frosted glass, above the Compose launcher container.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -10,6 +10,12 @@
     android:layout_height="match_parent"
     android:background="@color/aerix_canvas"
     android:orientation="vertical">
+
+    <com.kdt.mcgui.ProgressLayout
+        android:id="@+id/progress_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone" />
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -26,7 +32,7 @@
             android:id="@+id/aerix_home_button"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:layout_gravity="top|end"
+            android:layout_gravity="top|start"
             android:layout_margin="12dp"
             android:background="@drawable/aerix_home_button_bg"
             android:contentDescription="@string/aerix_nav_back_home"
@@ -37,10 +43,4 @@
             android:visibility="gone"
             app:tint="@color/aerix_accent" />
     </FrameLayout>
-
-    <com.kdt.mcgui.ProgressLayout
-        android:id="@+id/progress_layout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:visibility="gone" />
 </LinearLayout>

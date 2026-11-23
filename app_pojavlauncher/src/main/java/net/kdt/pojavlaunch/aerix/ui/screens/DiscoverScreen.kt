@@ -67,6 +67,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -147,6 +148,7 @@ import net.kdt.pojavlaunch.aerix.theme.AerixRadii
 import net.kdt.pojavlaunch.aerix.theme.AerixSpacing
 import net.kdt.pojavlaunch.aerix.theme.AerixSurface
 import net.kdt.pojavlaunch.aerix.theme.AerixThemeManager
+import net.kdt.pojavlaunch.aerix.theme.FireShapes
 import net.kdt.pojavlaunch.aerix.ui.AerixNav
 import net.kdt.pojavlaunch.aerix.ui.LauncherSection
 import net.kdt.pojavlaunch.aerix.social.SocialActivity
@@ -286,70 +288,172 @@ fun DiscoverScreen(activity: FragmentActivity, navigate: (LauncherSection) -> Un
 
     BackHandler(enabled = activeProject != null, onBack = closeDetail)
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = AerixSpacing.md, vertical = AerixSpacing.sm),
-        verticalArrangement = Arrangement.spacedBy(AerixSpacing.sm)
-    ) {
-        // Top category pill bar (Mirai DownloadScreen.kt lines 152-160)
-        AerixPillTabRow(modifier = Modifier.fillMaxWidth()) {
-            DiscoverTab.entries.forEach { tab ->
-                val selected = selectedTab == tab
-                AerixPillTab(
-                    selected = selected,
-                    onClick = {
-                        if (tab == DiscoverTab.INSTALL_VANILLA) {
-                            AerixNav.navigate(LauncherSection.CREATE_INSTANCE)
-                        } else {
-                            selectedTab = tab
-                            activeProject = null
-                            returnToReleases = false
-                        }
-                    }
-                ) {
-                    Icon(
-                        painter = painterResource(tab.iconRes),
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Text(
-                        text = tab.label,
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-            }
-        }
+    val activeAccent = AerixThemeManager.currentAccent()
 
+    @Composable
+    fun ArmoryMainContent(modifier: Modifier = Modifier) {
         val detailProject = activeProject
         if (detailProject != null) {
             AssetDetailContent(
                 activity = activity,
                 project = detailProject,
                 onBack = closeDetail,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
+                modifier = modifier
             )
         } else {
-            // Detail navigation removes the browser from composition. Keep each content tab's
-            // saveable filters, page and lazy-list position until that browser returns.
             browseStates.SaveableStateProvider(selectedTab.name) {
                 if (selectedTab == DiscoverTab.FAVORITES) {
                     FavoritesContent(
                         onOpenProject = { activeProject = it },
-                        modifier = Modifier.fillMaxWidth().weight(1f)
+                        modifier = modifier
                     )
                 } else {
                     SearchAssetsContent(
                         activity = activity,
                         type = selectedTab.assetType ?: AssetType.MOD,
                         onOpenProject = { activeProject = it },
-                        modifier = Modifier.fillMaxWidth().weight(1f)
+                        modifier = modifier
                     )
+                }
+            }
+        }
+    }
+
+    BoxWithConstraints(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = AerixSpacing.smPlus, vertical = AerixSpacing.xs)
+    ) {
+        val verticalArmoryRail = maxWidth >= 580.dp
+        if (verticalArmoryRail) {
+            // Fire Launcher inverted Armory layout:
+            //   - LEFT (164.dp): Vertical Chamfered Armory Category Sidebar
+            //   - RIGHT (weight 1f): Tactical Mod/Pack Grid + Filters
+            Row(
+                modifier = Modifier.fillMaxSize(),
+                horizontalArrangement = Arrangement.spacedBy(AerixSpacing.smPlus)
+            ) {
+                Surface(
+                    modifier = Modifier
+                        .width(164.dp)
+                        .fillMaxHeight(),
+                    shape = FireShapes.armorCard,
+                    color = AerixSurface.firePanelDeep,
+                    border = BorderStroke(1.dp, activeAccent.copy(alpha = 0.45f))
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(AerixSpacing.xsPlus),
+                        verticalArrangement = Arrangement.spacedBy(5.dp)
+                    ) {
+                        Text(
+                            text = "// MOD ARMORY",
+                            color = AerixSurface.fireAmber,
+                            fontSize = 9.sp,
+                            letterSpacing = 1.4.sp,
+                            fontWeight = FontWeight.Black,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
+                        )
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .verticalScroll(rememberScrollState()),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            DiscoverTab.entries.forEach { tab ->
+                                val selected = selectedTab == tab
+                                Surface(
+                                    onClick = {
+                                        if (tab == DiscoverTab.INSTALL_VANILLA) {
+                                            AerixNav.navigate(LauncherSection.CREATE_INSTANCE)
+                                        } else {
+                                            selectedTab = tab
+                                            activeProject = null
+                                            returnToReleases = false
+                                        }
+                                    },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = FireShapes.armorSmall,
+                                    color = if (selected) activeAccent else AerixSurface.firePanelRaised,
+                                    border = BorderStroke(
+                                        1.dp,
+                                        if (selected) AerixSurface.fireAmber else AerixSurface.borderSoft
+                                    )
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 9.dp, vertical = 7.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(7.dp)
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(tab.iconRes),
+                                            contentDescription = null,
+                                            tint = if (selected) AerixSurface.onFireAccentDefault else AerixSurface.fireAmber,
+                                            modifier = Modifier.size(15.dp)
+                                        )
+                                        Text(
+                                            text = tab.label.uppercase(),
+                                            color = if (selected) AerixSurface.onFireAccentDefault else AerixSurface.textPrimary,
+                                            fontSize = 9.5.sp,
+                                            letterSpacing = 0.5.sp,
+                                            fontWeight = if (selected) FontWeight.Black else FontWeight.Bold,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                ArmoryMainContent(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                )
+            }
+        } else {
+            // Portrait phone fallback: Armory grid at TOP, category strip at BOTTOM
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(AerixSpacing.sm)
+            ) {
+                ArmoryMainContent(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                )
+                AerixPillTabRow(modifier = Modifier.fillMaxWidth()) {
+                    DiscoverTab.entries.forEach { tab ->
+                        val selected = selectedTab == tab
+                        AerixPillTab(
+                            selected = selected,
+                            onClick = {
+                                if (tab == DiscoverTab.INSTALL_VANILLA) {
+                                    AerixNav.navigate(LauncherSection.CREATE_INSTANCE)
+                                } else {
+                                    selectedTab = tab
+                                    activeProject = null
+                                    returnToReleases = false
+                                }
+                            }
+                        ) {
+                            Icon(
+                                painter = painterResource(tab.iconRes),
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Text(
+                                text = tab.label,
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -813,15 +917,15 @@ private fun SearchAssetsContent(
                             }
                         }
 
-                        // Floating PageController bottom-end ("1 / 3862   <   >")
+                        // Relocated PageController: moved from BottomEnd to BottomStart!
                         PageController(
                             pageNumber = pageIndex,
                             totalPages = totalPages,
                             onPrevious = { if (pageIndex > 1) pageIndex-- },
                             onNext = { if (pageIndex < totalPages) pageIndex++ },
                             modifier = Modifier
-                                .align(Alignment.BottomEnd)
-                                .padding(bottom = AerixSpacing.sm, end = AerixSpacing.smCompact)
+                                .align(Alignment.BottomStart)
+                                .padding(bottom = AerixSpacing.sm, start = AerixSpacing.smCompact)
                         )
                     }
                 }
@@ -912,9 +1016,9 @@ private fun PageController(
 }
 
 /**
- * Mirai ResultProjectLayout (_Search.Result.kt lines 452-610):
- * 40dp icon + bold title + download count pill, 2-line description, loader badge pill +
- * Favorite toggle, and full-width 40dp Install / Installed button.
+ * Fire Launcher Tactical Armory Card:
+ * Chamfered volcanic obsidian plate with INSTALL trigger relocated to the TOP-RIGHT header row,
+ * 2-line project summary in the center, and Download Count + Loader Tag + Favorite at the bottom.
  */
 @Composable
 internal fun ResultProjectLayout(
@@ -931,65 +1035,79 @@ internal fun ResultProjectLayout(
         val loaderLabels = project.loaders.take(2).joinToString(" \u2022 ")
         loaderLabels.ifBlank { project.platform.displayName }
     }
+    val downloadsText = remember(project.downloads) { formatDownloadCount(project.downloads) }
 
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(AerixRadii.cardSmall),
-        color = AerixSurface.panelRaised,
-        contentColor = Color.White,
-        border = BorderStroke(AerixSpacing.hairline, AerixSurface.borderSoft),
+        shape = FireShapes.armorMedium,
+        color = AerixSurface.firePanelRaised,
+        contentColor = AerixSurface.textPrimary,
+        border = BorderStroke(
+            1.dp,
+            if (isInstalled) AerixSurface.fireAmber.copy(alpha = 0.65f) else accent.copy(alpha = 0.30f)
+        ),
         onClick = onClick
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(AerixSpacing.md),
-            verticalArrangement = Arrangement.spacedBy(AerixSpacing.sm)
+                .padding(AerixSpacing.smPlus),
+            verticalArrangement = Arrangement.spacedBy(AerixSpacing.xsPlus)
         ) {
-            // Top Row: 40dp Icon + Bold Title + Download Count Pill
+            // Top Row: 38dp Icon + Bold Title + TOP-RIGHT DEPLOY/INSTALL Trigger
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(AerixSpacing.smPlus)
+                horizontalArrangement = Arrangement.spacedBy(AerixSpacing.sm)
             ) {
                 AerixImageWell(
                     image = icon,
                     fallback = R.drawable.aerix_ic_extension_outlined,
-                    size = 40.dp,
+                    size = 38.dp,
                     radius = AerixRadii.controlSmall
                 )
 
-                Text(
-                    modifier = Modifier.weight(1f),
-                    text = project.title,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = Color.White,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = project.title,
+                        fontSize = 13.5.sp,
+                        fontWeight = FontWeight.Black,
+                        color = AerixSurface.textPrimary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Text(
+                        text = primaryBadgeText.uppercase(),
+                        fontSize = 9.5.sp,
+                        letterSpacing = 0.6.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = AerixSurface.fireAmber,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
 
-                val downloadsText = remember(project.downloads) { formatDownloadCount(project.downloads) }
+                // Relocated Install Trigger at TOP-RIGHT of card!
                 Surface(
-                    shape = RoundedCornerShape(AerixRadii.control),
-                    color = AerixSurface.panel
+                    modifier = Modifier.height(30.dp),
+                    shape = FireShapes.reactorTrigger,
+                    color = if (isInstalled) AerixSurface.firePanelDeep else accent,
+                    contentColor = if (isInstalled) AerixSurface.fireAmber else AerixSurface.onFireAccentDefault,
+                    border = BorderStroke(
+                        1.dp,
+                        if (isInstalled) AerixSurface.fireAmber else AerixSurface.fireAmber.copy(alpha = 0.8f)
+                    ),
+                    onClick = onClick
                 ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = AerixSpacing.sm, vertical = AerixSpacing.tiny),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(AerixSpacing.tiny)
+                    Box(
+                        modifier = Modifier.padding(horizontal = 10.dp),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            modifier = Modifier.size(12.dp),
-                            painter = painterResource(R.drawable.aerix_ic_download_2_outlined),
-                            contentDescription = null,
-                            tint = AerixSurface.textSecondary
-                        )
                         Text(
-                            text = downloadsText,
+                            text = if (isInstalled) "LOADED" else "DEPLOY",
                             fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = AerixSurface.textPrimary
+                            letterSpacing = 0.8.sp,
+                            fontWeight = FontWeight.Black
                         )
                     }
                 }
@@ -999,62 +1117,49 @@ internal fun ResultProjectLayout(
             Text(
                 modifier = Modifier.fillMaxWidth(),
                 text = project.description,
-                fontSize = 12.sp,
+                fontSize = 11.5.sp,
                 color = AerixSurface.textSecondary,
                 maxLines = 2,
                 minLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
 
-            // Loader badge pill + Favorite button
+            // Bottom Telemetry Strip: Downloads Badge (Left) + Favorite Toggle (Right)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(AerixSpacing.sm)
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Surface(
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(AerixRadii.control),
-                    color = AerixSurface.panel
+                    shape = FireShapes.hudChip,
+                    color = AerixSurface.firePanelDeep,
+                    border = BorderStroke(AerixSpacing.hairline, AerixSurface.borderSoft)
                 ) {
-                    Text(
-                        text = primaryBadgeText,
-                        modifier = Modifier.padding(horizontal = AerixSpacing.smPlus, vertical = AerixSpacing.xs),
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = AerixSurface.textPrimary,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
+                    Row(
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            modifier = Modifier.size(12.dp),
+                            painter = painterResource(R.drawable.aerix_ic_download_2_outlined),
+                            contentDescription = null,
+                            tint = AerixSurface.fireAmber
+                        )
+                        Text(
+                            text = "$downloadsText DL",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = AerixSurface.textPrimary
+                        )
+                    }
                 }
 
                 FavoriteToggleLabel(
                     isFavorite = isFavorite,
                     onClick = onFavoriteClick,
-                    modifier = Modifier.height(32.dp)
+                    modifier = Modifier.height(28.dp)
                 )
-            }
-
-            // Full-width Install / Installed button
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(40.dp),
-                shape = RoundedCornerShape(AerixRadii.controlSmall),
-                color = if (isInstalled) AerixSurface.accentContainer else accent,
-                contentColor = if (isInstalled) accent else AerixSurface.onAccent,
-                onClick = onClick
-            ) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = if (isInstalled) "Installed" else "Install",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.ExtraBold
-                    )
-                }
             }
         }
     }

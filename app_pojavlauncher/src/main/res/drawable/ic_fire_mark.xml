@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Fire Launcher — Iridescent Prism Flame Emblem.
+  Multi-color luminous crystal flame combining Sky Cyan, Electric Indigo,
+  Vivid Rose-Magenta, and Sunlit Pearl Core.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Frosted Pearl Shield Plate -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:strokeColor="#FF818CF8"
+        android:strokeWidth="3.2"
+        android:pathData="M54,8 L22,28 L16,64 L35,95 L54,101 L73,95 L92,64 L86,28 Z" />
+
+    <!-- Outer Sky-to-Indigo Flame Wing -->
+    <path
+        android:fillColor="#FF6366F1"
+        android:pathData="M54,15 C54,15 79,35 79,60 C79,76 68,89 54,92 C40,89 29,76 29,60 C29,46 37,35 45,28 C44,37 49,42 54,42 C51,31 54,15 54,15 Z" />
+
+    <!-- Secondary Rose-Pink Flame Crest -->
+    <path
+        android:fillColor="#FFEC4899"
+        android:pathData="M54,28 C64,41 70,51 70,63 C70,74 63,83 54,86 C45,83 38,74 38,63 C38,53 43,45 48,39 C48,46 52,49 55,49 C53,41 54,28 54,28 Z" />
+
+    <!-- Luminous Cyan-Mint Inner Prism -->
+    <path
+        android:fillColor="#FF38BDF8"
+        android:pathData="M54,41 L64,61 L54,79 L44,61 Z" />
+
+    <!-- Pure Sunlit White Core -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M54,49 L60,61 L54,72 L48,61 Z" />
+</vector>

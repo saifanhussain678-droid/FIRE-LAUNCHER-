@@ -67,6 +67,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -698,68 +699,84 @@ internal fun AerixInstallPanel(onMinimize: () -> Unit) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(AerixSurface.canvas.copy(alpha = 0.72f))
+                .background(Color(0xFF0F172A).copy(alpha = 0.28f))
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null
                 ) { onMinimize() },
             contentAlignment = Alignment.Center
         ) {
-            // The same rule as the plan dialog: the panel is never taller than the screen, and the
-            // list is what gives up room, so the button under it stays on screen.
             BoxWithConstraints(
                 modifier = Modifier
-                    .widthIn(min = 300.dp, max = 520.dp)
+                    .widthIn(min = 320.dp, max = 540.dp)
                     .padding(AerixSpacing.md)
             ) {
+                val panelShape = RoundedCornerShape(
+                    topStart = 26.dp,
+                    topEnd = 16.dp,
+                    bottomEnd = 26.dp,
+                    bottomStart = 16.dp
+                )
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .heightIn(max = minOf(maxHeight, 640.dp))
-                        .clip(RoundedCornerShape(AerixRadii.dialog))
-                        .background(AerixSurface.panelRaised)
-                        .border(AerixSpacing.hairline, AerixSurface.borderSoft, RoundedCornerShape(AerixRadii.dialog))
+                        .clip(panelShape)
+                        .background(AerixSurface.firePanelDeep)
+                        .border(
+                            1.5.dp,
+                            Brush.linearGradient(
+                                listOf(
+                                    Color(0xFF38BDF8).copy(alpha = 0.55f),
+                                    Color(0xFF818CF8).copy(alpha = 0.55f),
+                                    Color(0xFFF472B6).copy(alpha = 0.55f)
+                                )
+                            ),
+                            panelShape
+                        )
                         .clickable(
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null
                         ) { }
                         .padding(AerixSpacing.lg)
                 ) {
+                    // Inverted header: Clear Finished action on LEFT, FIRE DOWNLOADER title on RIGHT
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(AerixSpacing.sm)
                     ) {
-                        Text(
-                            text = stringResource(R.string.aerix_install_tasks).uppercase(),
-                            color = accent,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.ExtraBold,
-                            letterSpacing = 0.6.sp,
-                            modifier = Modifier.weight(1f)
-                        )
                         if (tasks.any { it.finished }) {
                             Surface(
                                 shape = RoundedCornerShape(AerixRadii.pill),
-                                color = AerixSurface.panel,
+                                color = Color(0xFFEEF2FF),
+                                border = BorderStroke(1.dp, Color(0xFF6366F1).copy(alpha = 0.30f)),
                                 onClick = { AerixInstallQueue.clearFinished() }
                             ) {
                                 Text(
                                     text = stringResource(R.string.aerix_install_clear_finished),
-                                    color = AerixSurface.textSecondary,
+                                    color = Color(0xFF4F46E5),
                                     fontSize = 10.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.padding(horizontal = AerixSpacing.smPlus, vertical = 4.dp)
+                                    fontWeight = FontWeight.ExtraBold,
+                                    modifier = Modifier.padding(horizontal = AerixSpacing.smPlus, vertical = 5.dp)
                                 )
                             }
                         }
+                        Spacer(modifier = Modifier.weight(1f))
+                        Text(
+                            text = "FIRE DOWNLOADER · " + stringResource(R.string.aerix_install_tasks).uppercase(),
+                            color = Color(0xFF4F46E5),
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 0.8.sp
+                        )
                     }
 
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(1f, fill = false)
-                            .padding(top = AerixSpacing.sm),
+                            .padding(top = AerixSpacing.smPlus),
                         verticalArrangement = Arrangement.spacedBy(AerixSpacing.sm)
                     ) {
                         items(tasks, key = { it.id }) { task ->
@@ -774,24 +791,56 @@ internal fun AerixInstallPanel(onMinimize: () -> Unit) {
                         horizontalArrangement = Arrangement.spacedBy(AerixSpacing.sm),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Spacer(modifier = Modifier.weight(1f))
                         AerixGhostButton(
                             text = stringResource(
                                 if (anyRunning) R.string.aerix_install_minimize
                                 else R.string.aerix_install_dismiss
                             ),
                             iconRes = if (anyRunning) R.drawable.aerix_ic_arrow_drop_down_rounded else null,
-                            // With nothing running the button also clears the finished cards, so the
-                            // pill does not outlive the install it was reporting.
                             onClick = {
                                 if (!anyRunning) AerixInstallQueue.clearFinished()
                                 onMinimize()
                             }
                         )
+                        Spacer(modifier = Modifier.weight(1f))
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun PrismDownloadProgressBar(
+    progress: Float,
+    status: AerixInstallStatus,
+    modifier: Modifier = Modifier
+) {
+    val fraction = if (status == AerixInstallStatus.DONE) 1f else progress.coerceIn(0.04f, 1f)
+    val fillBrush = when (status) {
+        AerixInstallStatus.DONE -> Brush.horizontalGradient(
+            listOf(Color(0xFF34D399), Color(0xFF10B981))
+        )
+        AerixInstallStatus.FAILED, AerixInstallStatus.CANCELLED -> Brush.horizontalGradient(
+            listOf(Color(0xFFFB7185), Color(0xFFE11D48))
+        )
+        else -> Brush.horizontalGradient(
+            listOf(Color(0xFF22D3EE), Color(0xFF6366F1), Color(0xFFF472B6))
+        )
+    }
+    Box(
+        modifier = modifier
+            .height(8.dp)
+            .clip(RoundedCornerShape(999.dp))
+            .background(Color(0xFFDCE4FF))
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxHeight()
+                .fillMaxWidth(fraction)
+                .clip(RoundedCornerShape(999.dp))
+                .background(fillBrush)
+        )
     }
 }
 
@@ -801,14 +850,21 @@ private fun InstallTaskCard(task: AerixInstallTask, accent: Color) {
         AerixInstallStatus.DONE -> AerixSurface.success
         AerixInstallStatus.FAILED -> AerixSurface.danger
         AerixInstallStatus.CANCELLED -> AerixSurface.textMuted
-        else -> accent
+        else -> Color(0xFF4F46E5)
     }
+    val pct = ((if (task.finished) 1f else task.progress.coerceIn(0f, 1f)) * 100f).toInt()
+    val cardShape = RoundedCornerShape(
+        topStart = 18.dp,
+        topEnd = 12.dp,
+        bottomEnd = 18.dp,
+        bottomStart = 12.dp
+    )
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(AerixRadii.cardSmall))
-            .background(AerixSurface.panel)
-            .border(AerixSpacing.hairline, AerixSurface.borderSoft, RoundedCornerShape(AerixRadii.cardSmall))
+            .clip(cardShape)
+            .background(Color.White.copy(alpha = 0.88f))
+            .border(1.dp, Color(0xFFCBD5E1).copy(alpha = 0.70f), cardShape)
             .padding(AerixSpacing.md),
         verticalArrangement = Arrangement.spacedBy(AerixSpacing.xs)
     ) {
@@ -817,28 +873,11 @@ private fun InstallTaskCard(task: AerixInstallTask, accent: Color) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(AerixSpacing.sm)
         ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = task.projectTitle,
-                    color = AerixSurface.textPrimary,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Text(
-                    text = task.title,
-                    color = AerixSurface.textMuted,
-                    fontSize = 10.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
             if (task.finished) {
                 Surface(
                     shape = CircleShape,
-                    color = Color.Transparent,
-                    contentColor = AerixSurface.textMuted,
+                    color = Color(0xFFF1F5F9),
+                    contentColor = AerixSurface.textSecondary,
                     onClick = { AerixInstallQueue.dismiss(task) }
                 ) {
                     Icon(
@@ -850,28 +889,48 @@ private fun InstallTaskCard(task: AerixInstallTask, accent: Color) {
             } else {
                 Surface(
                     shape = RoundedCornerShape(AerixRadii.pill),
-                    color = AerixSurface.danger.copy(alpha = 0.14f),
+                    color = AerixSurface.danger.copy(alpha = 0.12f),
+                    border = BorderStroke(1.dp, AerixSurface.danger.copy(alpha = 0.30f)),
                     onClick = { AerixInstallQueue.cancel(task) }
                 ) {
                     Text(
                         text = stringResource(R.string.aerix_install_cancel_task),
                         color = AerixSurface.danger,
                         fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
+                        fontWeight = FontWeight.ExtraBold,
                         modifier = Modifier.padding(horizontal = AerixSpacing.smPlus, vertical = 4.dp)
                     )
                 }
             }
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = task.projectTitle,
+                    color = AerixSurface.textPrimary,
+                    fontSize = 12.5.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = task.title,
+                    color = AerixSurface.textSecondary,
+                    fontSize = 10.5.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+            Text(
+                text = "$pct%",
+                color = Color(0xFFDB2777),
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Black
+            )
         }
 
-        LinearProgressIndicator(
-            progress = { if (task.finished) 1f else task.progress.coerceIn(0f, 1f) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(6.dp)
-                .clip(RoundedCornerShape(AerixRadii.pill)),
-            color = statusColor,
-            trackColor = AerixSurface.panelTrack
+        PrismDownloadProgressBar(
+            progress = task.progress,
+            status = task.status,
+            modifier = Modifier.fillMaxWidth()
         )
 
         val line = when (task.status) {
@@ -921,18 +980,17 @@ private fun InstallTaskCard(task: AerixInstallTask, accent: Color) {
 }
 
 /**
- * The minimized install: a pill that sits over whatever page is open. Tapping it brings the panel
- * back; the download itself never stopped.
+ * FIRE LAUNCHER Prism Light floating downloading bar capsule.
+ * Displays a live Cyan-Indigo-Pink gradient progress bar, percentage badge, and project name.
  */
 @Composable
 internal fun AerixInstallPill(onExpand: () -> Unit, modifier: Modifier = Modifier) {
-    val accent = AerixThemeManager.currentAccent()
     val task = AerixInstallQueue.activeTasks.firstOrNull() ?: AerixInstallQueue.tasks.firstOrNull() ?: return
     val running = AerixInstallQueue.running
     val tint = when (task.status) {
         AerixInstallStatus.DONE -> AerixSurface.success
         AerixInstallStatus.FAILED, AerixInstallStatus.CANCELLED -> AerixSurface.danger
-        else -> accent
+        else -> Color(0xFF6366F1)
     }
     val expandLabel = stringResource(R.string.aerix_install_expand)
     val label = when {
@@ -944,54 +1002,86 @@ internal fun AerixInstallPill(onExpand: () -> Unit, modifier: Modifier = Modifie
         task.status == AerixInstallStatus.DONE -> stringResource(R.string.aerix_install_done, task.title)
         else -> stringResource(R.string.aerix_install_failed)
     }
+    val pct = ((if (task.finished) 1f else task.progress.coerceIn(0f, 1f)) * 100f).toInt()
+    val pillShape = RoundedCornerShape(
+        topStart = 20.dp,
+        topEnd = 12.dp,
+        bottomEnd = 20.dp,
+        bottomStart = 12.dp
+    )
     Surface(
         modifier = modifier
-            .widthIn(max = 260.dp)
+            .widthIn(min = 240.dp, max = 320.dp)
             .semantics { contentDescription = expandLabel },
-        shape = RoundedCornerShape(AerixRadii.pill),
-        color = AerixSurface.panelRaised,
-        border = BorderStroke(AerixSpacing.hairline, tint.copy(alpha = 0.6f)),
+        shape = pillShape,
+        color = AerixSurface.firePanelDeep,
+        shadowElevation = 6.dp,
+        border = BorderStroke(
+            1.5.dp,
+            Brush.linearGradient(
+                listOf(
+                    Color(0xFF22D3EE).copy(alpha = 0.65f),
+                    Color(0xFF6366F1).copy(alpha = 0.65f),
+                    Color(0xFFF472B6).copy(alpha = 0.65f)
+                )
+            )
+        ),
         onClick = onExpand
     ) {
-        Row(
+        Column(
             modifier = Modifier.padding(horizontal = AerixSpacing.md, vertical = AerixSpacing.sm),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(AerixSpacing.sm)
+            verticalArrangement = Arrangement.spacedBy(5.dp)
         ) {
-            if (running) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(14.dp),
-                    strokeWidth = 2.dp,
-                    color = tint
-                )
-            } else {
-                Icon(
-                    painter = painterResource(
-                        if (task.status == AerixInstallStatus.DONE) R.drawable.aerix_ic_check
-                        else R.drawable.aerix_ic_warning_filled
-                    ),
-                    contentDescription = null,
-                    tint = tint,
-                    modifier = Modifier.size(14.dp)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(AerixSpacing.sm)
+            ) {
+                if (running) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(14.dp),
+                        strokeWidth = 2.dp,
+                        color = tint
+                    )
+                } else {
+                    Icon(
+                        painter = painterResource(
+                            if (task.status == AerixInstallStatus.DONE) R.drawable.aerix_ic_check
+                            else R.drawable.aerix_ic_warning_filled
+                        ),
+                        contentDescription = null,
+                        tint = tint,
+                        modifier = Modifier.size(14.dp)
+                    )
+                }
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "FIRE DOWNLOADER · ${task.projectTitle}",
+                        color = AerixSurface.textPrimary,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Text(
+                        text = label,
+                        color = AerixSurface.textSecondary,
+                        fontSize = 9.5.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+                Text(
+                    text = "$pct%",
+                    color = Color(0xFFDB2777),
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Black
                 )
             }
-            Column(modifier = Modifier.weight(1f, fill = false)) {
-                Text(
-                    text = task.projectTitle,
-                    color = AerixSurface.textPrimary,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Text(
-                    text = label,
-                    color = tint,
-                    fontSize = 10.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
+            PrismDownloadProgressBar(
+                progress = task.progress,
+                status = task.status,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     }
 }

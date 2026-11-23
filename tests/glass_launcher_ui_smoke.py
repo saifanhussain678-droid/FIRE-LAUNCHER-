@@ -39,5 +39,6 @@ assert 'drawOutline(outline = outline, brush = rim' in glass
 assert 'val accentDefault = Color(0xFF8DEFE0)' in surfaces # The old Aerix accent stays intact.
 assert (main / 'assets/wallpapers/aerix_twilight.jpg').is_file() # Keep previously chosen wallpaper valid.
 assert 'aerix_twilight' in (main / 'java/net/kdt/pojavlaunch/aerix/theme/AerixThemeManager.kt').read_text()
-assert 'DEFAULT_WALLPAPER = "wp_01_lush_caves"' in (main / 'java/net/kdt/pojavlaunch/aerix/bridge/AerixPreferences.kt').read_text()
-print('Original Aerix navigation, live actions and improved glass: smoke checks passed')
+assert 'DEFAULT_WALLPAPER = "anim_00_fire_inferno"' in (main / 'java/net/kdt/pojavlaunch/aerix/bridge/AerixPreferences.kt').read_text()
+assert 'DEFAULT_CUSTOM_COLOR = 0xFF6366F1.toInt()' in (main / 'java/net/kdt/pojavlaunch/aerix/bridge/AerixPreferences.kt').read_text()
+print('Fire Launcher navigation, live actions and volcanic armor glass: smoke checks passed')

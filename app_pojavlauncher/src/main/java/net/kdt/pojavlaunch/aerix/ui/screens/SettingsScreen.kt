@@ -52,16 +52,19 @@ import androidx.compose.ui.semantics.Role
 import net.kdt.pojavlaunch.aerix.bridge.rememberControlLayoutCatalog
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -137,6 +140,7 @@ import net.kdt.pojavlaunch.aerix.theme.AerixRadii
 import net.kdt.pojavlaunch.aerix.theme.AerixSpacing
 import net.kdt.pojavlaunch.aerix.theme.AerixSurface
 import net.kdt.pojavlaunch.aerix.theme.AerixThemeManager
+import net.kdt.pojavlaunch.aerix.theme.FireShapes
 import net.kdt.pojavlaunch.aerix.ui.AerixNav
 import net.kdt.pojavlaunch.aerix.ui.LauncherSection
 import net.kdt.pojavlaunch.contracts.OpenDocumentWithExtension
@@ -195,56 +199,149 @@ private fun runtimeLabel(runtime: Runtime): String {
 @Composable
 fun SettingsScreen(activity: FragmentActivity, tabKey: String, onTabChanged: (String) -> Unit) {
     val activeKey = if (settingTabItems.any { it.key == tabKey }) tabKey else AerixNav.TAB_RENDERER
+    val activeAccent = AerixThemeManager.currentAccent()
 
-    Column(
+    @Composable
+    fun ActiveSettingsPane() {
+        when (activeKey) {
+            AerixNav.TAB_STYLES -> FontStylesTab(activity)
+            AerixNav.TAB_RENDERER -> RendererTabContent(activity)
+            AerixNav.TAB_GAME -> GameTabContent(activity)
+            AerixNav.TAB_JAVA -> JavaManageTabContent(activity)
+            AerixNav.TAB_WALLPAPERS -> WallpapersScreen(modifier = Modifier.fillMaxSize())
+            AerixNav.TAB_LAUNCHER -> LauncherTabContent(activity)
+            AerixNav.TAB_CONTROLS -> ControlsTabContent(activity)
+            AerixNav.TAB_CONTROL_MANAGER -> ControlManagerTabContent(activity)
+            AerixNav.TAB_GAMEPAD -> GamepadTabContent(activity)
+            AerixNav.TAB_ABOUT -> AboutInfoTabContent(activity)
+            else -> RendererTabContent(activity)
+        }
+    }
+
+    BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = AerixSpacing.md, vertical = AerixSpacing.sm),
-        verticalArrangement = Arrangement.spacedBy(AerixSpacing.md)
+            .padding(horizontal = AerixSpacing.smPlus, vertical = AerixSpacing.xs)
     ) {
-        // Every settings page keeps the tab strip. The Wallpapers page used to be reachable from a
-        // rail entry of its own and hid the strip for that reason; that entry is now the modpack
-        // page, so Wallpapers is a normal tab like the rest.
-        AerixPillTabRow(modifier = Modifier.fillMaxWidth()) {
-            settingTabItems.forEach { item ->
-                val selected = activeKey == item.key
-                AerixPillTab(
-                    selected = selected,
-                    onClick = { onTabChanged(item.key) }
+        val sideModuleRack = maxWidth >= 560.dp
+        if (sideModuleRack) {
+            // Fire Launcher inverted Settings layout:
+            //   - LEFT (weight 1f): Active Engine Configuration Stage
+            //   - RIGHT (178.dp): Vertical Chamfered System Module Rack
+            Row(
+                modifier = Modifier.fillMaxSize(),
+                horizontalArrangement = Arrangement.spacedBy(AerixSpacing.smPlus)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
                 ) {
-                    Icon(
-                        painter = painterResource(item.iconRes),
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Text(
-                        text = item.label,
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
+                    ActiveSettingsPane()
+                }
+
+                Surface(
+                    modifier = Modifier
+                        .width(178.dp)
+                        .fillMaxHeight(),
+                    shape = FireShapes.armorCard,
+                    color = AerixSurface.firePanelDeep,
+                    border = BorderStroke(1.dp, activeAccent.copy(alpha = 0.45f))
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(AerixSpacing.xsPlus),
+                        verticalArrangement = Arrangement.spacedBy(5.dp)
+                    ) {
+                        Text(
+                            text = "// ENGINE MODULES",
+                            color = AerixSurface.fireAmber,
+                            fontSize = 9.sp,
+                            letterSpacing = 1.4.sp,
+                            fontWeight = FontWeight.Black,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
+                        )
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .verticalScroll(rememberScrollState()),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            settingTabItems.forEach { item ->
+                                val selected = activeKey == item.key
+                                Surface(
+                                    onClick = { onTabChanged(item.key) },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = FireShapes.armorSmall,
+                                    color = if (selected) activeAccent else AerixSurface.firePanelRaised,
+                                    border = BorderStroke(
+                                        1.dp,
+                                        if (selected) AerixSurface.fireAmber else AerixSurface.borderSoft
+                                    )
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 9.dp, vertical = 7.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(7.dp)
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(item.iconRes),
+                                            contentDescription = null,
+                                            tint = if (selected) AerixSurface.onFireAccentDefault else AerixSurface.fireAmber,
+                                            modifier = Modifier.size(15.dp)
+                                        )
+                                        Text(
+                                            text = item.label.uppercase(),
+                                            color = if (selected) AerixSurface.onFireAccentDefault else AerixSurface.textPrimary,
+                                            fontSize = 10.sp,
+                                            letterSpacing = 0.6.sp,
+                                            fontWeight = if (selected) FontWeight.Black else FontWeight.Bold,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
-        }
-
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-        ) {
-            when (activeKey) {
-                AerixNav.TAB_STYLES -> FontStylesTab(activity)
-                AerixNav.TAB_RENDERER -> RendererTabContent(activity)
-                AerixNav.TAB_GAME -> GameTabContent(activity)
-                AerixNav.TAB_JAVA -> JavaManageTabContent(activity)
-                AerixNav.TAB_WALLPAPERS -> WallpapersScreen(modifier = Modifier.fillMaxSize())
-                AerixNav.TAB_LAUNCHER -> LauncherTabContent(activity)
-                AerixNav.TAB_CONTROLS -> ControlsTabContent(activity)
-                AerixNav.TAB_CONTROL_MANAGER -> ControlManagerTabContent(activity)
-                AerixNav.TAB_GAMEPAD -> GamepadTabContent(activity)
-                AerixNav.TAB_ABOUT -> AboutInfoTabContent(activity)
-                else -> RendererTabContent(activity)
+        } else {
+            // Portrait phone fallback: active config stage at TOP, module strip at BOTTOM
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(AerixSpacing.sm)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                ) {
+                    ActiveSettingsPane()
+                }
+                AerixPillTabRow(modifier = Modifier.fillMaxWidth()) {
+                    settingTabItems.forEach { item ->
+                        val selected = activeKey == item.key
+                        AerixPillTab(
+                            selected = selected,
+                            onClick = { onTabChanged(item.key) }
+                        ) {
+                            Icon(
+                                painter = painterResource(item.iconRes),
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Text(
+                                text = item.label,
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
+                }
             }
         }
     }
@@ -1697,13 +1794,13 @@ private fun AboutInfoTabContent(activity: FragmentActivity) {
         contentPadding = PaddingValues(bottom = AerixSpacing.xxl),
         verticalArrangement = Arrangement.spacedBy(AerixSpacing.md)
     ) {
-        // Card 1: Aerix Launcher + entitybrian + Discord (Screenshot 5 top card)
+        // Card 1: FIRE LAUNCHER + maintainer + Discord
         item {
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(AerixRadii.hero),
-                color = AerixSurface.panel,
-                border = BorderStroke(AerixSpacing.hairline, AerixSurface.borderSoft)
+                color = AerixSurface.firePanel,
+                border = BorderStroke(AerixSpacing.hairline, AerixSurface.fireBorder)
             ) {
                 Column(
                     modifier = Modifier
@@ -1714,7 +1811,7 @@ private fun AboutInfoTabContent(activity: FragmentActivity) {
                     AboutRowCard(
                         iconRes = R.drawable.ic_aerix_mark,
                         iconTint = Color.Unspecified,
-                        title = "Aerix Launcher",
+                        title = "FIRE LAUNCHER",
                         subtitle = "Launcher Version: ${BuildConfig.VERSION_NAME}",
                         actions = {
                             AboutPillButton("Check for Updates", accent) {

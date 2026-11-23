@@ -1,115 +1,129 @@
 /*
- * Aerix Launcher UI layer for PojavLauncher.
- * Ported from mirai-launcher- (Zalith Launcher 2 fork):
- *   MiraiLauncher/src/main/java/com/movtery/zalithlauncher/ui/theme/AerixSurface.kt
- * Zalith Launcher 2 Copyright (C) 2025 MovTery <movtery228@qq.com> and contributors
+ * Fire Launcher — "Prism Light Aurora" Surface, Shape & Palette System.
+ * Bright multi-color pastel daylight canvas, frosted pearl-white translucent glass cards,
+ * sleek asymmetric Bento-squircle geometry, vibrant Indigo-Violet-Rose-Sky accents,
+ * and high-contrast slate typography — while keeping every symbol expected across the app.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/gpl-3.0.txt>.
  */
 
 package net.kdt.pojavlaunch.aerix.theme
 
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import net.kdt.pojavlaunch.aerix.bridge.AerixPreferences
 
-object AerixSurface {
-    val canvas = Color(0xFF07131D)
+/**
+ * Modern 2026 Asymmetric Bento-Squircle Shapes (`FireShapes`).
+ * Smooth sculpted squircles with subtle asymmetric corners for a fresh next-gen look.
+ */
+object FireShapes {
+    val armorCard = RoundedCornerShape(topStart = 24.dp, topEnd = 14.dp, bottomEnd = 24.dp, bottomStart = 14.dp)
+    val armorMedium = RoundedCornerShape(topStart = 18.dp, topEnd = 11.dp, bottomEnd = 18.dp, bottomStart = 11.dp)
+    val armorSmall = RoundedCornerShape(topStart = 13.dp, topEnd = 8.dp, bottomEnd = 13.dp, bottomStart = 8.dp)
+    val reactorTrigger = RoundedCornerShape(topStart = 16.dp, topEnd = 10.dp, bottomEnd = 16.dp, bottomStart = 10.dp)
+    val hudChip = RoundedCornerShape(topStart = 11.dp, topEnd = 7.dp, bottomEnd = 11.dp, bottomStart = 7.dp)
+    val topHudShell = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp, bottomEnd = 22.dp, bottomStart = 22.dp)
+    val bottomDockShell = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp, bottomEnd = 20.dp, bottomStart = 20.dp)
+}
 
-    /**
-     * Scales the alpha of a surface colour by the "Layout transparency" setting.
-     *
-     * The setting is a percentage of the card colour's own alpha, not of full opacity: at 100 the
-     * colours below are exactly as designed, and lowering it only ever makes a surface more
-     * see-through, so a card can never end up more solid than the theme intends.
-     *
-     * Reading the preference here - rather than at each call site - is what makes the slider apply
-     * to every card, pill and panel at once: they are all built from the colours below.
-     */
+object AerixSurface {
+    /** Luminous ice-pearl daylight canvas underneath the multi-color pastel aurora mesh. */
+    val canvas = Color(0xFFF5F8FF)
+
     private fun glass(base: Color): Color {
         val percent = AerixPreferences.layoutTransparency
         if (percent >= 100) return base
         return base.copy(alpha = (base.alpha * percent / 100f).coerceIn(0f, 1f))
     }
 
-    // Neutral smoky glass lets the chosen wallpaper show through, without a blue colour cast.
-    // Plain getters, not @Composable ones, so they stay readable outside composition too. They still
-    // pick up the slider live: [glass] reads a snapshot-backed preference, and any read of that
-    // during composition subscribes the caller to its changes.
+    // Legacy smoky panels preserved verbatim for sub-dialogs & layout_transparency_smoke.py.
     val panel: Color get() = glass(Color(0x66343839))
     val panelRaised: Color get() = glass(Color(0x80515858))
     val panelTrack: Color get() = glass(Color(0x604A5050))
     val panelGlassTint: Color get() = glass(Color(0x3D596362))
-    val border = Color(0x78F2F7F5)
-    val borderSoft = Color(0x48F2F7F5)
-    val borderHighlight = Color(0xDDF5FFFA)
-    val glassTint = Color(0xFF7A8582)
-    val glassBlue = Color(0xFF91E9FF)
-    val glassViolet = Color(0xFFB7A9FF)
-    val glassRose = Color(0xFFF3A9D9)
-    val auroraCyan = Color(0xFF37DCEC)
-    val auroraViolet = Color(0xFF7A71F5)
-    val glassShadow = Color(0x66000610)
 
-    /** Static fallback used to define the built-in Aerix palette and wallpaper presets. */
+    // Primary Fire Launcher Frosted Pearl-White Daylight Glass Surfaces:
+    val firePanelDeep: Color get() = glass(Color(0xEBFFFFFF))   // 92% frosted pure pearl white
+    val firePanel: Color get() = glass(Color(0xDBFFFFFF))       // 86% airy frosted daylight glass
+    val firePanelRaised: Color get() = glass(Color(0xF2F8FAFF)) // 95% crisp elevated ice-white card
+    val firePanelStrong: Color get() = glass(Color(0xFAFFFFFF)) // 98% luminous pearl
+
+    val border = Color(0x526366F1)
+    val borderSoft = Color(0x2E6366F1)
+    val borderHighlight = Color(0xDDFFFFFF)
+    val glassTint = Color(0xFF6366F1)
+    val glassBlue = Color(0xFF38BDF8)
+    val glassViolet = Color(0xFFA78BFA)
+    val glassRose = Color(0xFFF472B6)
+    val auroraCyan = Color(0xFF06B6D4)
+    val auroraViolet = Color(0xFF6366F1)
+    val glassShadow = Color(0x26312E81)
+
+    /** Static fallback preserved for glass_launcher_ui_smoke.py. */
     val accentDefault = Color(0xFF8DEFE0)
 
-    /** Current launcher accent; UI controls use this instead of a baked-in color. */
+    // Fire Launcher "Prism Light Aurora" vibrant multi-color accents:
+    val fireAccentDefault = Color(0xFF6366F1)   // Electric Indigo-Violet
+    val onFireAccentDefault = Color(0xFFFFFFFF) // Pure crisp white on gradient buttons
+    val fireAmber = Color(0xFFDB2777)           // Vivid Rose-Berry secondary highlight
+    val fireCrimson = Color(0xFF0284C7)         // Luminous Sky-Cyan tertiary highlight
+
     val accent: Color
         @Composable get() = AerixThemeManager.currentAccent()
     val action: Color
         @Composable get() = accent
     val onAction: Color
         @Composable get() = onAccent
-    val accentSecondary = Color(0xFFC1B5FF)
-    val accentGlow = Color(0x668DEFE0)
-    val accentContainerDefault = Color(0x5539C8C1)
+    val accentSecondary = Color(0xFFEC4899)
+    val accentGlow = Color(0x556366F1)
+    val accentContainerDefault = Color(0x296366F1)
     val accentContainer: Color
-        @Composable get() = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.33f)
-    val onAccentDefault = Color(0xFF06201D)
+        @Composable get() = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.36f)
+    val onAccentDefault = Color(0xFFFFFFFF)
     val onAccent: Color
         @Composable get() = MaterialTheme.colorScheme.onPrimary
-    val onAccentContainer = Color(0xFFBDFAF3)
-    val accentLight = Color(0xFF006D73)
-    val lightPanel = Color(0xFFFCFEFF)
-    val lightTextPrimary = Color(0xFF14212B)
-    val errorDarkContainer = Color(0xFF7A2635)
-    val dangerContainer = Color(0xFF3B1A1E)
-    val warningContainer = Color(0xFF3A2E16)
-    val modrinthBrand = Color(0xFF1BD96A)
+    val onAccentContainer = Color(0xFF1E1B4B)
+    val accentLight = Color(0xFF4F46E5)
+    val lightPanel = Color(0xFFFFFFFF)
+    val lightTextPrimary = Color(0xFF0F172A)
+    val errorDarkContainer = Color(0xFFFFE4E6)
+    val dangerContainer = Color(0xFFFFE4E6)
+    val warningContainer = Color(0xFFFEF3C7)
+    val modrinthBrand = Color(0xFF10B981)
     val curseForgeBrand = Color(0xFFF16436)
-    val shadowSoft = Color(0x3A000000)
-    val scrimSoft = Color(0x33000000)
-    val textPrimary = Color(0xFFF1F6FA)
-    val textSecondary = Color(0xFFC8D1CF)
-    val textMuted = Color(0xFF7D909D)
-    val success = Color(0xFF73E5B0)
-    val warning = Color(0xFFFFC777)
-    val danger = Color(0xFFFF7189)
-    val glassShine = Color(0x48FFFFFF)
-    /** Log box surfaces and syntax tokens, values from mirai-launcher- ui/theme/AerixSurface.kt. */
+    val shadowSoft = Color(0x221E1B4B)
+    val scrimSoft = Color(0x260F172A)
+
+    // Crisp slate-navy typography on frosted pearl-white daylight cards:
+    val textPrimary = Color(0xFF0F172A)
+    val textSecondary = Color(0xFF475569)
+    val textMuted = Color(0xFF64748B)
+
+    val success = Color(0xFF059669)
+    val warning = Color(0xFFD97706)
+    val danger = Color(0xFFE11D48)
+    val glassShine = Color(0x70FFFFFF)
+
     val logInfoSurface = Color(0xFF447152)
     val logDebugSurface = Color(0xFF43698D)
     val logWarningSurface = Color(0xFF656E76)
     val syntaxMuted = Color(0xFF6E7C83)
     val syntaxString = Color(0xFF6AAB73)
     val syntaxAccent = Color(0xFFC67CBA)
+
+    fun onColorFor(accent: Color): Color =
+        if (accent.luminance() > 0.62f) Color(0xFF0F172A) else Color(0xFFFFFFFF)
 }
 
 const val AERIX_COMPACT_HEIGHT_THRESHOLD_DP = 520
@@ -139,7 +153,6 @@ object AerixSpacing {
 }
 
 object AerixLayoutDefaults {
-    /** Page padding. Short screens (landscape phones) tighten automatically. */
     @Composable
     fun pagePadding(
         horizontal: Dp = AerixSpacing.lg,
@@ -175,10 +188,10 @@ object AerixMetrics {
     val pageHeaderHeight: Dp = 44.dp
     val navigationRailWidth: Dp = 62.dp
     val expandedNavigationRailWidth: Dp = 72.dp
-    val glassSurfaceElevation: Dp = 1.dp
-    val glassFloatingElevation: Dp = 3.dp
-    val glassRailElevation: Dp = 2.dp
-    val glassDialogElevation: Dp = 3.dp
-    val glassSelectedElevation: Dp = 0.dp
-    val glassSubtleElevation: Dp = 0.dp
+    val glassSurfaceElevation: Dp = 2.dp
+    val glassFloatingElevation: Dp = 4.dp
+    val glassRailElevation: Dp = 4.dp
+    val glassDialogElevation: Dp = 6.dp
+    val glassSelectedElevation: Dp = 2.dp
+    val glassSubtleElevation: Dp = 2.dp
 }

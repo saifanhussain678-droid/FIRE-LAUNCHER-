@@ -170,31 +170,27 @@ check("the reserve never double-counts the system bars",
 
 print("9. the dashboard skin switches without a restart")
 aerix_prefs = read(os.path.join(JAVA, "aerix", "bridge"), "AerixPreferences.kt")
-check("two skins, named as the players named them",
-      'PREMIUM("Old UI (dashboard)")' in aerix_prefs and 'CLEAN("New UI (hero)")' in aerix_prefs)
+check("two skins, named for Fire Launcher modes",
+      'PREMIUM("COMMAND DECK")' in aerix_prefs and 'CLEAN("REACTOR SPLIT")' in aerix_prefs)
 check("the choice is persisted", 'putString(KEY_UI_STYLE, value.name)' in aerix_prefs)
 check("the choice is Compose state, so no restart is needed",
       "var uiStyle by mutableStateOf" in aerix_prefs)
 home = read(os.path.join(JAVA, "aerix", "ui", "screens"), "HomeScreen.kt")
-check("the switch sits at the top of the dashboard", "AerixUiStyleSwitch" in home)
-check("the two layouts animate into position",
-      "animateDpAsState" in home and "animateFloatAsState" in home)
-check("the pills move with a sliding highlight", 'label = "uiStylePill"' in home)
-# "The old UI" is a layout, not a colour scheme: the dashboard the players screenshotted put the
-# utility tiles and the active-world card on the left and the docked 3D skin card on the right. If
-# the switch only changed padding, picking "old UI" would show them a different launcher.
+check("the switch sits on the Fire HQ command deck", "FireHudStyleSwitch" in home)
+check("the pills animate with a sliding highlight",
+      "animateFloatAsState" in home and 'label = "fireHudModePill"' in home)
 classic_block = home[home.index("if (AerixPreferences.uiStyle == AerixLauncherUiStyle.PREMIUM)"):]
 classic_block = classic_block[:classic_block.index("} else {")]
-check("the old skin is its own composition", "ClassicHomeDashboard(" in classic_block)
-check("the old skin keeps the switch, so it is never a dead end",
-      "AerixUiStyleSwitch" in classic_block)
-check("the dashboard and the docked skin card are both drawn",
-      "WideHomeDashboard(" in home and "CompactHomeDashboard(" in home
-      and "ActionMenuCard(" in home[home.index("private fun ClassicHomeDashboard"):])
-check("the split matches the layout the screenshot showed",
-      "maxWidth >= 500.dp" in home and "ContentWeight" in home and "ActionMenuWeight" in home)
-check("the old sections are still the ones the page names",
-      "aerix_home_your_space" in home and "aerix_home_active_world" in home)
+check("the overdrive command deck is its own composition", "FireOverdriveCommandDeck(" in classic_block)
+check("the overdrive mode keeps the switch, so it is never a dead end",
+      "FireHudStyleSwitch" in home[home.index("private fun FireOverdriveCommandDeck"):])
+check("all Fire HQ layouts and the operator hologram chamber are drawn",
+      "FireReactorTriWingHq(" in home and "FireCompactPortraitHq(" in home
+      and "OperatorHologramChamber(" in home)
+check("the responsive split threshold and three-wing weights are wired",
+      "maxWidth >= 620.dp" in home and "weight(0.30f)" in home and "weight(0.38f)" in home and "weight(0.32f)" in home)
+check("the tactical matrix and active reactor sections are wired",
+      "TacticalMissionMatrix(" in home and "ActiveReactorHeroCard(" in home and "InstanceCartridgeRack(" in home)
 
 print("10. mouse settings live where they were asked for")
 section = read(os.path.join(JAVA, "aerix", "ui", "screens"), "AerixMouseSettingsSection.kt")

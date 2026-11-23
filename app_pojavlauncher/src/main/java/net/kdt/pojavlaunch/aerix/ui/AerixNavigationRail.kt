@@ -1,24 +1,14 @@
 /*
- * Aerix Launcher UI layer for PojavLauncher.
- * Ported from mirai-launcher- (Zalith Launcher 2 fork):
- *   MiraiLauncher/src/main/java/com/movtery/zalithlauncher/ui/screens/main/MiraiNavigationRail.kt
- *     (LauncherSection, MiraiNavigationRail, RailIconItem, AccountAvatarRailButton)
- * Account state comes from PojavAccountBridge instead of AccountsManager.currentAccountFlow.
- * Zalith Launcher 2 Copyright (C) 2025 MovTery <movtery228@qq.com> and contributors
- * Copyright (C) 2026 Aerix Launcher contributors.
+ * Fire Launcher Top Tactical Command Bar & Bottom Floating Molten Dock.
+ * Replaces both vertical side rails of the old UI:
+ *   - Top Command Header: Operator ID (Top-Left), System Utility Strip & Fire Crest (Top-Center),
+ *     Active Instance Cartridge + Blazing IGNITE Launch Trigger (Top-Right).
+ *   - Bottom Command Dock: Horizontal chamfered navigation deck across the bottom edge.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/gpl-3.0.txt>.
  */
 
 package net.kdt.pojavlaunch.aerix.ui
@@ -26,33 +16,34 @@ package net.kdt.pojavlaunch.aerix.ui
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
@@ -61,34 +52,36 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import net.kdt.pojavlaunch.R
 import net.kdt.pojavlaunch.aerix.bridge.AerixAccount
+import net.kdt.pojavlaunch.aerix.bridge.GameDownloadTarget
 import net.kdt.pojavlaunch.aerix.bridge.PojavAccountBridge
+import net.kdt.pojavlaunch.aerix.bridge.PojavInstanceBridge
 import net.kdt.pojavlaunch.aerix.components.AerixImageWell
 import net.kdt.pojavlaunch.aerix.components.bringFocusedItemIntoView
 import net.kdt.pojavlaunch.aerix.components.liquidGlass
+import net.kdt.pojavlaunch.aerix.guide.AerixGuideState
+import net.kdt.pojavlaunch.aerix.guide.guideAnchor
 import net.kdt.pojavlaunch.aerix.theme.AERIX_COMPACT_HEIGHT_THRESHOLD_DP
 import net.kdt.pojavlaunch.aerix.theme.AerixMetrics
 import net.kdt.pojavlaunch.aerix.theme.AerixRadii
-import net.kdt.pojavlaunch.aerix.guide.AerixGuideState
-import net.kdt.pojavlaunch.aerix.guide.guideAnchor
 import net.kdt.pojavlaunch.aerix.theme.AerixSpacing
 import net.kdt.pojavlaunch.aerix.theme.AerixSurface
+import net.kdt.pojavlaunch.aerix.theme.AerixThemeManager
+import net.kdt.pojavlaunch.aerix.theme.FireShapes
 import net.kdt.pojavlaunch.aerix.theme.ThemeMotion
 import net.kdt.pojavlaunch.aerix.theme.accentGlow
 import net.kdt.pojavlaunch.aerix.theme.accentRing
-import net.kdt.pojavlaunch.aerix.theme.AerixThemeManager
 
-/** Primary destinations kept visible while the Aerix launcher is open. */
+/** Primary destinations kept visible while the launcher is open. */
 enum class LauncherSection {
     HOME,
-    /** Dedicated Aerix Client (Minecraft 1.16.5 Testing Edition · Liquid Crystal Clear). */
     AERIX_CLIENT,
     LIBRARY,
     SERVERS,
-    /** Friends, messages and parties - the social launcher, opened from Home and the rail. */
     SOCIALS,
     DISCOVER,
     OTHER_RELEASES,
@@ -97,25 +90,25 @@ enum class LauncherSection {
     FILES,
     LOGS,
     SETTINGS,
-    /** The team page, between Settings and the account entry. */
     CONTRIBUTION,
-    /** Team Aerix modpacks, one press to install. Replaces the old Wallpapers rail entry. */
     MODPACKS,
     ACCOUNTS,
     ABOUT,
-    /** Pages opened on top of a section (Mirai "Create New Instance", instance settings, account sign-in). */
     CREATE_INSTANCE,
     INSTANCE_EDITOR,
-    /** Home utility destinations; Back returns to the dashboard. */
     QUICK_TOOLS,
     INSTANCE_SELECTOR,
     ADD_ACCOUNT,
     OFFLINE_ACCOUNT,
     AERIX_ACCOUNT,
-    /** One team member's page, opened from Contribution. */
     CONTRIBUTION_DETAIL
 }
 
+/**
+ * Bottom Floating Molten Command Dock.
+ * Replaces the old left-hand vertical pill rail: every primary destination now sits in a
+ * chamfered horizontal tactical dock anchored along the bottom edge.
+ */
 @Composable
 fun AerixNavigationRail(
     selectedSection: LauncherSection,
@@ -123,126 +116,164 @@ fun AerixNavigationRail(
     onCreateInstance: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val account = PojavAccountBridge.current
     val scrollState = rememberScrollState()
     val activeAccent = AerixThemeManager.currentAccent()
     val configuration = LocalConfiguration.current
-    // Short screens (landscape phones): tighten the rail so every entry stays visible.
-    val compactRail = configuration.screenHeightDp < AERIX_COMPACT_HEIGHT_THRESHOLD_DP
-    val expandedRail = configuration.screenWidthDp >= 900 && !compactRail
+    val compact = configuration.screenHeightDp < AERIX_COMPACT_HEIGHT_THRESHOLD_DP
 
-    Row(modifier = modifier.fillMaxHeight()) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = AerixSpacing.smPlus, vertical = if (compact) 3.dp else 5.dp),
+        contentAlignment = Alignment.Center
+    ) {
         Surface(
             modifier = Modifier
-                .width(if (expandedRail) AerixMetrics.expandedNavigationRailWidth else AerixMetrics.navigationRailWidth)
-                .fillMaxHeight()
-                // The pill sits against the left edge - only the end side keeps a gap, so the
-                // pages own the rest of the width.
-                .padding(start = 2.dp, end = AerixSpacing.xs, top = AerixSpacing.smPlus, bottom = AerixSpacing.smPlus)
-                .liquidGlass(shape = CircleShape, tint = AerixSurface.glassTint, strength = 0.94f, elevation = AerixMetrics.glassRailElevation),
-            shape = CircleShape,
-            color = Color.Transparent,
-            contentColor = Color.White
+                .liquidGlass(
+                    shape = FireShapes.bottomDockShell,
+                    tint = activeAccent,
+                    strength = 0.94f,
+                    elevation = AerixMetrics.glassRailElevation
+                ),
+            shape = FireShapes.bottomDockShell,
+            color = AerixSurface.firePanelDeep,
+            contentColor = AerixSurface.textPrimary,
+            border = BorderStroke(1.dp, activeAccent.copy(alpha = 0.38f))
         ) {
-            Column(
+            Row(
                 modifier = Modifier
-                    .fillMaxHeight()
-                    .verticalScroll(scrollState)
-                    .padding(vertical = if (compactRail) AerixSpacing.xs else AerixSpacing.smPlus),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(if (compactRail) AerixSpacing.xs else AerixSpacing.sm)
+                    .horizontalScroll(scrollState)
+                    .padding(horizontal = AerixSpacing.sm, vertical = if (compact) 4.dp else 6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(if (compact) 5.dp else 7.dp)
             ) {
-                // Aerix monogram and wordmark establish a persistent brand anchor.
-                Column(
+                // Bottom-Left Prism Brand Anchor
+                Row(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(AerixRadii.panelSmall))
+                        .clip(FireShapes.hudChip)
+                        .background(
+                            Brush.linearGradient(
+                                listOf(Color(0x2638BDF8), activeAccent.copy(alpha = 0.16f), Color(0x26EC4899))
+                            )
+                        )
+                        .border(BorderStroke(1.dp, activeAccent.copy(alpha = 0.55f)), FireShapes.hudChip)
                         .bringFocusedItemIntoView()
                         .clickable(role = Role.Button) { onNavigate(LauncherSection.HOME) }
-                        .semantics { contentDescription = "Aerix Home" }
-                        .padding(vertical = AerixSpacing.xs),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(AerixSpacing.xxs)
+                        .semantics { contentDescription = "Fire Launcher HQ" }
+                        .padding(horizontal = 8.dp, vertical = if (compact) 5.dp else 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(5.dp)
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(if (compactRail) 32.dp else 38.dp)
-                            .clip(RoundedCornerShape(AerixRadii.control))
-                            .background(activeAccent.copy(alpha = 0.12f))
-                            .liquidGlass(
-                                shape = RoundedCornerShape(AerixRadii.control),
-                                tint = activeAccent,
-                                strength = 0.82f,
-                                elevation = AerixMetrics.glassSubtleElevation
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_aerix_mark),
-                            contentDescription = "Aerix",
-                            tint = Color.Unspecified,
-                            modifier = Modifier.size(if (compactRail) 20.dp else 24.dp)
+                    Image(
+                        painter = painterResource(R.drawable.ic_aerix_mark),
+                        contentDescription = "FIRE LAUNCHER",
+                        modifier = Modifier.size(if (compact) 18.dp else 21.dp)
+                    )
+                    if (!compact || configuration.screenWidthDp >= 640) {
+                        Text(
+                            text = "FIRE LAUNCHER",
+                            fontSize = 9.5.sp,
+                            letterSpacing = 1.1.sp,
+                            fontWeight = FontWeight.Black,
+                            color = AerixSurface.textPrimary
                         )
                     }
-                    if (expandedRail) {
-                        Text(text = "AERIX", fontSize = 8.sp, letterSpacing = 1.1.sp, fontWeight = FontWeight.ExtraBold, color = AerixSurface.textSecondary)
-                    }
                 }
 
-                Spacer(Modifier.height(if (compactRail) AerixSpacing.zero else AerixSpacing.xs))
+                DockCommandItem(
+                    iconRes = R.drawable.aerix_ic_home_filled,
+                    label = "HQ",
+                    selected = selectedSection == LauncherSection.HOME,
+                    accentColor = activeAccent,
+                    compact = compact
+                ) { onNavigate(LauncherSection.HOME) }
 
-                RailIconItem(R.drawable.aerix_ic_home_filled, stringResource(R.string.aerix_nav_home),
-                    selectedSection == LauncherSection.HOME, activeAccent, expandedRail, compactRail) { onNavigate(LauncherSection.HOME) }
-                RailIconItem(R.drawable.aerix_ic_client_crystal, "Aerix Client",
-                    selectedSection == LauncherSection.AERIX_CLIENT, activeAccent, expandedRail, compactRail) { onNavigate(LauncherSection.AERIX_CLIENT) }
-                RailIconItem(R.drawable.aerix_ic_add, stringResource(R.string.create_instance),
-                    selectedSection == LauncherSection.CREATE_INSTANCE, activeAccent, expandedRail, compactRail,
-                    onClick = onCreateInstance, guideKey = AerixGuideState.CREATE)
-                RailIconItem(R.drawable.aerix_ic_dashboard_filled, stringResource(R.string.aerix_nav_library),
-                    librarySelected(selectedSection), activeAccent, expandedRail, compactRail,
-                    onClick = { onNavigate(LauncherSection.LIBRARY) }, guideKey = AerixGuideState.LIBRARY)
-                RailIconItem(R.drawable.aerix_ic_sports_esports_outlined, "Servers",
-                    selectedSection == LauncherSection.SERVERS, activeAccent, expandedRail, compactRail) { onNavigate(LauncherSection.SERVERS) }
-                // Socials is not a rail entry: it opens from the Home dashboard and brings its own
-                // sidebar, so it is not listed next to the launcher's own sections.
-                RailIconItem(R.drawable.aerix_ic_public, stringResource(R.string.aerix_nav_discover),
-                    discoverSelected(selectedSection), activeAccent, expandedRail, compactRail) { onNavigate(LauncherSection.DISCOVER) }
-                RailIconItem(R.drawable.aerix_ic_rocket_launch_filled, "Our other new releases",
-                    selectedSection == LauncherSection.OTHER_RELEASES, activeAccent, expandedRail, compactRail) { onNavigate(LauncherSection.OTHER_RELEASES) }
-                RailIconItem(R.drawable.aerix_ic_archive_filled, "Our modpacks",
-                    selectedSection == LauncherSection.MODPACKS, activeAccent, expandedRail, compactRail,
-                    guideKey = AerixGuideState.MODPACKS) { onNavigate(LauncherSection.MODPACKS) }
+                DockCommandItem(
+                    iconRes = R.drawable.aerix_ic_dashboard_filled,
+                    label = "VAULT",
+                    selected = librarySelected(selectedSection),
+                    accentColor = activeAccent,
+                    compact = compact,
+                    guideKey = AerixGuideState.LIBRARY
+                ) { onNavigate(LauncherSection.LIBRARY) }
 
-                HorizontalDivider(modifier = Modifier.width(28.dp).padding(vertical = AerixSpacing.xxs), color = AerixSurface.borderSoft)
+                DockCommandItem(
+                    iconRes = R.drawable.aerix_ic_add,
+                    label = "FORGE",
+                    selected = selectedSection == LauncherSection.CREATE_INSTANCE,
+                    accentColor = activeAccent,
+                    compact = compact,
+                    highlighted = true,
+                    guideKey = AerixGuideState.CREATE,
+                    onClick = onCreateInstance
+                )
 
-                // On Home these two utility destinations move to the right rail. The team entry
-                // remains here, so it is still reachable from every screen without duplicating the
-                // profile shortcut.
-                if (selectedSection != LauncherSection.HOME) {
-                    RailIconItem(R.drawable.aerix_ic_settings_filled, stringResource(R.string.aerix_nav_settings),
-                        settingsSelected(selectedSection), activeAccent, expandedRail, compactRail,
-                        onClick = { onNavigate(LauncherSection.SETTINGS) }, guideKey = AerixGuideState.SETTINGS)
-                }
+                DockCommandItem(
+                    iconRes = R.drawable.aerix_ic_public,
+                    label = "ARMORY",
+                    selected = discoverSelected(selectedSection),
+                    accentColor = activeAccent,
+                    compact = compact
+                ) { onNavigate(LauncherSection.DISCOVER) }
 
-                RailIconItem(R.drawable.aerix_ic_group_outlined, stringResource(R.string.aerix_nav_contribution),
-                    selectedSection == LauncherSection.CONTRIBUTION || selectedSection == LauncherSection.CONTRIBUTION_DETAIL,
-                    activeAccent, expandedRail, compactRail) { onNavigate(LauncherSection.CONTRIBUTION) }
+                DockCommandItem(
+                    iconRes = R.drawable.aerix_ic_archive_filled,
+                    label = "PACKS",
+                    selected = selectedSection == LauncherSection.MODPACKS,
+                    accentColor = activeAccent,
+                    compact = compact,
+                    guideKey = AerixGuideState.MODPACKS
+                ) { onNavigate(LauncherSection.MODPACKS) }
 
-                if (selectedSection != LauncherSection.HOME) {
-                    AccountAvatarRailButton(
-                        account = account,
-                        selected = selectedSection == LauncherSection.ACCOUNTS || selectedSection == LauncherSection.ADD_ACCOUNT || selectedSection == LauncherSection.OFFLINE_ACCOUNT,
-                        expanded = expandedRail,
-                        compact = compactRail,
-                        onClick = { onNavigate(LauncherSection.ACCOUNTS) }
-                    )
-                }
+                DockCommandItem(
+                    iconRes = R.drawable.aerix_ic_sports_esports_outlined,
+                    label = "REALMS",
+                    selected = selectedSection == LauncherSection.SERVERS,
+                    accentColor = activeAccent,
+                    compact = compact
+                ) { onNavigate(LauncherSection.SERVERS) }
+
+                DockCommandItem(
+                    iconRes = R.drawable.aerix_ic_client_crystal,
+                    label = "CLIENT",
+                    selected = selectedSection == LauncherSection.AERIX_CLIENT,
+                    accentColor = activeAccent,
+                    compact = compact
+                ) { onNavigate(LauncherSection.AERIX_CLIENT) }
+
+                DockCommandItem(
+                    iconRes = R.drawable.aerix_ic_people,
+                    label = "CREW",
+                    selected = selectedSection == LauncherSection.SOCIALS,
+                    accentColor = activeAccent,
+                    compact = compact
+                ) { onNavigate(LauncherSection.SOCIALS) }
+
+                DockCommandItem(
+                    iconRes = R.drawable.aerix_ic_rocket_launch_filled,
+                    label = "DROPS",
+                    selected = selectedSection == LauncherSection.OTHER_RELEASES,
+                    accentColor = activeAccent,
+                    compact = compact
+                ) { onNavigate(LauncherSection.OTHER_RELEASES) }
+
+                DockCommandItem(
+                    iconRes = R.drawable.aerix_ic_group_outlined,
+                    label = "TEAM",
+                    selected = selectedSection == LauncherSection.CONTRIBUTION || selectedSection == LauncherSection.CONTRIBUTION_DETAIL,
+                    accentColor = activeAccent,
+                    compact = compact
+                ) { onNavigate(LauncherSection.CONTRIBUTION) }
             }
         }
     }
 }
 
-/** Utility rail shown beside the centered character on Home. The first three match the
- * settings, profile and avatar destinations called out in the dashboard reference. */
+/**
+ * Top Tactical HUD Command Header Bar.
+ * Replaces the old right-side utility rail AND relocates Account (Top-Left), System Utilities
+ * (Top-Center), and Active Instance Cartridge + IGNITE Play Trigger (Top-Right).
+ */
 @Composable
 fun AerixHomeUtilityRail(
     selectedSection: LauncherSection,
@@ -250,99 +281,217 @@ fun AerixHomeUtilityRail(
     onOpenProfile: () -> Unit,
     onQuickTools: () -> Unit,
     onInstances: () -> Unit,
+    onIgnite: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val account = PojavAccountBridge.current
+    val selectedInstance = PojavInstanceBridge.selected
     val activeAccent = AerixThemeManager.currentAccent()
-    val scrollState = rememberScrollState()
     val configuration = LocalConfiguration.current
-    val compactRail = configuration.screenHeightDp < AERIX_COMPACT_HEIGHT_THRESHOLD_DP
-    val expandedRail = configuration.screenWidthDp >= 900 && !compactRail
+    val compact = configuration.screenHeightDp < AERIX_COMPACT_HEIGHT_THRESHOLD_DP
+    val wide = configuration.screenWidthDp >= 700
+    val versionTag = remember(selectedInstance) {
+        selectedInstance?.let {
+            GameDownloadTarget.minecraftVersionIn(it.versionId) ?: it.versionId
+        } ?: "NO CORE"
+    }
 
     Surface(
         modifier = modifier
-            .width(if (expandedRail) AerixMetrics.expandedNavigationRailWidth else AerixMetrics.navigationRailWidth)
-            .fillMaxHeight()
-            .padding(start = AerixSpacing.xs, end = 2.dp, top = AerixSpacing.smPlus, bottom = AerixSpacing.smPlus)
-            .liquidGlass(shape = CircleShape, tint = AerixSurface.glassTint, strength = 0.94f, elevation = AerixMetrics.glassRailElevation),
-        shape = CircleShape,
-        color = Color.Transparent,
-        contentColor = Color.White
+            .fillMaxWidth()
+            .padding(horizontal = AerixSpacing.smPlus, vertical = if (compact) 3.dp else 5.dp)
+            .liquidGlass(
+                shape = FireShapes.topHudShell,
+                tint = activeAccent,
+                strength = 0.92f,
+                elevation = AerixMetrics.glassRailElevation
+            ),
+        shape = FireShapes.topHudShell,
+        color = AerixSurface.firePanelDeep,
+        contentColor = AerixSurface.textPrimary,
+        border = BorderStroke(1.dp, activeAccent.copy(alpha = 0.36f))
     ) {
-        Column(
+        Row(
             modifier = Modifier
-                .fillMaxHeight()
-                .verticalScroll(scrollState)
-                .padding(vertical = if (compactRail) AerixSpacing.xs else AerixSpacing.smPlus),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(if (compactRail) AerixSpacing.xs else AerixSpacing.sm)
+                .fillMaxWidth()
+                .padding(horizontal = AerixSpacing.smPlus, vertical = if (compact) 4.dp else 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(AerixSpacing.xsPlus)
         ) {
-            RailIconItem(
-                R.drawable.aerix_ic_settings_filled,
-                stringResource(R.string.aerix_nav_settings),
-                settingsSelected(selectedSection), activeAccent, expandedRail, compactRail,
-                guideKey = AerixGuideState.SETTINGS
-            ) { onNavigate(LauncherSection.SETTINGS) }
-            RailIconItem(
-                R.drawable.aerix_ic_person_outlined,
-                "Profile",
-                selectedSection == LauncherSection.SOCIALS,
-                activeAccent, expandedRail, compactRail
-            ) { onOpenProfile() }
-            AccountAvatarRailButton(
+            // 1. TOP-LEFT: Operator Account Pod + FIRE LAUNCHER Brand Title
+            AccountAvatarHudPod(
                 account = account,
                 selected = selectedSection == LauncherSection.ACCOUNTS ||
                     selectedSection == LauncherSection.ADD_ACCOUNT ||
                     selectedSection == LauncherSection.OFFLINE_ACCOUNT,
-                expanded = expandedRail,
-                compact = compactRail,
+                compact = compact,
                 onClick = { onNavigate(LauncherSection.ACCOUNTS) }
             )
 
-            HorizontalDivider(
-                modifier = Modifier.width(28.dp).padding(vertical = AerixSpacing.xxs),
-                color = AerixSurface.borderSoft
-            )
+            if (wide) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
+                    modifier = Modifier.padding(horizontal = 4.dp)
+                ) {
+                    Image(
+                        painter = painterResource(R.drawable.ic_aerix_mark),
+                        contentDescription = "FIRE LAUNCHER Logo",
+                        modifier = Modifier.size(22.dp)
+                    )
+                    Text(
+                        text = "FIRE LAUNCHER",
+                        color = AerixSurface.textPrimary,
+                        fontSize = 12.sp,
+                        letterSpacing = 0.8.sp,
+                        fontWeight = FontWeight.Black,
+                        maxLines = 1
+                    )
+                }
+            }
 
-            RailIconItem(
-                R.drawable.aerix_ic_build_outlined,
-                "Quick Tools",
-                selectedSection == LauncherSection.QUICK_TOOLS,
-                activeAccent, expandedRail, compactRail
-            ) { onQuickTools() }
-            RailIconItem(
-                R.drawable.aerix_ic_videogame_asset_outlined,
-                "Instances",
-                selectedSection == LauncherSection.INSTANCE_SELECTOR,
-                activeAccent, expandedRail, compactRail
-            ) { onInstances() }
-            RailIconItem(
-                R.drawable.aerix_ic_dashboard_filled,
-                stringResource(R.string.aerix_nav_library),
-                librarySelected(selectedSection), activeAccent, expandedRail, compactRail
-            ) { onNavigate(LauncherSection.LIBRARY) }
-            RailIconItem(
-                R.drawable.aerix_ic_sports_esports_outlined,
-                "Servers",
-                selectedSection == LauncherSection.SERVERS,
-                activeAccent, expandedRail, compactRail
-            ) { onNavigate(LauncherSection.SERVERS) }
-            RailIconItem(
-                R.drawable.aerix_ic_public,
-                stringResource(R.string.aerix_nav_discover),
-                discoverSelected(selectedSection), activeAccent, expandedRail, compactRail
-            ) { onNavigate(LauncherSection.DISCOVER) }
-            RailIconItem(
-                R.drawable.aerix_ic_folder_outlined,
-                "Files",
-                selectedSection == LauncherSection.FILES,
-                activeAccent, expandedRail, compactRail
-            ) { onNavigate(LauncherSection.FILES) }
-            RailIconItem(
-                R.drawable.aerix_ic_description_outlined,
-                "Logs",
-                settingsSelected(selectedSection), activeAccent, expandedRail, compactRail
-            ) { onNavigate(LauncherSection.LOGS) }
+            // 2. TOP-CENTER-LEFT: Tactical Utility Triggers (Settings, Ops, Files, Logs, Social ID)
+            Row(
+                modifier = Modifier
+                    .weight(1f)
+                    .horizontalScroll(rememberScrollState()),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(5.dp)
+            ) {
+                TopHudUtilityChip(
+                    iconRes = R.drawable.aerix_ic_settings_filled,
+                    label = "CONFIG",
+                    selected = settingsSelected(selectedSection),
+                    accentColor = activeAccent,
+                    showLabel = wide,
+                    guideKey = AerixGuideState.SETTINGS
+                ) { onNavigate(LauncherSection.SETTINGS) }
+
+                TopHudUtilityChip(
+                    iconRes = R.drawable.aerix_ic_build_outlined,
+                    label = "OPS",
+                    selected = selectedSection == LauncherSection.QUICK_TOOLS,
+                    accentColor = activeAccent,
+                    showLabel = wide
+                ) { onQuickTools() }
+
+                TopHudUtilityChip(
+                    iconRes = R.drawable.aerix_ic_folder_outlined,
+                    label = "FILES",
+                    selected = selectedSection == LauncherSection.FILES,
+                    accentColor = activeAccent,
+                    showLabel = wide
+                ) { onNavigate(LauncherSection.FILES) }
+
+                TopHudUtilityChip(
+                    iconRes = R.drawable.aerix_ic_terminal_outlined,
+                    label = "CONSOLE",
+                    selected = selectedSection == LauncherSection.LOGS,
+                    accentColor = activeAccent,
+                    showLabel = wide
+                ) { onNavigate(LauncherSection.LOGS) }
+
+                TopHudUtilityChip(
+                    iconRes = R.drawable.aerix_ic_person_outlined,
+                    label = "ID CARD",
+                    selected = selectedSection == LauncherSection.SOCIALS,
+                    accentColor = activeAccent,
+                    showLabel = wide
+                ) { onOpenProfile() }
+
+                if (wide) {
+                    Spacer(Modifier.width(4.dp))
+                    Text(
+                        text = "// FIRE OS · ${selectedSection.name.replace('_', ' ')}",
+                        color = AerixSurface.textMuted,
+                        fontSize = 9.sp,
+                        letterSpacing = 1.3.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        maxLines = 1
+                    )
+                }
+            }
+
+            // 3. TOP-RIGHT: Active Instance Cartridge + Blazing IGNITE Reactor Launch Button
+            Surface(
+                modifier = Modifier
+                    .height(if (compact) 32.dp else 36.dp)
+                    .widthIn(max = if (wide) 190.dp else 132.dp)
+                    .bringFocusedItemIntoView(),
+                shape = FireShapes.hudChip,
+                color = AerixSurface.firePanelRaised,
+                border = BorderStroke(1.dp, activeAccent.copy(alpha = 0.45f)),
+                onClick = onInstances
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    AerixImageWell(
+                        image = selectedInstance?.icon,
+                        fallback = R.drawable.aerix_ic_videogame_asset_outlined,
+                        size = if (compact) 20.dp else 22.dp,
+                        radius = AerixRadii.tiny
+                    )
+                    Column(verticalArrangement = Arrangement.Center) {
+                        Text(
+                            text = selectedInstance?.name ?: "SELECT CORE",
+                            color = AerixSurface.textPrimary,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Text(
+                            text = versionTag.uppercase(),
+                            color = AerixSurface.fireAmber,
+                            fontSize = 8.5.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 0.5.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+            }
+
+            val igniteBrush = Brush.linearGradient(
+                colors = listOf(Color(0xFF22D3EE), Color(0xFF818CF8), Color(0xFFF472B6))
+            )
+            Surface(
+                modifier = Modifier
+                    .height(if (compact) 32.dp else 36.dp)
+                    .guideAnchor(AerixGuideState.PLAY)
+                    .bringFocusedItemIntoView(),
+                shape = FireShapes.reactorTrigger,
+                color = Color.Transparent,
+                border = BorderStroke(1.dp, AerixSurface.fireAmber.copy(alpha = 0.85f)),
+                onClick = onIgnite
+            ) {
+                Row(
+                    modifier = Modifier
+                        .background(igniteBrush)
+                        .padding(horizontal = if (compact) 11.dp else 15.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(5.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.aerix_ic_play_arrow_filled),
+                        contentDescription = stringResource(R.string.aerix_home_play),
+                        tint = AerixSurface.onFireAccentDefault,
+                        modifier = Modifier.size(if (compact) 15.dp else 17.dp)
+                    )
+                    Text(
+                        text = if (selectedInstance != null) "IGNITE" else "FORGE",
+                        color = AerixSurface.onFireAccentDefault,
+                        fontSize = if (compact) 10.5.sp else 11.5.sp,
+                        letterSpacing = 1.2.sp,
+                        fontWeight = FontWeight.Black,
+                        maxLines = 1
+                    )
+                }
+            }
         }
     }
 }
@@ -353,134 +502,188 @@ private fun librarySelected(section: LauncherSection): Boolean =
 private fun discoverSelected(section: LauncherSection): Boolean =
     section == LauncherSection.DISCOVER || section == LauncherSection.DOWNLOADS
 
-/**
- * Settings is one destination with several tabs, so its rail entry stays highlighted on every tab.
- * The former Wallpapers entry had to share the highlight with it; that entry is gone, so the
- * pairing is now simply "Settings is selected whenever Settings is open".
- */
 private fun settingsSelected(section: LauncherSection): Boolean =
-    section == LauncherSection.SETTINGS || section == LauncherSection.ABOUT || section == LauncherSection.LOGS
+    section == LauncherSection.SETTINGS || section == LauncherSection.ABOUT
 
 @Composable
-private fun RailIconItem(
+private fun DockCommandItem(
     iconRes: Int,
     label: String,
     selected: Boolean,
     accentColor: Color,
-    expanded: Boolean,
     compact: Boolean,
-    /** Names this item for the first-run guide, so the tour can point at it. */
+    highlighted: Boolean = false,
     guideKey: String? = null,
     onClick: () -> Unit
 ) {
-    // The selected item uses the current theme accent; icon, fill and border update together.
-    val selectedContentColor = MaterialTheme.colorScheme.onPrimary
-    // With the animated theme on, the selected item's accent breathes and carries a glow. Off, it
-    // is the identical flat accent as before - and no animation is started for unselected items.
     val motionOn = ThemeMotion.rememberEnabled()
     val liveAccent = ThemeMotion.rememberPulse(accentColor, selected, motionOn)
     val containerColor by animateColorAsState(
-        targetValue = if (selected) liveAccent else AerixSurface.panel,
-        animationSpec = tween(140),
-        label = "railContainerColor"
+        targetValue = when {
+            selected -> liveAccent
+            highlighted -> liveAccent.copy(alpha = 0.16f)
+            else -> AerixSurface.firePanel
+        },
+        animationSpec = tween(150),
+        label = "dockContainerColor"
     )
-    val iconTint by animateColorAsState(
-        targetValue = if (selected) selectedContentColor else AerixSurface.textSecondary,
-        animationSpec = tween(140),
-        label = "railIconTint"
+    val contentTint by animateColorAsState(
+        targetValue = when {
+            selected -> AerixSurface.onFireAccentDefault
+            highlighted -> AerixSurface.fireAmber
+            else -> AerixSurface.textSecondary
+        },
+        animationSpec = tween(150),
+        label = "dockIconTint"
     )
-    val itemWidth = when {
-        expanded -> 64.dp
-        compact -> 36.dp
-        else -> 44.dp
-    }
-    val itemHeight = when {
-        expanded -> 54.dp
-        compact -> 36.dp
-        else -> 42.dp
-    }
-    val itemShape = RoundedCornerShape(AerixRadii.control)
+    val itemShape = FireShapes.armorSmall
     Box(
         modifier = Modifier
             .then(if (guideKey != null) Modifier.guideAnchor(guideKey) else Modifier)
-            .size(width = itemWidth, height = itemHeight)
+            .height(if (compact) 31.dp else 36.dp)
             .clip(itemShape)
             .background(containerColor)
             .accentGlow(liveAccent, selected, motionOn)
             .accentRing(liveAccent, itemShape, selected, motionOn, AerixSpacing.hairline)
-            .border(BorderStroke(AerixSpacing.hairline, if (selected) liveAccent else AerixSurface.borderSoft), itemShape)
+            .border(
+                BorderStroke(
+                    1.dp,
+                    when {
+                        selected -> AerixSurface.fireAmber
+                        highlighted -> liveAccent.copy(alpha = 0.6f)
+                        else -> AerixSurface.borderSoft
+                    }
+                ),
+                itemShape
+            )
             .bringFocusedItemIntoView()
             .clickable(role = Role.Tab, onClick = onClick)
-            .semantics { contentDescription = label },
+            .semantics { contentDescription = label }
+            .padding(horizontal = if (compact) 9.dp else 11.dp),
         contentAlignment = Alignment.Center
     ) {
-        if (expanded) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Icon(painter = painterResource(iconRes), contentDescription = label, tint = iconTint, modifier = Modifier.size(19.dp))
-                Text(
-                    text = label,
-                    color = if (selected) iconTint else AerixSurface.textSecondary,
-                    fontSize = 8.sp,
-                    lineHeight = 9.sp,
-                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
-                    maxLines = 1
-                )
-            }
-        } else {
-            Icon(painter = painterResource(iconRes), contentDescription = label, tint = iconTint, modifier = Modifier.size(if (compact) 18.dp else 21.dp))
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(5.dp)
+        ) {
+            Icon(
+                painter = painterResource(iconRes),
+                contentDescription = label,
+                tint = contentTint,
+                modifier = Modifier.size(if (compact) 15.dp else 16.dp)
+            )
+            Text(
+                text = label,
+                color = if (selected) contentTint else AerixSurface.textPrimary,
+                fontSize = if (compact) 9.5.sp else 10.sp,
+                letterSpacing = 0.8.sp,
+                fontWeight = if (selected) FontWeight.Black else FontWeight.Bold,
+                maxLines = 1
+            )
         }
     }
 }
 
 @Composable
-private fun AccountAvatarRailButton(
+private fun TopHudUtilityChip(
+    iconRes: Int,
+    label: String,
+    selected: Boolean,
+    accentColor: Color,
+    showLabel: Boolean,
+    guideKey: String? = null,
+    onClick: () -> Unit
+) {
+    val shape = FireShapes.hudChip
+    Surface(
+        modifier = Modifier
+            .then(if (guideKey != null) Modifier.guideAnchor(guideKey) else Modifier)
+            .height(32.dp)
+            .bringFocusedItemIntoView(),
+        shape = shape,
+        color = if (selected) accentColor else AerixSurface.firePanel,
+        border = BorderStroke(
+            1.dp,
+            if (selected) AerixSurface.fireAmber else accentColor.copy(alpha = 0.3f)
+        ),
+        onClick = onClick
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = if (showLabel) 9.dp else 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Icon(
+                painter = painterResource(iconRes),
+                contentDescription = label,
+                tint = if (selected) AerixSurface.onFireAccentDefault else AerixSurface.fireAmber,
+                modifier = Modifier.size(15.dp)
+            )
+            if (showLabel) {
+                Text(
+                    text = label,
+                    color = if (selected) AerixSurface.onFireAccentDefault else AerixSurface.textPrimary,
+                    fontSize = 9.5.sp,
+                    letterSpacing = 0.7.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    maxLines = 1
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun AccountAvatarHudPod(
     account: AerixAccount?,
     selected: Boolean,
-    expanded: Boolean,
     compact: Boolean,
     onClick: () -> Unit
 ) {
     val activeAccent = AerixThemeManager.currentAccent()
-    val ringColor by animateColorAsState(
-        targetValue = if (selected) activeAccent else AerixSurface.borderSoft,
-        animationSpec = tween(150),
-        label = "accountAvatarRing"
-    )
     val accountsLabel = stringResource(R.string.aerix_nav_accounts)
-    Column(
+    val shape = FireShapes.armorSmall
+    Surface(
         modifier = Modifier
-            .clip(RoundedCornerShape(AerixRadii.panelSmall))
+            .height(if (compact) 32.dp else 36.dp)
             .bringFocusedItemIntoView()
-            .clickable(role = Role.Button, onClick = onClick)
-            .semantics { contentDescription = account?.username ?: accountsLabel }
-            .padding(AerixSpacing.xs),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(AerixSpacing.xs)
+            .semantics { contentDescription = account?.username ?: accountsLabel },
+        shape = shape,
+        color = if (selected) activeAccent.copy(alpha = 0.24f) else AerixSurface.firePanelRaised,
+        border = BorderStroke(1.dp, if (selected) AerixSurface.fireAmber else activeAccent.copy(alpha = 0.5f)),
+        onClick = onClick
     ) {
-        Box(
-            modifier = Modifier
-                .size(if (compact) 32.dp else 36.dp)
-                .clip(CircleShape)
-                .background(AerixSurface.panel)
-                .liquidGlass(shape = CircleShape, tint = activeAccent, strength = if (selected) 0.82f else 0.34f, elevation = AerixMetrics.glassSelectedElevation)
-                .border(width = if (selected) 2.dp else AerixSpacing.hairline, color = ringColor, shape = CircleShape),
-            contentAlignment = Alignment.Center
+        Row(
+            modifier = Modifier.padding(horizontal = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             AerixImageWell(
                 image = account?.face,
                 fallback = R.drawable.aerix_head_steve,
-                size = if (compact) 26.dp else 30.dp,
-                radius = 15.dp
+                size = if (compact) 22.dp else 24.dp,
+                radius = AerixRadii.tiny
             )
-        }
-        if (expanded) {
-            Text(
-                text = accountsLabel,
-                color = if (selected) activeAccent else AerixSurface.textSecondary,
-                fontSize = 8.sp,
-                fontWeight = FontWeight.SemiBold,
-                maxLines = 1
-            )
+            Column(verticalArrangement = Arrangement.Center) {
+                Text(
+                    text = account?.username ?: "+ OPERATOR",
+                    color = AerixSurface.textPrimary,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Black,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                if (!compact) {
+                    Text(
+                        text = if (account != null) "ONLINE ID" else "TAP LOGIN",
+                        color = if (account != null) AerixSurface.fireAmber else activeAccent,
+                        fontSize = 8.sp,
+                        letterSpacing = 0.8.sp,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1
+                    )
+                }
+            }
         }
     }
 }

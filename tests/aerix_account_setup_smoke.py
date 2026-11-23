@@ -7,8 +7,8 @@ page = (root/'aerix/ui/screens/AerixAccountSetupScreen.kt').read_text()
 cosmetics = (root/'aerix/ui/screens/SocialProfileScreen.kt').read_text()
 nav = (root/'aerix/ui/AerixLauncherScreen.kt').read_text()
 backend = (root/'aerix/social/SocialBackend.kt').read_text()
-assert home.count('AerixAccountHomeCard(accent, actions.aerixAccount)') == 2
-assert 'Sign in to Aerix account' in home
+assert 'actions.aerixAccount' in home and ('CLOUD ID' in home or 'CLOUD CAPE' in home)
+assert home.count('OperatorHologramChamber(') >= 2
 assert 'LauncherSection.AERIX_ACCOUNT -> AerixAccountSetupScreen' in nav
 assert 'beginGoogleSignIn(activity, true)' in page and 'ProfileCosmeticsPage(activity, setupFlow = true' in page
 assert 'claimed != null && setupFlow' in cosmetics

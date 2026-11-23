@@ -44,7 +44,7 @@ enum class AerixColorTheme { AERIX, CUSTOM }
  * Both are live - the player picks one at the top of the dashboard and the home page composes into
  * it, because restarting the launcher to try a skin is not a choice, it is a chore.
  */
-enum class AerixLauncherUiStyle(val label: String) { PREMIUM("Old UI (dashboard)"), CLEAN("New UI (hero)") }
+enum class AerixLauncherUiStyle(val label: String) { PREMIUM("COMMAND DECK"), CLEAN("REACTOR SPLIT") }
 
 /** Page transition types, from mirai utils/animation/TransitionAnimationType.kt. */
 enum class AerixTransitionType { CLOSE, JELLY_BOUNCE, BOUNCE, SLICE_IN }
@@ -95,8 +95,8 @@ object AerixPreferences {
     /** Attach modpack art, clickable info URLs, and action buttons to Discord Rich Presence cards. */
     const val KEY_DISCORD_CLICKABLE_LINKS = "aerixDiscordClickableLinks"
 
-    const val DEFAULT_CUSTOM_COLOR = 0xFF8DEFE0.toInt()
-    const val DEFAULT_BACKGROUND_OPACITY = 60
+    const val DEFAULT_CUSTOM_COLOR = 0xFF6366F1.toInt()
+    const val DEFAULT_BACKGROUND_OPACITY = 42
 
     /**
      * How solid the cards, pills and panels on top of the wallpaper are, as a percentage.
@@ -108,7 +108,7 @@ object AerixPreferences {
     const val KEY_LAYOUT_TRANSPARENCY = "layoutTransparency"
     const val DEFAULT_LAYOUT_TRANSPARENCY = 100
     const val DEFAULT_ANIMATE_SPEED = 3
-    const val DEFAULT_WALLPAPER = "wp_01_lush_caves"
+    const val DEFAULT_WALLPAPER = "anim_00_fire_inferno"
     /** Mirai AllSettings.logBufferFlushInterval default. */
     const val DEFAULT_LOG_BUFFER_FLUSH_INTERVAL = 200
 

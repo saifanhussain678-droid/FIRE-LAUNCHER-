@@ -1,21 +1,12 @@
 /*
- * Aerix Launcher UI layer for PojavLauncher.
- * Ported from mirai-launcher- (Zalith Launcher 2 fork):
- *   MiraiLauncher/src/main/java/com/movtery/zalithlauncher/ui/components/LiquidGlass.kt
- * Zalith Launcher 2 Copyright (C) 2025 MovTery <movtery228@qq.com> and contributors
+ * Fire Launcher — Frosted Pearl-Light Prism Glass Modifier.
+ * Renders an airy daylight specular sheen and an iridescent multi-color pastel rim
+ * (Sky Cyan -> Electric Indigo -> Rose Pink) across every Bento-squircle card.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/gpl-3.0.txt>.
  */
 
 package net.kdt.pojavlaunch.aerix.components
@@ -35,7 +26,6 @@ import net.kdt.pojavlaunch.aerix.theme.AerixMetrics
 import net.kdt.pojavlaunch.aerix.theme.AerixSpacing
 import net.kdt.pojavlaunch.aerix.theme.AerixSurface
 
-/** Glass sheen + rim treatment shared by every Aerix panel, rail and button. */
 fun Modifier.liquidGlass(
     shape: Shape,
     tint: Color = AerixSurface.glassTint,
@@ -56,24 +46,21 @@ fun Modifier.liquidGlass(
     return glassModifier.drawWithCache {
         val width = size.width.coerceAtLeast(1f)
         val height = size.height.coerceAtLeast(1f)
-        // A soft, neutral reflection and a delicate rim keep the wallpaper visible. The tint is
-        // intentionally restrained so custom accent colours do not paint the entire panel.
         val sheen = Brush.linearGradient(
             colors = listOf(
-                Color.White.copy(alpha = 0.13f * intensity),
-                tint.copy(alpha = 0.045f * intensity),
-                Color.White.copy(alpha = 0.018f * intensity),
-                Color.Transparent
+                Color.White.copy(alpha = 0.55f * intensity),
+                tint.copy(alpha = 0.06f * intensity),
+                Color(0xFFFCE7F3).copy(alpha = 0.14f * intensity),
+                Color(0xFFE0F2FE).copy(alpha = 0.18f * intensity)
             ),
             start = Offset.Zero,
             end = Offset(width, height)
         )
         val rim = Brush.linearGradient(
             colors = listOf(
-                Color.White.copy(alpha = 0.38f * intensity),
-                Color.White.copy(alpha = 0.16f * intensity),
-                Color.White.copy(alpha = 0.10f * intensity),
-                Color.White.copy(alpha = 0.25f * intensity)
+                Color(0xFF38BDF8).copy(alpha = 0.52f * intensity),
+                tint.copy(alpha = 0.45f * intensity),
+                Color(0xFFF472B6).copy(alpha = 0.52f * intensity)
             ),
             start = Offset.Zero,
             end = Offset(width, height)
@@ -82,9 +69,7 @@ fun Modifier.liquidGlass(
         val rimWidth = AerixSpacing.hairline.toPx() * intensity
 
         onDrawWithContent {
-            // Draw inside the outline even when clipContent is disabled; otherwise rounded
-            // panels would cast a rectangular sheen outside their corners.
-            drawOutline(outline = outline, color = Color.Black.copy(alpha = 0.16f * intensity))
+            drawOutline(outline = outline, color = Color.White.copy(alpha = 0.28f * intensity))
             drawOutline(outline = outline, brush = sheen)
             drawContent()
             if (rimWidth > 0f) {

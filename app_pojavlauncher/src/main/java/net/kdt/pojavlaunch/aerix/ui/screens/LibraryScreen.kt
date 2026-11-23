@@ -110,6 +110,7 @@ import net.kdt.pojavlaunch.aerix.theme.AerixRadii
 import net.kdt.pojavlaunch.aerix.theme.AerixSpacing
 import net.kdt.pojavlaunch.aerix.theme.AerixSurface
 import net.kdt.pojavlaunch.aerix.theme.AerixThemeManager
+import net.kdt.pojavlaunch.aerix.theme.FireShapes
 import net.kdt.pojavlaunch.aerix.ui.AerixNav
 import net.kdt.pojavlaunch.aerix.ui.LauncherSection
 
@@ -232,12 +233,9 @@ fun LibraryScreen(activity: FragmentActivity) {
     // The page reads differently on a short display (a phone held sideways) than on a tall one.
     // Stacked, five rows of chrome and a strip of cards left the detail card a couple of
     // centimetres of height, so everything inside it was cut off at the bottom edge. Side by side
-    // on a short display, the list and the detail each get the whole height instead.
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-        val sideBySide = maxHeight < 500.dp
-        // Read here, in the scope that owns it: inside the Row below, the receiver is the row and
-        // maxWidth would not resolve.
-        val listPaneWidth = (maxWidth * 0.34f).coerceIn(196.dp, 288.dp)
+        val sideBySide = maxWidth >= 580.dp || maxHeight < 500.dp
+        val listPaneWidth = (maxWidth * 0.36f).coerceIn(206.dp, 310.dp)
 
         // Everything the detail card can ask for, gathered once: both arrangements hand it over the
         // same way, so neither can drift from the other.
@@ -267,7 +265,7 @@ fun LibraryScreen(activity: FragmentActivity) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = AerixSpacing.mdPlus, vertical = AerixSpacing.sm),
+                    .padding(horizontal = AerixSpacing.mdPlus, vertical = AerixSpacing.xsPlus),
                 verticalArrangement = Arrangement.spacedBy(AerixSpacing.sm)
             ) {
                 LibraryHeaderRow(
@@ -275,12 +273,25 @@ fun LibraryScreen(activity: FragmentActivity) {
                     onOpenFolder = { PojavInstanceBridge.openGameDirectory(activity) },
                     onInstall = { AerixNav.navigate(LauncherSection.CREATE_INSTANCE) }
                 )
+                // Fire Launcher inverted Vault:
+                //   - LEFT (weight 1f): Active Reactor Detail Inspector
+                //   - RIGHT (listPaneWidth): Cartridge Rack + Search/Sort
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f),
                     horizontalArrangement = Arrangement.spacedBy(AerixSpacing.md)
                 ) {
+                    InstanceDetailCard(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight(),
+                        instance = selectedInstance,
+                        selectedIsActive = selectedIsActive,
+                        selectedIsPinned = selectedIsPinned,
+                        vanilla = vanilla,
+                        actions = actions
+                    )
                     InstanceListPane(
                         modifier = Modifier
                             .width(listPaneWidth)
@@ -297,19 +308,10 @@ fun LibraryScreen(activity: FragmentActivity) {
                         onSortChange = { sortMode = it },
                         onSelect = { PojavInstanceBridge.select(it) }
                     )
-                    InstanceDetailCard(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight(),
-                        instance = selectedInstance,
-                        selectedIsActive = selectedIsActive,
-                        selectedIsPinned = selectedIsPinned,
-                        vanilla = vanilla,
-                        actions = actions
-                    )
                 }
             }
         } else {
+            // Portrait stacked mode: Detail Inspector at TOP, Cartridge Strip + Search at BOTTOM
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -322,30 +324,16 @@ fun LibraryScreen(activity: FragmentActivity) {
                     onInstall = { AerixNav.navigate(LauncherSection.CREATE_INSTANCE) }
                 )
 
-                LibrarySearchRow(
-                    query = searchQuery,
-                    onQueryChange = { searchQuery = it },
-                    sortMode = sortMode,
-                    onSortChange = { sortMode = it }
+                InstanceDetailCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    instance = selectedInstance,
+                    selectedIsActive = selectedIsActive,
+                    selectedIsPinned = selectedIsPinned,
+                    vanilla = vanilla,
+                    actions = actions
                 )
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = "YOUR INSTANCES",
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = AerixSurface.textSecondary
-                    )
-                    Text(
-                        text = "${instances.size} installed",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = AerixSurface.textMuted
-                    )
-                }
 
                 InstanceStrip(
                     instances = displayedInstances,
@@ -357,15 +345,11 @@ fun LibraryScreen(activity: FragmentActivity) {
                     onSelect = { PojavInstanceBridge.select(it) }
                 )
 
-                InstanceDetailCard(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    instance = selectedInstance,
-                    selectedIsActive = selectedIsActive,
-                    selectedIsPinned = selectedIsPinned,
-                    vanilla = vanilla,
-                    actions = actions
+                LibrarySearchRow(
+                    query = searchQuery,
+                    onQueryChange = { searchQuery = it },
+                    sortMode = sortMode,
+                    onSortChange = { sortMode = it }
                 )
             }
         }
@@ -432,61 +416,15 @@ private fun LibraryHeaderRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(AerixSpacing.sm)
     ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = "Instance Management",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.ExtraBold,
-                color = Color.White,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-            Text(
-                text = "Select an instance to manage",
-                style = MaterialTheme.typography.labelSmall,
-                color = AerixSurface.textSecondary,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        }
-        Surface(
-            modifier = Modifier.size(30.dp),
-            shape = RoundedCornerShape(AerixRadii.pill),
-            color = AerixSurface.panelRaised,
-            border = BorderStroke(AerixSpacing.hairline, AerixSurface.borderSoft)
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Text(
-                    text = "$shownCount",
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = AerixSurface.textPrimary
-                )
-            }
-        }
-        Surface(
-            modifier = Modifier.size(34.dp),
-            shape = RoundedCornerShape(AerixRadii.controlSmall),
-            color = AerixSurface.panel,
-            border = BorderStroke(AerixSpacing.hairline, AerixSurface.borderSoft),
-            onClick = onOpenFolder
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Icon(
-                    painter = painterResource(R.drawable.aerix_ic_folder_outlined),
-                    contentDescription = "Directories",
-                    tint = AerixSurface.textSecondary,
-                    modifier = Modifier.size(17.dp)
-                )
-            }
-        }
+        // Inverted Header: + FORGE & Folder actions on LEFT, Vault Title & Cartridge Count on RIGHT
         Surface(
             modifier = Modifier
                 .height(34.dp)
                 .widthIn(min = 34.dp),
-            shape = RoundedCornerShape(AerixRadii.controlSmall),
+            shape = FireShapes.reactorTrigger,
             color = accent,
-            contentColor = AerixSurface.onAccent,
+            contentColor = AerixSurface.onFireAccentDefault,
+            border = BorderStroke(1.dp, AerixSurface.fireAmber),
             onClick = onInstall
         ) {
             Row(
@@ -500,11 +438,48 @@ private fun LibraryHeaderRow(
                     modifier = Modifier.size(16.dp)
                 )
                 Text(
-                    text = "Install",
+                    text = "FORGE NEW",
                     style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 0.8.sp
                 )
             }
+        }
+        Surface(
+            modifier = Modifier.size(34.dp),
+            shape = FireShapes.hudChip,
+            color = AerixSurface.firePanelRaised,
+            border = BorderStroke(1.dp, accent.copy(alpha = 0.4f)),
+            onClick = onOpenFolder
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(
+                    painter = painterResource(R.drawable.aerix_ic_folder_outlined),
+                    contentDescription = "Directories",
+                    tint = AerixSurface.fireAmber,
+                    modifier = Modifier.size(17.dp)
+                )
+            }
+        }
+        Spacer(Modifier.weight(1f))
+        Column(horizontalAlignment = Alignment.End) {
+            Text(
+                text = "REACTOR VAULT",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Black,
+                letterSpacing = 1.sp,
+                color = AerixSurface.textPrimary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                text = "$shownCount CARTRIDGES LOADED",
+                style = MaterialTheme.typography.labelSmall,
+                color = AerixSurface.fireAmber,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
         }
     }
 }
@@ -1026,6 +1001,33 @@ private fun VersionManagementDetailPane(
                             tint = if (isPinned) accent else AerixSurface.textSecondary
                         )
                     }
+                    // Relocated IGNITE button: moved from bottom of card to TOP-RIGHT header row!
+                    Surface(
+                        modifier = Modifier.height(36.dp),
+                        shape = FireShapes.reactorTrigger,
+                        color = accent,
+                        contentColor = AerixSurface.onFireAccentDefault,
+                        border = BorderStroke(1.dp, AerixSurface.fireAmber),
+                        onClick = { onPlay(instance) }
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 14.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(5.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.aerix_ic_play_arrow_filled),
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Text(
+                                text = "IGNITE",
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Black,
+                                letterSpacing = 1.sp
+                            )
+                        }
+                    }
                     Box {
                         IconButton(onClick = { showActions = true }) {
                             Icon(
@@ -1186,41 +1188,13 @@ private fun VersionManagementDetailPane(
                     }
                 }
 
-                // PLAY sits under the scrolling part, not inside it, so it is on screen whatever
-                // height the card was given.
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(46.dp),
-                    shape = RoundedCornerShape(AerixRadii.cardSmall),
-                    color = accent,
-                    contentColor = AerixSurface.onAccent,
-                    onClick = { onPlay(instance) }
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.aerix_ic_play_arrow_filled),
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(Modifier.width(AerixSpacing.sm))
-                        Text(
-                            text = "PLAY",
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.ExtraBold
-                        )
-                    }
-                }
                 if (isCurrent) {
                     Text(
-                        modifier = Modifier.align(Alignment.CenterHorizontally),
-                        text = "Selected as the current launch instance",
+                        modifier = Modifier.align(Alignment.Start),
+                        text = "// ARMED AS PRIMARY REACTOR CORE",
                         style = MaterialTheme.typography.labelSmall,
-                        color = AerixSurface.textSecondary
+                        fontWeight = FontWeight.Bold,
+                        color = AerixSurface.fireAmber
                     )
                 }
             }

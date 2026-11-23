@@ -79,6 +79,8 @@ private fun scene(
 
 /** The 25 animated wallpapers, in the same order as the 25 photographic ones. */
 val AerixAnimations: List<AerixAnimation> = listOf(
+    scene("anim_00_fire_inferno", "Prism Pastel Aurora", "Fire Launcher • Multi-Color Daylight Glow", Color(0xFF6366F1), SceneFeature.AURORA, WallpaperEffect.FIREFLIES,
+        listOf(Color(0xFFD6F1FF), Color(0xFFEDE4FF), Color(0xFFFFE4EC), Color(0xFFDCFCE7)), listOf(Color(0xFFC7D2FE), Color(0xFFDDD6FE), Color(0xFFBAE6FD)), Color(0xFFA7F3D0)),
     scene("anim_01_lush_cavern", "Lush Cavern Glow", "Lush Caves • Cavern light", Color(0xFF2DD4BF), SceneFeature.RAYS, WallpaperEffect.FIREFLIES,
         listOf(Color(0xFF05231F), Color(0xFF0B3B33), Color(0xFF14614F)), listOf(Color(0xFF0A2E28), Color(0xFF0D3A31), Color(0xFF15574A)), Color(0xFF1E6F5C)),
     scene("anim_02_cherry_grove", "Cherry Grove Drift", "Cherry Grove • Petal fall", Color(0xFFF472B6), SceneFeature.SUN, WallpaperEffect.PETALS,

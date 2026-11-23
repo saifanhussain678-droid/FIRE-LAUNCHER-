@@ -220,22 +220,22 @@ android {
             shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.customDebug
-            resValue "string", "app_name", "Aerix Launcher (Debug)"
-            resValue "string", "app_short_name", "Aerix Launcher (Debug)"
-            resValue "string", "aerix_app_label", "Aerix Launcher (Debug)"
+            resValue "string", "app_name", "FIRE LAUNCHER (Debug)"
+            resValue "string", "app_short_name", "FIRE LAUNCHER (Debug)"
+            resValue "string", "aerix_app_label", "FIRE LAUNCHER (Debug)"
             resValue 'string', 'application_package', 'net.al.aerixlauncher.debug'
             resValue 'string', 'storageProviderAuthorities', 'net.al.aerixlauncher.scoped.gamefolder.debug'
         }
-        // Aerix Nightly is the testing channel. It keeps the debug applicationId, signing key and
+        // Nightly is the testing channel. It keeps the debug applicationId, signing key and
         // versionCode, so it installs over an existing debug build and behaves exactly like it.
         // Only the launcher label changes.
         nightly {
             initWith debug
             signingConfig signingConfigs.customDebug
             matchingFallbacks += List.of("debug")
-            resValue "string", "app_name", "Aerix Nightly"
-            resValue "string", "app_short_name", "Aerix Nightly"
-            resValue "string", "aerix_app_label", "Aerix Nightly"
+            resValue "string", "app_name", "FIRE LAUNCHER"
+            resValue "string", "app_short_name", "FIRE LAUNCHER"
+            resValue "string", "aerix_app_label", "FIRE LAUNCHER"
         }
         proguard {
             initWith debug
@@ -253,9 +253,9 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.aerixRelease
-            resValue "string", "app_name", "Aerix Launcher"
-            resValue "string", "app_short_name", "Aerix Launcher"
-            resValue "string", "aerix_app_label", "Aerix Launcher"
+            resValue "string", "app_name", "FIRE LAUNCHER"
+            resValue "string", "app_short_name", "FIRE LAUNCHER"
+            resValue "string", "aerix_app_label", "FIRE LAUNCHER"
             resValue 'string', 'application_package', 'net.al.aerixlauncher'
             resValue 'string', 'storageProviderAuthorities', 'net.al.aerixlauncher.scoped.gamefolder'
         }
@@ -268,9 +268,9 @@ android {
             initWith release
             signingConfig signingConfigs.customDebug // WIP, changeme
             applicationIdSuffix '.pub'
-            resValue "string", "app_name", "Aerix Launcher (Nightly)"
-            resValue "string", "app_short_name", "Aerix Launcher (Nightly)"
-            resValue "string", "aerix_app_label", "Aerix Launcher (Nightly)"
+            resValue "string", "app_name", "FIRE LAUNCHER (Nightly)"
+            resValue "string", "app_short_name", "FIRE LAUNCHER (Nightly)"
+            resValue "string", "aerix_app_label", "FIRE LAUNCHER (Nightly)"
             resValue 'string', 'application_package', 'net.al.aerixlauncher.pub'
             resValue 'string', 'storageProviderAuthorities', 'net.al.aerixlauncher.pub.scoped.gamefolder'
             matchingFallbacks += List.of("release")

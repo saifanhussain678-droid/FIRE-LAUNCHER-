@@ -65,6 +65,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
@@ -119,11 +120,12 @@ import net.kdt.pojavlaunch.aerix.theme.AerixRadii
 import net.kdt.pojavlaunch.aerix.theme.AerixSpacing
 import net.kdt.pojavlaunch.aerix.theme.AerixSurface
 import net.kdt.pojavlaunch.aerix.theme.AerixThemeManager
+import net.kdt.pojavlaunch.aerix.theme.FireShapes
 import net.kdt.pojavlaunch.game.renderer.RendererCache
 import net.kdt.pojavlaunch.prefs.LauncherPreferences
 import kotlin.math.roundToInt
 
-/** Mirai AerixPillTabRow: liquid-glass pill bar used by Settings, Discover and Instance Management. */
+/** Fire Launcher segmented tactical command strip (replaces soft pill bar). */
 @Composable
 fun AerixPillTabRow(
     modifier: Modifier = Modifier,
@@ -133,11 +135,12 @@ fun AerixPillTabRow(
     Row(
         modifier = modifier
             .liquidGlass(
-                shape = CircleShape,
+                shape = FireShapes.armorMedium,
                 tint = AerixSurface.glassTint,
-                strength = 0.72f,
+                strength = 0.8f,
                 elevation = AerixMetrics.glassSelectedElevation
             )
+            .background(AerixSurface.firePanelDeep, FireShapes.armorMedium)
             .selectableGroup()
             .horizontalScroll(rememberScrollState())
             .padding(contentPadding),
@@ -147,7 +150,7 @@ fun AerixPillTabRow(
     )
 }
 
-/** Mirai AerixPillTab: one pill item inside [AerixPillTabRow]. */
+/** Chamfered magma command tab inside [AerixPillTabRow]. */
 @Composable
 fun AerixPillTab(
     selected: Boolean,
@@ -158,26 +161,16 @@ fun AerixPillTab(
 ) {
     val activeAccent = AerixThemeManager.currentAccent()
     val outline by animateColorAsState(
-        targetValue = if (selected) AerixSurface.borderHighlight else Color.Transparent,
+        targetValue = if (selected) AerixSurface.fireAmber else activeAccent.copy(alpha = 0.24f),
         animationSpec = tween(durationMillis = 160),
         label = "aerixTabOutline"
     )
-    val contentColor = if (selected) activeAccent else AerixSurface.textSecondary
+    val contentColor = if (selected) AerixSurface.onAccent else AerixSurface.textSecondary
     val interactionSource = remember { MutableInteractionSource() }
 
     Surface(
         modifier = modifier
             .defaultMinSize(minHeight = AerixMetrics.pillTabHeight)
-            .then(
-                if (selected) {
-                    Modifier.liquidGlass(
-                        shape = CircleShape,
-                        tint = activeAccent,
-                        strength = 0.95f,
-                        elevation = AerixMetrics.glassSelectedElevation
-                    )
-                } else Modifier
-            )
             .selectable(
                 selected = selected,
                 enabled = enabled,
@@ -186,14 +179,14 @@ fun AerixPillTab(
                 indication = null,
                 onClick = onClick
             ),
-        shape = CircleShape,
-        color = Color.Transparent,
+        shape = FireShapes.hudChip,
+        color = if (selected) activeAccent else AerixSurface.firePanel,
         contentColor = if (enabled) contentColor else contentColor.copy(alpha = 0.48f),
         border = BorderStroke(AerixSpacing.hairline, outline),
         shadowElevation = if (selected) AerixSpacing.xs else 0.dp
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = AerixSpacing.md, vertical = AerixSpacing.sm),
+            modifier = Modifier.padding(horizontal = AerixSpacing.md, vertical = AerixSpacing.xsPlus),
             horizontalArrangement = Arrangement.spacedBy(AerixSpacing.xs),
             verticalAlignment = Alignment.CenterVertically,
             content = content
@@ -201,35 +194,36 @@ fun AerixPillTab(
     }
 }
 
-/** Mirai ModrinthMetaPill: small badge used in Renderer Settings and Instance Management. */
+/** Chamfered HUD badge used in Renderer Settings, Armory and Instance Vault. */
 @Composable
 fun ModrinthMetaPill(
     text: String,
     highlighted: Boolean = false,
-    backgroundColor: Color = if (highlighted) AerixSurface.accentContainer else AerixSurface.panelRaised,
-    textColor: Color = if (highlighted) AerixSurface.modrinthBrand else AerixSurface.textSecondary,
-    borderColor: Color? = if (highlighted) AerixSurface.modrinthBrand.copy(alpha = 0.45f) else null
+    backgroundColor: Color = if (highlighted) AerixSurface.accentContainer else AerixSurface.firePanelRaised,
+    textColor: Color = if (highlighted) AerixSurface.fireAmber else AerixSurface.textPrimary,
+    borderColor: Color? = if (highlighted) AerixSurface.fireAmber.copy(alpha = 0.65f) else AerixSurface.borderSoft
 ) {
-    val shape = RoundedCornerShape(AerixRadii.compact)
+    val shape = FireShapes.hudChip
     Box(
         modifier = Modifier
             .clip(shape)
             .background(backgroundColor)
             .then(if (borderColor != null) Modifier.border(AerixSpacing.hairline, borderColor, shape) else Modifier)
-            .padding(horizontal = AerixSpacing.smTight, vertical = AerixSpacing.xxs),
+            .padding(horizontal = AerixSpacing.sm, vertical = AerixSpacing.xxs),
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = text,
-            fontSize = 10.sp,
-            fontWeight = FontWeight.Bold,
+            text = text.uppercase(),
+            fontSize = 9.5.sp,
+            letterSpacing = 0.5.sp,
+            fontWeight = FontWeight.ExtraBold,
             color = textColor,
             maxLines = 1
         )
     }
 }
 
-/** Compact Modrinth-style search bar with leading search icon and optional clear button. */
+/** Chamfered volcanic search field with leading magma search icon and clear button. */
 @Composable
 fun ModrinthCompactSearchField(
     value: String,
@@ -237,13 +231,14 @@ fun ModrinthCompactSearchField(
     placeholder: String,
     modifier: Modifier = Modifier
 ) {
-    val shape = RoundedCornerShape(AerixRadii.controlSmall)
+    val accent = AerixThemeManager.currentAccent()
+    val shape = FireShapes.armorSmall
     Row(
         modifier = modifier
-            .height(36.dp)
+            .height(38.dp)
             .clip(shape)
-            .background(AerixSurface.panel)
-            .border(AerixSpacing.hairline, AerixSurface.borderSoft, shape)
+            .background(AerixSurface.firePanelDeep)
+            .border(AerixSpacing.hairline, accent.copy(alpha = 0.45f), shape)
             .padding(horizontal = AerixSpacing.smPlus),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(AerixSpacing.smCompact)
@@ -251,7 +246,7 @@ fun ModrinthCompactSearchField(
         Icon(
             painter = painterResource(R.drawable.aerix_ic_search),
             contentDescription = null,
-            tint = AerixSurface.textSecondary,
+            tint = accent,
             modifier = Modifier.size(16.dp)
         )
         Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
@@ -268,8 +263,8 @@ fun ModrinthCompactSearchField(
                 value = value,
                 onValueChange = onValueChange,
                 singleLine = true,
-                textStyle = TextStyle(color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Medium),
-                cursorBrush = SolidColor(AerixThemeManager.currentAccent()),
+                textStyle = TextStyle(color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.SemiBold),
+                cursorBrush = SolidColor(accent),
                 modifier = Modifier.fillMaxWidth()
             )
         }
@@ -277,7 +272,7 @@ fun ModrinthCompactSearchField(
             Icon(
                 painter = painterResource(R.drawable.aerix_ic_close),
                 contentDescription = null,
-                tint = AerixSurface.textSecondary,
+                tint = AerixSurface.fireAmber,
                 modifier = Modifier
                     .size(15.dp)
                     .clickable { onValueChange("") }
@@ -322,26 +317,28 @@ fun DefaultSwitch(
     )
 }
 
-/** Mirai CardPosition + rememberSettingsCardShape: grouped settings cards with 32dp outer corners and 4dp inner seams. */
 enum class CardPosition { Top, Middle, Bottom, Single }
 
 @Composable
 fun rememberSettingsCardShape(
     position: CardPosition,
-    outerShape: Dp = AerixRadii.hero,
-    innerShape: Dp = AerixRadii.tiny
+    outerShape: Dp = 14.dp,
+    innerShape: Dp = 2.dp
 ): Shape = remember(position, outerShape, innerShape) {
     when (position) {
-        CardPosition.Top -> RoundedCornerShape(
-            topStart = outerShape, topEnd = outerShape,
+        CardPosition.Top -> CutCornerShape(
+            topStart = outerShape, topEnd = 3.dp,
             bottomStart = innerShape, bottomEnd = innerShape
         )
-        CardPosition.Middle -> RoundedCornerShape(innerShape)
-        CardPosition.Bottom -> RoundedCornerShape(
+        CardPosition.Middle -> CutCornerShape(innerShape)
+        CardPosition.Bottom -> CutCornerShape(
             topStart = innerShape, topEnd = innerShape,
-            bottomStart = outerShape, bottomEnd = outerShape
+            bottomStart = 3.dp, bottomEnd = outerShape
         )
-        CardPosition.Single -> RoundedCornerShape(outerShape)
+        CardPosition.Single -> CutCornerShape(
+            topStart = outerShape, topEnd = 3.dp,
+            bottomStart = 3.dp, bottomEnd = outerShape
+        )
     }
 }
 
@@ -352,12 +349,12 @@ fun SettingsCardColumn(
 ) {
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(AerixSpacing.xxs),
+        verticalArrangement = Arrangement.spacedBy(AerixSpacing.xs),
         content = content
     )
 }
 
-/** Base Mirai SettingsCard surface (`_SettingsCard.kt`). */
+/** Volcanic carbon armor SettingsCard surface. */
 @Composable
 fun MiraiSettingsCard(
     position: CardPosition,
@@ -368,9 +365,9 @@ fun MiraiSettingsCard(
 ) {
     val shape = rememberSettingsCardShape(position)
     Surface(
-        modifier = modifier.liquidGlass(shape = shape, strength = 0.55f, elevation = AerixSpacing.zero),
+        modifier = modifier.liquidGlass(shape = shape, strength = 0.65f, elevation = AerixSpacing.zero),
         shape = shape,
-        color = AerixSurface.panel,
+        color = AerixSurface.firePanel,
         contentColor = Color.White,
         border = BorderStroke(AerixSpacing.hairline, AerixSurface.borderSoft)
     ) {

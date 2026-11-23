@@ -16,7 +16,7 @@ class NightlyChannelSmoke(unittest.TestCase):
         self.assertIn("initWith debug", nightly)
         self.assertIn("signingConfig signingConfigs.customDebug", nightly)
         self.assertIn('matchingFallbacks += List.of("debug")', nightly)
-        self.assertIn('resValue "string", "aerix_app_label", "Aerix Nightly"', nightly)
+        self.assertIn('resValue "string", "aerix_app_label", "FIRE LAUNCHER"', nightly)
         self.assertNotIn("applicationIdSuffix", nightly)
         self.assertIn('onVariants(selector().withBuildType("nightly"))', GRADLE)
         self.assertIn("output.versionCode.set(AERIX_DEBUG_VERSION_CODE)", GRADLE)
