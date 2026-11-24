@@ -17,7 +17,7 @@ LEGACY_PACKAGES = {
     "net.kdt.pojavlaunch.debug",
     "net.kdt.pojavlaunch.pub",
     "net.al.aerixlauncher",
-    "net.kdt.pojavlaunch.cloud.debug",
+    "net.al.aerixlauncher.debug",
     "net.al.aerixlauncher.pub",
 }
 
