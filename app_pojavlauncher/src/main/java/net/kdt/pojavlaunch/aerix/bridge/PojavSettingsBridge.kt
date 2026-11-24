@@ -143,6 +143,10 @@ object PojavSettingsBridge {
         if (value && key == "use_angle") editor.putBoolean("use_system_angle", false)
         if (value && key == "use_system_angle") editor.putBoolean("use_angle", false)
         editor.apply()
+        if (key == "show_fps") {
+            net.kdt.pojavlaunch.aerix.client.AerixClientStore.fpsOverlayEnabled = value
+            net.kdt.pojavlaunch.aerix.client.AerixClientStore.persist()
+        }
         commit(context)
     }
 

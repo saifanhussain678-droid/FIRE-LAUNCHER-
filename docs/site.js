@@ -346,5 +346,78 @@
     })
     .catch(() => {});
 
+  // Interactive Real FPS Display Box Demo (Green / Yellow / Red + Settings ON/OFF)
+  const fpsDemoState = { on: true, fps: 144, renderer: 'MobileGlues' };
+  const liveBox = document.getElementById('liveRealFpsBox');
+  const liveHidden = document.getElementById('liveRealFpsHiddenMsg');
+  const liveBar = document.getElementById('liveRealFpsBar');
+  const liveFpsVal = document.getElementById('liveRealFpsVal');
+  const liveRenVal = document.getElementById('liveRealRendererVal');
+  const liveMsVal = document.getElementById('liveRealMsVal');
+  const btnOn = document.getElementById('fpsToggleOnBtn');
+  const btnOff = document.getElementById('fpsToggleOffBtn');
+
+  function colorForFps(fps) {
+    if (fps >= 60) return '#22C55E'; // Green
+    if (fps >= 30) return '#FACC15'; // Yellow
+    return '#EF4444';                // Red
+  }
+
+  function renderRealFpsDemo() {
+    if (!liveBox) return;
+    if (!fpsDemoState.on) {
+      liveBox.style.display = 'none';
+      if (liveHidden) liveHidden.style.display = 'block';
+      return;
+    }
+    liveBox.style.display = 'inline-flex';
+    if (liveHidden) liveHidden.style.display = 'none';
+    const col = colorForFps(fpsDemoState.fps);
+    const ms = (1000 / Math.max(1, fpsDemoState.fps)).toFixed(1) + ' ms';
+    liveBox.style.borderColor = col;
+    if (liveBar) liveBar.style.background = col;
+    if (liveFpsVal) {
+      liveFpsVal.textContent = String(fpsDemoState.fps);
+      liveFpsVal.style.color = col;
+    }
+    if (liveRenVal) liveRenVal.textContent = fpsDemoState.renderer;
+    if (liveMsVal) {
+      liveMsVal.textContent = ms;
+      liveMsVal.style.color = col;
+    }
+  }
+
+  if (btnOn && btnOff) {
+    btnOn.addEventListener('click', () => {
+      fpsDemoState.on = true;
+      btnOn.classList.add('active');
+      btnOff.classList.remove('active');
+      renderRealFpsDemo();
+    });
+    btnOff.addEventListener('click', () => {
+      fpsDemoState.on = false;
+      btnOff.classList.add('active');
+      btnOn.classList.remove('active');
+      renderRealFpsDemo();
+    });
+  }
+
+  document.querySelectorAll('[data-fps-demo]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      fpsDemoState.fps = parseInt(btn.dataset.fpsDemo, 10) || 60;
+      document.querySelectorAll('[data-fps-demo]').forEach((b) => b.classList.toggle('active', b === btn));
+      renderRealFpsDemo();
+    });
+  });
+
+  document.querySelectorAll('[data-fps-renderer]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      fpsDemoState.renderer = btn.dataset.fpsRenderer || 'MobileGlues';
+      document.querySelectorAll('[data-fps-renderer]').forEach((b) => b.classList.toggle('active', b === btn));
+      renderRealFpsDemo();
+    });
+  });
+
+  renderRealFpsDemo();
   updateCalculator();
 })();

@@ -699,23 +699,97 @@ def page_header(kicker: str, title: str, lede: str) -> str:
 """
 
 
+def real_fps_box_section() -> str:
+    return """
+  <section class="section" id="real-fps-display">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="kicker">📊 New In-Game Real FPS HUD + Settings Toggle</span>
+        <h2>Dynamic Color <span class="gradient-text">Real FPS Display Box</span></h2>
+        <p class="lede">
+          Reads genuine native rendered frames and swap intervals — never fake screen refresh rate — inside one
+          draggable 3-line HUD box that automatically shifts between <strong>Green (60+ FPS)</strong>,
+          <strong>Yellow (30–59 FPS)</strong>, and <strong>Red (&lt;30 FPS)</strong>, with an instant ON/OFF switch in Settings.
+        </p>
+      </div>
+
+      <div class="calc-grid">
+        <div class="glass-box calc-controls">
+          <div>
+            <span class="calc-group-label">1. Settings → Show Real FPS Display (ON / OFF)</span>
+            <div class="pill-group">
+              <button class="pill-opt active" type="button" id="fpsToggleOnBtn">🟢 Show Real FPS Display: ON</button>
+              <button class="pill-opt" type="button" id="fpsToggleOffBtn">⚪ OFF (Hidden)</button>
+            </div>
+          </div>
+
+          <div>
+            <span class="calc-group-label">2. Test Dynamic Color States (Green / Yellow / Red)</span>
+            <div class="pill-group">
+              <button class="pill-opt active" type="button" data-fps-demo="144">🟢 144 FPS (Green · 6.9 ms)</button>
+              <button class="pill-opt" type="button" data-fps-demo="78">🟢 78 FPS (Green · 12.8 ms)</button>
+              <button class="pill-opt" type="button" data-fps-demo="45">🟡 45 FPS (Yellow · 22.2 ms)</button>
+              <button class="pill-opt" type="button" data-fps-demo="19">🔴 19 FPS (Red · 52.6 ms)</button>
+            </div>
+          </div>
+
+          <div>
+            <span class="calc-group-label">3. Active Renderer Shown Inside Box</span>
+            <div class="pill-group">
+              <button class="pill-opt active" type="button" data-fps-renderer="MobileGlues">MobileGlues</button>
+              <button class="pill-opt" type="button" data-fps-renderer="Vulkan Zink">Vulkan Zink</button>
+              <button class="pill-opt" type="button" data-fps-renderer="LTW (GLES 3)">LTW (GLES 3)</button>
+              <button class="pill-opt" type="button" data-fps-renderer="Holy GL4ES">Holy GL4ES</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-box calc-output" style="justify-content:center;align-items:flex-start;gap:16px">
+          <span class="kicker" style="margin-bottom:0">Live In-Game HUD Box Preview (Draggable in Launcher)</span>
+
+          <div id="liveRealFpsBox" style="display:inline-flex;align-items:stretch;gap:12px;padding:14px 20px 14px 14px;border-radius:12px;background:rgba(11,18,32,0.90);border:2px solid #22C55E;box-shadow:0 12px 30px rgba(15,37,68,0.18);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;min-width:255px;transition:all 0.2s ease">
+            <span id="liveRealFpsBar" style="width:5px;border-radius:4px;background:#22C55E;display:block"></span>
+            <div style="display:grid;gap:5px;font-size:15px;line-height:1.35">
+              <div><span style="color:#E2E8F0">Fps - </span><strong id="liveRealFpsVal" style="color:#22C55E">144</strong></div>
+              <div><span style="color:#E2E8F0">Renderer - </span><strong id="liveRealRendererVal" style="color:#38BDF8">MobileGlues</strong></div>
+              <div><span style="color:#E2E8F0">Ms - </span><strong id="liveRealMsVal" style="color:#22C55E">6.9 ms</strong></div>
+            </div>
+          </div>
+
+          <div id="liveRealFpsHiddenMsg" style="display:none;padding:12px 0;font-weight:800;color:#55789E">
+            Real FPS Display is currently turned OFF in Settings. Tap &ldquo;ON&rdquo; to show the HUD box.
+          </div>
+
+          <div style="font-size:13px;color:#2B4C73;line-height:1.6">
+            <strong>Color Rules:</strong>
+            <span style="color:#16A34A;font-weight:800">● 60+ FPS = Green</span> &nbsp;·&nbsp;
+            <span style="color:#CA8A04;font-weight:800">● 30–59 FPS = Yellow</span> &nbsp;·&nbsp;
+            <span style="color:#DC2626;font-weight:800">● &lt;30 FPS = Red</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+"""
+
+
 def all_ui_gallery_section() -> str:
     shots = [
         ("assets/screenshots/fire-launcher-prism-light-ui.png", "1. HQ Home Dashboard (3-Wing Bento Deck)", "Top Command Header (Operator ID, Config/Ops/Files/Console, Active Instance + IGNITE), Left 3D Skin Studio, Center 2×2 Pastel Bento Cards, Right Active Instance & Rack, and Bottom Floating Dock."),
         ("assets/screenshots/fire-ui-version-install.png", "2. Version & Mod Loader Install (+ FORGE) + Top Downloading Bar", "Relocated Top Prism Downloading Bar (68% · 24.8 MB/s · ETA 00:08), Mod Loader selector (Vanilla, Fabric, Quilt, Forge, NeoForge, OptiFine), Minecraft 1.21.4–1.8.9 list, and Java 21 Auto setup."),
         ("assets/screenshots/fire-ui-mods-install.png", "3. Mod Armory — Mods, Shaders & Modpacks Install", "Built-in Modrinth & CurseForge Armory with 1-tap install and live Cyan-Indigo-Pink progress bars for Sodium, Lithium, Iris Shaders, FerriteCore, Complementary Shaders, and ImmediatelyFast."),
-        ("assets/screenshots/fire-ui-settings.png", "4. Settings, Renderers & 4GB/6GB/8GB FPS Boost (CONFIG)", "Inverted Right-side Category Rail + 1-Tap FIRE FPS Boost Presets (4GB · 1728 MB, 6GB · 2816 MB, 8GB+ · 4096 MB), RAM Slider, MobileGlues Vulkan + Turnip .ZIP Driver, and 120Hz Unlock."),
+        ("assets/screenshots/fire-ui-settings.png", "4. Settings, Show Real FPS Display Toggle & 4GB/6GB/8GB Boost", "Inverted Right Category Rail + Show Real FPS Display ON/OFF switch (Green/Yellow/Red preview) + 1-Tap 4GB / 6GB / 8GB+ FPS Boost Presets, RAM Slider, MobileGlues Vulkan, and 120Hz Unlock."),
         ("assets/screenshots/fire-ui-instance-vault.png", "5. Instance Vault (Multi-Version Library)", "Left Active Instance Inspector (Prism PvP 1.21.4 · Fabric · OpenJDK 21 · MobileGlues) with IGNITE / Edit / Mods / Folder / Crash Logs + Right Multi-Instance Cartridge Grid."),
         ("assets/screenshots/fire-ui-accounts-client.png", "6. Accounts, 3D Skin/Cape Wardrobe & Fire Client HUD", "3D Character & Rainbow Cape Studio, Account Vault (Microsoft Xbox Live, Ely.by, Offline Username), and Fire Client PvP Toggles (120Hz FPS Pill, RGB Keystrokes + CPS, ToggleSprint, Zoom, 1080p60 Audio Recorder)."),
-        ("assets/screenshots/fire-ui-controls-ingame.png", "7. In-Game Custom Controls Rig & Floating FIRE LAUNCHER Menu", "Live 224 FPS · 120Hz pill, RGB Keystrokes + CPS, translucent frosted touch buttons, and the floating 3D Prismatic Flame button open to FIRE LAUNCHER MENU + 1080p60 Internal Audio Recording."),
+        ("assets/screenshots/fire-ui-controls-ingame.png", "7. In-Game Real FPS Box (Fps / Renderer / Ms) & Floating Menu", "Top-left color-shifting Real FPS Display Box (Fps - 144 / Renderer - MobileGlues / Ms - 6.9 ms), RGB Keystrokes + CPS, frosted touch controls, and floating FIRE LAUNCHER MENU."),
         ("assets/branding/fire-launcher-logo.png", "8. Official FIRE LAUNCHER 3D Prismatic Flame + Cube Emblem", "Signature crystalline prism flame cradling an isometric Minecraft cube — installed across Android Adaptive Icons, Splash Screen, Top Header, Bottom Dock, and In-Game Menu."),
     ]
     cards = []
     for src, title, desc in shots:
         cards.append(f"""        <article class="card" style="padding:16px 0;display:flex;flex-direction:column;gap:12px">
-          <div class="showcase-frame" style="aspect-ratio:16/9;display:grid;place-items:center">
+          <a href="{src}" target="_blank" rel="noopener" class="showcase-frame" style="aspect-ratio:16/9;display:grid;place-items:center;border-radius:14px;overflow:hidden;border:1px solid rgba(2,132,199,0.22)">
             <img src="{src}" alt="{title}" loading="lazy" style="width:100%;height:100%;object-fit:cover">
-          </div>
+          </a>
           <div style="padding:4px 2px">
             <h3>{title}</h3>
             <p>{desc}</p>
@@ -822,6 +896,7 @@ def build_index() -> str:
   </section>
 """
         + all_ui_gallery_section()
+        + real_fps_box_section()
         + ui_explorer_section()
         + ram_fps_section()
         + all_systems_section()
@@ -842,10 +917,11 @@ def build_screenshots() -> str:
         + page_header(
             "🖥 Complete UI Showcase",
             "Every Screen Installed in FIRE LAUNCHER",
-            "Full HD showcase of all 7 Prism Light Multi-Color screens + interactive UI simulator underneath.",
+            "Full HD showcase of all 7 Prism Light Multi-Color screens + Real FPS Display Box demo + interactive UI simulator.",
         )
         + "<main id=\"main\">"
         + all_ui_gallery_section()
+        + real_fps_box_section()
         + ui_explorer_section()
         + "</main>"
         + FOOTER

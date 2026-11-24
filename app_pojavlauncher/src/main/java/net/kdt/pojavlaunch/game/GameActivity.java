@@ -578,6 +578,9 @@ public class GameActivity extends BaseActivity implements ControlButtonMenuListe
         touchCharInput = findViewById(R.id.mainTouchCharInput);
         mDrawerPullButton = findViewById(R.id.drawer_button);
         mFpsView = findViewById(R.id.main_fps_view);
+        if (mFpsView != null && mGameRenderer != null && mGameRenderer.getCurrentRenderer() != null) {
+            mFpsView.setRendererTag(mGameRenderer.getCurrentRenderer().tag());
+        }
         mGameMenuOverlay = findViewById(R.id.game_menu_overlay);
         mAerixClientOverlay = findViewById(R.id.aerix_client_overlay);
         mHotbarView = findViewById(R.id.hotbar_view);

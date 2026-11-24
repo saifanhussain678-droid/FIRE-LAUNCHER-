@@ -5,7 +5,8 @@ final class FrameRateSampler {
     private final long[] frames = new long[10], durations = new long[10];
     private long lastFrames = -1, lastTime;
     private int index, count, fps, average;
-    void reset() { lastFrames = -1; lastTime = 0; index = count = fps = average = 0; }
+    private double frameTimeMs;
+    void reset() { lastFrames = -1; lastTime = 0; index = count = fps = average = 0; frameTimeMs = 0d; }
     boolean sample(long totalFrames, long nowNanos) {
         if (totalFrames < 0) { reset(); return false; }
         if (lastFrames < 0 || nowNanos <= lastTime) {
@@ -18,6 +19,7 @@ final class FrameRateSampler {
         index = (index + 1) % frames.length;
         count = Math.min(count + 1, frames.length);
         fps = (int) Math.round(delta * 1_000_000_000d / elapsed);
+        frameTimeMs = delta > 0 ? (elapsed / 1_000_000.0d) / delta : 0d;
         long sum = 0, time = 0;
         for (int i = 0; i < count; i++) { sum += frames[i]; time += durations[i]; }
         average = (int) Math.round(sum * 1_000_000_000d / time);
@@ -25,4 +27,5 @@ final class FrameRateSampler {
     }
     int fps() { return fps; }
     int average() { return average; }
+    double frameTimeMs() { return frameTimeMs; }
 }

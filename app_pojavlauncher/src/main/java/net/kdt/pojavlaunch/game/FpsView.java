@@ -24,13 +24,25 @@ public class FpsView extends View {
     private static final long UPDATE_INTERVAL_MS = 500;
     private final Paint background = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private final RectF backgroundRect = new RectF(), bounds = new RectF();
+    private final Paint borderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint accentBarPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint boxLabelPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint boxValuePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final RectF backgroundRect = new RectF(), borderRect = new RectF(), accentBarRect = new RectF(), bounds = new RectF();
     private final FrameRateSampler sampler = new FrameRateSampler();
     private SharedPreferences preferences;
     private boolean running, positionLoaded, dragging;
+    private boolean boxMode = true;
     private int pointerId = -1, touchSlop;
-    private float downX, downY, startX, startY;
+    private float downX, downY, startX, startY, density;
     private String text = "-- FPS";
+    private int liveFps;
+    private double liveFrameMs;
+    private String fallbackStatus = "--";
+    private String rendererLabel = "Auto";
+    private String fpsValueText = "--";
+    private String rendererValueText = "Auto";
+    private String msValueText = "--";
     private View host;
     private final int[] parentLocation = new int[2];
     private final OnLayoutChangeListener hostLayout = (v, l, t, r, b, ol, ot, or, ob) -> {
@@ -62,6 +74,7 @@ public class FpsView extends View {
                     frameSource = "client mod";
                     float hz = net.kdt.pojavlaunch.utils.DisplayRefreshMode.activeRefreshHz(getContext());
                     int value = modFps;
+                    updateRealMetrics(value, value > 0 ? 1000.0d / value : 0d, "--");
                     updateText(getContext().getString(hz > 0f
                             && net.kdt.pojavlaunch.prefs.LauncherPreferences.PREF_MAX_REFRESH_RATE
                             ? R.string.fps_overlay_value_hz : R.string.fps_overlay_value,
@@ -73,6 +86,7 @@ public class FpsView extends View {
                 frameSource = "none";
                 sampler.reset();
                 stalledSamples++;
+                updateRealMetrics(0, 0d, "N/A");
                 // The full reason is a whole sentence, and it is shown in a pill that is as wide as
                 // its text - on a phone it ran off the screen and read as garbled characters. The
                 // pill says the short thing; the reason goes where the text is not clipped. It has
@@ -83,6 +97,8 @@ public class FpsView extends View {
                             + ". " + getContext().getString(R.string.fps_overlay_drag));
                 }
             } else if (sampler.sample(count, SystemClock.elapsedRealtimeNanos())) {
+                stalledSamples = 0;
+                updateRealMetrics(sampler.fps(), sampler.frameTimeMs(), "--");
                 // With the refresh-rate request on, the panel rate is the thing being tested, so it is
                 // printed next to the frame count: "58 FPS @ 120 Hz" proves the display moved even
                 // though the game cannot use every frame.
@@ -98,6 +114,7 @@ public class FpsView extends View {
                 // presenting frames (paused, backgrounded, or a renderer the hook cannot see).
                 // Say so instead of leaving the pill on the initial "-- FPS".
                 if (++stalledSamples == 4) {
+                    updateRealMetrics(0, 0d, "0");
                     updateText(getContext().getString(R.string.fps_overlay_stalled));
                 }
             }
@@ -114,16 +131,60 @@ public class FpsView extends View {
         setWillNotDraw(false);
         preferences = getContext().getSharedPreferences("fps_overlay", Context.MODE_PRIVATE);
         touchSlop = ViewConfiguration.get(getContext()).getScaledTouchSlop();
-        background.setColor(0xB0000000);
+        density = getResources().getDisplayMetrics().density;
+        float scaled = getResources().getDisplayMetrics().scaledDensity;
+        background.setColor(RealFpsBoxFormatter.COLOR_BOX_BG);
+        borderPaint.setStyle(Paint.Style.STROKE);
+        borderPaint.setStrokeWidth(Math.max(1f, density * 1.25f));
+        accentBarPaint.setStyle(Paint.Style.FILL);
+
+        boxLabelPaint.setColor(RealFpsBoxFormatter.COLOR_LABEL);
+        boxLabelPaint.setTypeface(android.graphics.Typeface.MONOSPACE);
+        boxLabelPaint.setTextAlign(Paint.Align.LEFT);
+        boxLabelPaint.setTextSize(scaled * 11f);
+
+        boxValuePaint.setColor(Color.WHITE);
+        boxValuePaint.setTypeface(android.graphics.Typeface.create(android.graphics.Typeface.MONOSPACE, android.graphics.Typeface.BOLD));
+        boxValuePaint.setTextAlign(Paint.Align.LEFT);
+        boxValuePaint.setTextSize(scaled * 11f);
+
+        rendererLabel = RealFpsBoxFormatter.shortRendererLabel(
+                net.kdt.pojavlaunch.prefs.LauncherPreferences.PREF_RENDERER);
+        rendererValueText = fit(rendererLabel);
+
         textPaint.setColor(Color.WHITE);
         textPaint.setTypeface(android.graphics.Typeface.MONOSPACE);
         // Centred, not left-aligned: the pill is exactly as wide as the text it measured, and a
         // left-aligned draw at the padding edge left the glyphs riding the border - the other half
         // of what read as "weird text".
         textPaint.setTextAlign(Paint.Align.CENTER);
-        textPaint.setTextSize(getResources().getDisplayMetrics().scaledDensity * 12f);
+        textPaint.setTextSize(scaled * 12f);
         setContentDescription(getContext().getString(R.string.fps_overlay_drag));
         ViewCompat.setOnApplyWindowInsetsListener(this, (v, insets) -> { post(this::restorePosition); return insets; });
+    }
+
+    /** Sets the active renderer tag or display name shown on the "Renderer - " row of the box. */
+    public void setRendererTag(String rendererTag) {
+        String resolved = RealFpsBoxFormatter.shortRendererLabel(rendererTag);
+        if (resolved.equals(rendererLabel)) return;
+        rendererLabel = resolved;
+        rendererValueText = fit(resolved);
+        requestLayout();
+        invalidate();
+    }
+
+    private void updateRealMetrics(int fps, double frameMs, String statusFallback) {
+        String nextFps = fit(RealFpsBoxFormatter.formatFpsValue(fps, statusFallback));
+        String nextMs = fit(RealFpsBoxFormatter.formatMsValue(fps, frameMs));
+        boolean sizeChanged = nextFps.length() != fpsValueText.length()
+                || nextMs.length() != msValueText.length();
+        liveFps = fps;
+        liveFrameMs = frameMs;
+        fallbackStatus = statusFallback;
+        fpsValueText = nextFps;
+        msValueText = nextMs;
+        if (sizeChanged) requestLayout();
+        invalidate();
     }
     /**
      * Keeps the pill to one line of sane text.
@@ -194,6 +255,7 @@ public class FpsView extends View {
             sampler.reset();
             stalledSamples = 0;
             frameSource = "frame-counter";
+            updateRealMetrics(0, 0d, "--");
             updateText(getContext().getString(R.string.fps_overlay_waiting));
             postDelayed(poll, 60L);
         } else stopCounting();
@@ -282,6 +344,25 @@ public class FpsView extends View {
         post(() -> { if (!positionLoaded) restorePosition(); else moveTo(getX(), getY()); });
     }
     @Override protected void onMeasure(int widthSpec, int heightSpec) {
+        if (boxMode) {
+            float row1 = boxLabelPaint.measureText(RealFpsBoxFormatter.PREFIX_FPS)
+                    + boxValuePaint.measureText(fpsValueText);
+            float row2 = boxLabelPaint.measureText(RealFpsBoxFormatter.PREFIX_RENDERER)
+                    + boxValuePaint.measureText(rendererValueText);
+            float row3 = boxLabelPaint.measureText(RealFpsBoxFormatter.PREFIX_MS)
+                    + boxValuePaint.measureText(msValueText);
+            float maxRow = Math.max(row1, Math.max(row2, row3));
+            float leftInset = Math.max(getPaddingLeft(), Math.round(density * 13f));
+            float rightInset = Math.max(getPaddingRight(), Math.round(density * 10f));
+            float vPad = Math.max(getPaddingTop(), Math.round(density * 6f));
+            Paint.FontMetrics fm = boxLabelPaint.getFontMetrics();
+            float lineHeight = fm.descent - fm.ascent;
+            float lineGap = density * 2.5f;
+            int width = (int) Math.ceil(leftInset + maxRow + rightInset);
+            int height = (int) Math.ceil(vPad * 2f + lineHeight * 3f + lineGap * 2f);
+            setMeasuredDimension(resolveSize(width, widthSpec), resolveSize(height, heightSpec));
+            return;
+        }
         int width = (int) Math.ceil(textPaint.measureText(text)) + getPaddingLeft() + getPaddingRight();
         int height = (int) Math.ceil(textPaint.getFontMetrics().descent - textPaint.getFontMetrics().ascent) + getPaddingTop() + getPaddingBottom();
         setMeasuredDimension(resolveSize(width, widthSpec), resolveSize(height, heightSpec));
@@ -289,6 +370,45 @@ public class FpsView extends View {
     @Override protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         backgroundRect.set(0, 0, getWidth(), getHeight());
+        if (boxMode) {
+            int statusColor = RealFpsBoxFormatter.colorForFps(liveFps);
+            float radius = density * 8f;
+            canvas.drawRoundRect(backgroundRect, radius, radius, background);
+
+            float halfStroke = borderPaint.getStrokeWidth() / 2f;
+            borderRect.set(halfStroke, halfStroke, getWidth() - halfStroke, getHeight() - halfStroke);
+            borderPaint.setColor((statusColor & 0x00FFFFFF) | 0xCC000000);
+            canvas.drawRoundRect(borderRect, radius, radius, borderPaint);
+
+            float barLeft = density * 4.5f;
+            float barWidth = density * 3f;
+            float barTop = density * 6f;
+            accentBarRect.set(barLeft, barTop, barLeft + barWidth, getHeight() - barTop);
+            accentBarPaint.setColor(statusColor);
+            canvas.drawRoundRect(accentBarRect, barWidth / 2f, barWidth / 2f, accentBarPaint);
+
+            float x = Math.max(getPaddingLeft(), Math.round(density * 13f));
+            float vPad = Math.max(getPaddingTop(), Math.round(density * 6f));
+            Paint.FontMetrics fm = boxLabelPaint.getFontMetrics();
+            float lineHeight = fm.descent - fm.ascent;
+            float lineGap = density * 2.5f;
+            float y1 = vPad - fm.ascent;
+            float y2 = y1 + lineHeight + lineGap;
+            float y3 = y2 + lineHeight + lineGap;
+
+            canvas.drawText(RealFpsBoxFormatter.PREFIX_FPS, x, y1, boxLabelPaint);
+            boxValuePaint.setColor(statusColor);
+            canvas.drawText(fpsValueText, x + boxLabelPaint.measureText(RealFpsBoxFormatter.PREFIX_FPS), y1, boxValuePaint);
+
+            canvas.drawText(RealFpsBoxFormatter.PREFIX_RENDERER, x, y2, boxLabelPaint);
+            boxValuePaint.setColor(RealFpsBoxFormatter.COLOR_RENDERER);
+            canvas.drawText(rendererValueText, x + boxLabelPaint.measureText(RealFpsBoxFormatter.PREFIX_RENDERER), y2, boxValuePaint);
+
+            canvas.drawText(RealFpsBoxFormatter.PREFIX_MS, x, y3, boxLabelPaint);
+            boxValuePaint.setColor(statusColor);
+            canvas.drawText(msValueText, x + boxLabelPaint.measureText(RealFpsBoxFormatter.PREFIX_MS), y3, boxValuePaint);
+            return;
+        }
         canvas.drawRoundRect(backgroundRect, getHeight() / 4f, getHeight() / 4f, background);
         canvas.drawText(text, getWidth() / 2f,
                 -textPaint.getFontMetrics().ascent + getPaddingTop(), textPaint);

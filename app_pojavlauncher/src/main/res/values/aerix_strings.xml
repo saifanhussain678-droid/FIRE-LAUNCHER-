@@ -577,7 +577,7 @@
     <string name="aerix_ingame_menu_tap_key">Tap a key</string>
     <string name="aerix_ingame_menu_tap_key_summary">Press a key into the game, for clients bound to a key you have no button for</string>
     <string name="aerix_ingame_menu_fps_counter">FPS overlay</string>
-    <string name="aerix_ingame_menu_fps_counter_summary">The frame rate readout drawn over the game</string>
+    <string name="aerix_ingame_menu_fps_counter_summary">Real FPS Display box (Fps / Renderer / Ms) with Green, Yellow &amp; Red colors</string>
     <!-- The switch is in the A menu, which most players read as "A overlay"; the row says which
          readout it controls so it is not mistaken for a setting of the A menu itself. -->
     <string name="aerix_ingame_menu_fps_counter_hint">Shown while you play, hidden while this menu is open. It moves with a drag.</string>

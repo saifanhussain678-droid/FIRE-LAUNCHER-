@@ -29,12 +29,12 @@ Neeche **FIRE LAUNCHER** me lagi hui **saari 7 Prism Light Multi-Color UI Screen
 
 ---
 
-## 4. Settings, Renderers & 4GB / 6GB / 8GB+ FPS Boost (`⚙ CONFIG`)
+## 4. Settings, Show Real FPS Display Toggle & 4GB / 6GB / 8GB+ FPS Boost (`⚙ CONFIG`)
 - **Inverted Right Category Rail**: `Appearance`, `Video & Renderers`, `Java & FPS Boost`, `Controls Rig`, `Fire Client`, `About`
-- **1-Tap Optimizer Card**: **`4GB Phone Boost · 1728 MB`**, **`6GB Phone Boost · 2816 MB`**, **`8GB+ Ultra Boost · 4096 MB`**
-- Smooth RAM Allocation Slider, `MobileGlues (Vulkan 1.3 / OpenGL 4.6)` + `Import Turnip .ZIP Driver`, aur `Max Refresh Rate (120Hz Display Unlock) ON`
+- **Show Real FPS Display (`ON / OFF`)**: Settings me ON/OFF switch + live preview (`Fps - 124 / Renderer - MobileGlues / Ms - 8.1 ms`) with `Green (60+) · Yellow (30-59) · Red (<30)` color states
+- **1-Tap Optimizer Card**: **`4GB`**, **`6GB`**, **`8GB+`** FPS Boost presets, Smooth RAM Allocation Slider, `MobileGlues` + `Turnip .ZIP Driver`, aur `120Hz Display Unlock ON`
 
-![4. Settings, Renderers & FPS Boost](assets/screenshots/fire-ui-settings.png)
+![4. Settings, Show Real FPS Display & FPS Boost](assets/screenshots/fire-ui-settings.png)
 
 ---
 
@@ -55,11 +55,14 @@ Neeche **FIRE LAUNCHER** me lagi hui **saari 7 Prism Light Multi-Color UI Screen
 
 ---
 
-## 7. In-Game Custom Controls Rig & Floating `FIRE LAUNCHER MENU`
-- Top-left **`224 FPS · 120Hz · MobileGlues`** pill + **RGB Keystrokes (`W A S D` + `14 CPS`)**
-- Frosted translucent touch control buttons + Floating **3D Crystalline Prismatic Flame** button open to **`FIRE LAUNCHER MENU`** (`Resume Game`, `Recording 1080p60 + Audio`, `Customize Touch Controls Rig`, `Live Console Log`, `Settings`)
+## 7. In-Game Real FPS Display Box (`Fps / Renderer / Ms`) & Floating `FIRE LAUNCHER MENU`
+- Top-left **Color-Shifting Real FPS Display Box**:
+  - `Fps - 144` (**Green** 60+ · **Yellow** 30–59 · **Red** <30)
+  - `Renderer - MobileGlues`
+  - `Ms - 6.9 ms` (**Green / Yellow / Red** real frame-time milliseconds)
+- **RGB Keystrokes + `14 CPS`**, frosted touch controls, aur floating **3D Crystalline Prismatic Flame** button se khulne wala **`FIRE LAUNCHER MENU`**
 
-![7. In-Game Controls Rig & Floating Menu](assets/screenshots/fire-ui-controls-ingame.png)
+![7. In-Game Real FPS Box & Floating Menu](assets/screenshots/fire-ui-controls-ingame.png)
 
 ---
 

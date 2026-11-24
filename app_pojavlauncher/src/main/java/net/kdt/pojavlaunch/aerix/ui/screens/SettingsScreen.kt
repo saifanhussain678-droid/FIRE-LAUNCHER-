@@ -512,6 +512,11 @@ private fun RendererTabContent(activity: FragmentActivity) {
             }
         }
 
+        // 1b. Real FPS Display (Fps / Renderer / Ms — Green / Yellow / Red) ON/OFF Card
+        item {
+            RealFpsDisplaySettingsCard(activity = activity)
+        }
+
         // 2. Layout transparency — the slot the global renderer picker used to occupy. It lives on
         // this tab because it is a device-wide look, not a per-instance renderer choice, and it is
         // the first card so the effect of dragging it is visible on the cards right below.
@@ -771,6 +776,10 @@ private fun GameTabContent(activity: FragmentActivity) {
         contentPadding = PaddingValues(bottom = AerixSpacing.xxl),
         verticalArrangement = Arrangement.spacedBy(AerixSpacing.md)
     ) {
+        item {
+            RealFpsDisplaySettingsCard(activity = activity)
+        }
+
         item {
             SettingsCardColumn(modifier = Modifier.fillMaxWidth()) {
                 MiraiSwitchSettingsCard(
@@ -2037,6 +2046,133 @@ private fun MiraiSwitchSettingsCard(
             DefaultSwitch(
                 checked = checked,
                 onCheckedChange = onCheckedChange
+            )
+        }
+    }
+}
+
+@Composable
+private fun RealFpsDisplaySettingsCard(activity: FragmentActivity) {
+    val revision = PojavSettingsBridge.revision
+    var enabled by remember(revision) { mutableStateOf(LauncherPreferences.PREF_SHOW_FPS) }
+    val previewRenderer = remember(revision) {
+        net.kdt.pojavlaunch.game.RealFpsBoxFormatter.shortRendererLabel(
+            LauncherPreferences.PREF_RENDERER ?: Renderers.MOBILEGLUES_RENDERER
+        )
+    }
+    val shape = rememberSettingsCardShape(CardPosition.Single)
+    val greenColor = Color(0xFF22C55E)
+    val yellowColor = Color(0xFFFACC15)
+    val redColor = Color(0xFFEF4444)
+    val cyanColor = Color(0xFF38BDF8)
+
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .liquidGlass(shape = shape, tint = AerixSurface.glassTint, strength = 0.9f, elevation = AerixSpacing.zero),
+        shape = shape,
+        color = AerixSurface.panel,
+        contentColor = AerixSurface.textPrimary,
+        border = BorderStroke(AerixSpacing.hairline, if (enabled) greenColor.copy(alpha = 0.55f) else AerixSurface.borderSoft),
+        onClick = {
+            val next = !enabled
+            enabled = next
+            PojavSettingsBridge.writeBoolean(activity, "show_fps", next)
+        }
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(all = AerixSpacing.lg),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(AerixSpacing.md)
+        ) {
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.preference_show_fps_title),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = AerixSurface.textPrimary
+                )
+                Text(
+                    text = stringResource(R.string.preference_show_fps_description),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = AerixSurface.textSecondary,
+                    lineHeight = 16.sp
+                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Box(Modifier.size(7.dp).clip(CircleShape).background(greenColor))
+                        Text("60+ Green", style = MaterialTheme.typography.labelSmall, color = greenColor, fontWeight = FontWeight.Bold)
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Box(Modifier.size(7.dp).clip(CircleShape).background(yellowColor))
+                        Text("30-59 Yellow", style = MaterialTheme.typography.labelSmall, color = yellowColor, fontWeight = FontWeight.Bold)
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Box(Modifier.size(7.dp).clip(CircleShape).background(redColor))
+                        Text("<30 Red", style = MaterialTheme.typography.labelSmall, color = redColor, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+
+            // Live 3-line HUD Box Preview ("Fps -", "Renderer -", "Ms -")
+            Surface(
+                shape = RoundedCornerShape(8.dp),
+                color = Color(0xD60B1220),
+                border = BorderStroke(1.dp, if (enabled) greenColor.copy(alpha = 0.85f) else Color(0x6694A3B8))
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 9.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .width(3.dp)
+                            .height(34.dp)
+                            .clip(RoundedCornerShape(2.dp))
+                            .background(if (enabled) greenColor else Color(0xFF94A3B8))
+                    )
+                    Column(verticalArrangement = Arrangement.spacedBy(1.dp)) {
+                        Row {
+                            Text("Fps - ", color = Color(0xFFE2E8F0), fontSize = 10.sp)
+                            Text(
+                                text = if (enabled) "124" else "OFF",
+                                color = if (enabled) greenColor else Color(0xFF94A3B8),
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.ExtraBold
+                            )
+                        }
+                        Row {
+                            Text("Renderer - ", color = Color(0xFFE2E8F0), fontSize = 10.sp)
+                            Text(previewRenderer, color = cyanColor, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                        }
+                        Row {
+                            Text("Ms - ", color = Color(0xFFE2E8F0), fontSize = 10.sp)
+                            Text(
+                                text = if (enabled) "8.1 ms" else "--",
+                                color = if (enabled) greenColor else Color(0xFF94A3B8),
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.ExtraBold
+                            )
+                        }
+                    }
+                }
+            }
+
+            DefaultSwitch(
+                checked = enabled,
+                onCheckedChange = { isOn ->
+                    enabled = isOn
+                    PojavSettingsBridge.writeBoolean(activity, "show_fps", isOn)
+                }
             )
         }
     }
