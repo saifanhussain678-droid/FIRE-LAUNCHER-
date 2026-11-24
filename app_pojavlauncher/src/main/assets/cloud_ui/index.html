@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>Cloud Launcher</title>
+  <link rel="stylesheet" href="app.css">
+  <script src="../skinview/skinview3d.bundle.js"></script>
+</head>
+<body>
+  <!-- Relocated Top CLOUD DOWNLOADER Bar -->
+  <div id="top-downloader">
+    <span class="dl-badge">CLOUD DOWNLOADER</span>
+    <span class="dl-label" id="dl-title">Downloading Minecraft Assets...</span>
+    <div class="dl-track"><div class="dl-fill" id="dl-fill" style="width: 47%"></div></div>
+    <span class="dl-pct" id="dl-pct">47%</span>
+  </div>
+
+  <div id="app-shell">
+    <!-- Top Command Header Bar -->
+    <header class="top-bar">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="account-pill" onclick="CloudUI.go('client')">
+          <canvas id="top-avatar-canvas" class="account-avatar" width="32" height="32"></canvas>
+          <div class="account-meta">
+            <div class="account-name-row">
+              <span id="top-account-name">Cloud_OP</span>
+              <span style="color:#64748b;font-weight:700;font-size:10px;" id="top-account-mode">· ONLINE ID</span>
+            </div>
+            <div class="account-sub"><span class="dot-green"></span> READY</div>
+          </div>
+        </div>
+
+        <div class="brand-cluster" onclick="CloudUI.go('hq')">
+          <div class="brand-logo-box"><img src="logo.png" alt="Cloud Launcher"></div>
+          <span class="brand-title">CLOUD LAUNCHER</span>
+        </div>
+      </div>
+
+      <div class="header-pills">
+        <button class="h-pill" data-nav="config" onclick="CloudUI.go('config')">⚙ CONFIG</button>
+        <button class="h-pill" data-nav="ops" onclick="CloudUI.go('ops')">⚡ OPS</button>
+        <button class="h-pill" data-nav="files" onclick="CloudUI.go('files')">📁 FILES</button>
+        <button class="h-pill" data-nav="console" onclick="CloudUI.go('console')">🖥 CONSOLE</button>
+      </div>
+
+      <div class="right-launch-cluster">
+        <div class="active-inst-pill" id="top-inst-pill" onclick="CloudUI.go('vault')">Prism PvP 1.21.4 · Fabric</div>
+        <button class="ignite-btn" onclick="CloudUI.launchGame()">► IGNITE</button>
+      </div>
+    </header>
+
+    <!-- Main Stage -->
+    <main id="stage">
+      <!-- SCREEN 1: HQ HOME -->
+      <section class="screen active" id="screen-hq">
+        <div class="hq-grid">
+          <!-- Left: Operator Studio -->
+          <div class="glass-panel operator-card">
+            <div class="card-eyebrow">OPERATOR STUDIO</div>
+            <div class="skin-stage-wrap">
+              <div id="hq-skin-host"></div>
+              <div class="rainbow-halo"></div>
+            </div>
+            <div class="studio-actions">
+              <button class="soft-pill-btn" onclick="CloudUI.cycleSkin()">SKIN WARDROBE</button>
+              <button class="soft-pill-btn" onclick="CloudUI.go('client')">CLOUD ID <span style="color:#10b981;">✓</span></button>
+            </div>
+          </div>
+
+          <!-- Center: Reactor Split / Command Deck -->
+          <div class="glass-panel reactor-card">
+            <div class="segmented-tabs">
+              <div class="seg-tab active" id="tab-reactor" onclick="CloudUI.setCenterMode('reactor')">REACTOR SPLIT</div>
+              <div class="seg-tab" id="tab-deck" onclick="CloudUI.setCenterMode('deck')">COMMAND DECK</div>
+            </div>
+
+            <div class="reactor-tiles" id="reactor-split-view">
+              <div class="pastel-tile tile-blue" onclick="CloudUI.go('crew')">
+                <div class="tile-icon-box">👥</div>
+                <div class="tile-title-row"><span>CREW &amp; PARTY</span><span>›</span></div>
+              </div>
+              <div class="pastel-tile tile-pink" onclick="CloudUI.go('armory')">
+                <div class="tile-icon-box">🧊</div>
+                <div class="tile-title-row"><span>MOD ARMORY</span><span>›</span></div>
+              </div>
+              <div class="pastel-tile tile-mint" onclick="CloudUI.openControlsRig()">
+                <div class="tile-icon-box">🎮</div>
+                <div class="tile-title-row"><span>CONTROL RIG</span><span>›</span></div>
+              </div>
+              <div class="pastel-tile tile-peach" onclick="CloudUI.runJarInstaller()">
+                <div class="tile-icon-box">📦</div>
+                <div class="tile-title-row"><span>RUN .JAR</span><span>›</span></div>
+              </div>
+            </div>
+
+            <div id="command-deck-view" style="display:none;flex:1;flex-direction:column;gap:8px;justify-content:space-between;">
+              <div class="setting-row">
+                <div>
+                  <div class="setting-title">1-Tap FPS Boost Preset</div>
+                  <div class="setting-sub">Instant RAM + Renderer + JVM tuning</div>
+                </div>
+                <div class="preset-group">
+                  <button class="preset-pill" data-preset="4gb" onclick="CloudUI.applyPreset('4gb')">4GB</button>
+                  <button class="preset-pill" data-preset="6gb" onclick="CloudUI.applyPreset('6gb')">6GB</button>
+                  <button class="preset-pill" data-preset="8gb" onclick="CloudUI.applyPreset('8gb')">8GB+</button>
+                </div>
+              </div>
+              <div class="setting-row">
+                <div>
+                  <div class="setting-title">Import Skin (.PNG)</div>
+                  <div class="setting-sub">Equip custom HD skin onto 3D character</div>
+                </div>
+                <button class="mini-btn primary" onclick="CloudUI.pickSkinFile()">CHOOSE .PNG</button>
+              </div>
+              <div class="setting-row">
+                <div>
+                  <div class="setting-title">Gamepad &amp;Logs</div>
+                  <div class="setting-sub">Controller remapper &amp; crash diagnostics</div>
+                </div>
+                <div style="display:flex;gap:6px;">
+                  <button class="mini-btn" onclick="CloudUI.openGamepad()">GAMEPAD</button>
+                  <button class="mini-btn" onclick="CloudUI.shareLogs()">SHARE LOG</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="engine-ready-pill">
+              <span class="dot-green"></span>
+              <span id="hq-engine-status">ENGINE READY · MOBILEGLUES · 120HZ</span>
+            </div>
+          </div>
+
+          <!-- Right: Active Instance + Instance Rack -->
+          <div class="right-col">
+            <div class="glass-panel active-hero-card">
+              <div>
+                <div class="card-eyebrow" style="font-size:10px;color:#334155;">ACTIVE INSTANCE</div>
+                <div class="hero-inst-name" id="hq-active-name">Prism PvP 1.21.4</div>
+                <div class="hero-inst-meta" id="hq-active-ver">Minecraft 1.21.4 · Ready to Launch</div>
+              </div>
+              <button class="launch-wide-btn" onclick="CloudUI.launchGame()">► LAUNCH INSTANCE</button>
+            </div>
+
+            <div class="glass-panel rack-card">
+              <div style="display:flex;align-items:center;justify-content:space-between;">
+                <span class="card-eyebrow" style="font-size:10px;">INSTANCE RACK</span>
+                <button class="mini-btn" onclick="CloudUI.go('forge')">+ NEW</button>
+              </div>
+              <div class="rack-list" id="hq-rack-list"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 2: + FORGE (Version & Modloader Installer) -->
+      <section class="screen" id="screen-forge">
+        <div class="left-rail-layout">
+          <div class="glass-panel rail-pane" id="forge-loader-rail">
+            <div class="card-eyebrow" style="padding:4px 6px;">MODLOADER / TYPE</div>
+            <button class="rail-btn active" data-loader="VANILLA" onclick="CloudUI.setForgeLoader('VANILLA', 'RELEASE')">Releases</button>
+            <button class="rail-btn" data-loader="SNAPSHOT" onclick="CloudUI.setForgeLoader('VANILLA', 'SNAPSHOT')">Snapshots</button>
+            <button class="rail-btn" data-loader="FABRIC" onclick="CloudUI.setForgeLoader('FABRIC', 'RELEASE')">Fabric</button>
+            <button class="rail-btn" data-loader="FORGE" onclick="CloudUI.setForgeLoader('FORGE', 'RELEASE')">Forge</button>
+            <button class="rail-btn" data-loader="NEOFORGE" onclick="CloudUI.setForgeLoader('NEOFORGE', 'RELEASE')">NeoForge</button>
+            <button class="rail-btn" data-loader="QUILT" onclick="CloudUI.setForgeLoader('QUILT', 'RELEASE')">Quilt</button>
+            <button class="rail-btn" data-loader="OPTIFINE" onclick="CloudUI.setForgeLoader('OPTIFINE', 'RELEASE')">OptiFine</button>
+          </div>
+          <div class="glass-panel scroll-pane">
+            <div class="setting-row" style="flex-wrap:wrap;">
+              <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:220px;">
+                <span style="font-size:12px;font-weight:800;">Instance Name:</span>
+                <input id="forge-inst-name" class="prism-input" style="flex:1;" placeholder="Cloud 1.21.4" value="Cloud 1.21.4">
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <input id="forge-search" class="prism-input" style="width:125px;" placeholder="Filter 1.21..." oninput="CloudUI.renderForgeVersions()">
+                <button class="ignite-btn" onclick="CloudUI.installSelectedVersion()">⬇ INSTALL &amp; CREATE</button>
+              </div>
+            </div>
+            <div id="forge-versions-list" class="cards-grid"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 3: ARMORY (Mod Downloader & Installed Mods) -->
+      <section class="screen" id="screen-armory">
+        <div class="glass-panel scroll-pane" style="width:100%;height:100%;">
+          <div class="setting-row" style="flex-wrap:wrap;">
+            <div style="display:flex;align-items:center;gap:8px;flex:1;">
+              <span class="card-eyebrow">MOD ARMORY</span>
+              <input id="armory-query" class="prism-input" style="flex:1;" placeholder="Search Modrinth mods (Sodium, Iris, ReplayMod, Journeymap...)" onkeydown="if(event.key==='Enter')CloudUI.searchMods()">
+              <button class="mini-btn primary" onclick="CloudUI.searchMods()">SEARCH MODS</button>
+              <button class="mini-btn" onclick="CloudUI.showInstalledMods()">INSTALLED (.JAR)</button>
+            </div>
+          </div>
+          <div id="armory-grid" class="cards-grid"></div>
+        </div>
+      </section>
+
+      <!-- SCREEN 4: CONFIG (Settings + FPS Boost Presets + Show Real FPS Display) -->
+      <section class="screen" id="screen-config">
+        <div class="split-layout">
+          <div class="glass-panel scroll-pane" id="settings-main-pane"></div>
+          <div class="glass-panel rail-pane">
+            <div class="card-eyebrow" style="padding:4px 6px;">SETTINGS CATEGORY RAIL</div>
+            <button class="rail-btn active" data-scat="fps" onclick="CloudUI.setSettingsCat('fps')">Java &amp; FPS Boost</button>
+            <button class="rail-btn" data-scat="video" onclick="CloudUI.setSettingsCat('video')">Video &amp; Renderers</button>
+            <button class="rail-btn" data-scat="appearance" onclick="CloudUI.setSettingsCat('appearance')">Appearance</button>
+            <button class="rail-btn" data-scat="controls" onclick="CloudUI.setSettingsCat('controls')">Controls Rig</button>
+            <button class="rail-btn" data-scat="client" onclick="CloudUI.setSettingsCat('client')">Cloud Client</button>
+            <button class="rail-btn" data-scat="about" onclick="CloudUI.setSettingsCat('about')">About</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 5: VAULT (Instance Vault Grid) -->
+      <section class="screen" id="screen-vault">
+        <div class="glass-panel scroll-pane" style="width:100%;height:100%;">
+          <div class="setting-row">
+            <div>
+              <div class="setting-title">CLOUD INSTANCE VAULT</div>
+              <div class="setting-sub">Select, launch, clone, rename, or manage mods for each Minecraft profile</div>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button class="mini-btn" onclick="CloudUI.refreshAll()">↻ REFRESH</button>
+              <button class="ignite-btn" onclick="CloudUI.go('forge')">+ NEW INSTANCE</button>
+            </div>
+          </div>
+          <div id="vault-grid" class="cards-grid"></div>
+        </div>
+      </section>
+
+      <!-- SCREEN 6: CLIENT & ACCOUNT VAULT -->
+      <section class="screen" id="screen-client">
+        <div class="hq-grid" style="grid-template-columns: 1.08fr 1.25fr;">
+          <!-- Left: Account Vault -->
+          <div class="glass-panel scroll-pane">
+            <div class="card-eyebrow">ACCOUNT VAULT · MICROSOFT &amp; OFFLINE</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              <button class="mini-btn primary" onclick="CloudUI.microsoftLogin()">🔐 MICROSOFT LOGIN</button>
+              <button class="mini-btn" onclick="CloudUI.pickSkinFile()">🎨 EQUIP .PNG SKIN</button>
+            </div>
+            <div style="display:flex;gap:6px;">
+              <input id="offline-username" class="prism-input" style="flex:1;" placeholder="Enter Offline Username (e.g. Cloud_OP)">
+              <button class="mini-btn primary" onclick="CloudUI.createOffline()">+ ADD OFFLINE</button>
+            </div>
+            <div id="accounts-list" style="display:flex;flex-direction:column;gap:6px;"></div>
+          </div>
+
+          <!-- Right: Cloud Client PvP & HUD Modules -->
+          <div class="glass-panel scroll-pane">
+            <div class="card-eyebrow">CLOUD CLIENT PVP &amp; IN-GAME HUD MODULES</div>
+            <div id="client-modules-list" style="display:flex;flex-direction:column;gap:7px;"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PACKS (Shaders & Resource Packs) -->
+      <section class="screen" id="screen-packs">
+        <div class="glass-panel scroll-pane" style="width:100%;height:100%;">
+          <div class="setting-row" style="flex-wrap:wrap;">
+            <div style="display:flex;align-items:center;gap:8px;flex:1;">
+              <button class="mini-btn primary" id="pack-tab-shader" onclick="CloudUI.setPackKind('shader')">✨ SHADERS</button>
+              <button class="mini-btn" id="pack-tab-rp" onclick="CloudUI.setPackKind('resourcepack')">🎨 RESOURCE PACKS</button>
+              <input id="packs-query" class="prism-input" style="flex:1;" placeholder="Search Complementary, BSL, Faithful, Bare Bones..." onkeydown="if(event.key==='Enter')CloudUI.searchPacks()">
+              <button class="mini-btn primary" onclick="CloudUI.searchPacks()">SEARCH</button>
+            </div>
+          </div>
+          <div id="packs-grid" class="cards-grid"></div>
+        </div>
+      </section>
+
+      <!-- REALMS (Multiplayer Servers) -->
+      <section class="screen" id="screen-realms">
+        <div class="glass-panel scroll-pane" style="width:100%;height:100%;">
+          <div class="setting-row" style="flex-wrap:wrap;">
+            <span class="card-eyebrow">MULTIPLAYER REALMS &amp; DIRECT JOIN</span>
+            <div style="display:flex;gap:6px;flex:1;justify-content:flex-end;">
+              <input id="srv-name" class="prism-input" style="width:140px;" placeholder="Server Name">
+              <input id="srv-addr" class="prism-input" style="width:180px;" placeholder="play.example.net">
+              <button class="mini-btn primary" onclick="CloudUI.addServer()">+ ADD SERVER</button>
+            </div>
+          </div>
+          <div id="realms-grid" class="cards-grid"></div>
+        </div>
+      </section>
+
+      <!-- CREW (Squad & Community) -->
+      <section class="screen" id="screen-crew">
+        <div class="glass-panel scroll-pane" style="width:100%;height:100%;">
+          <div class="setting-row">
+            <div>
+              <div class="setting-title">CLOUD CREW &amp; SQUAD PARTY</div>
+              <div class="setting-sub">Share your Cloud Squad Tag or launch directly into multiplayer servers with friends</div>
+            </div>
+            <button class="ignite-btn" onclick="CloudUI.openDiscord()">💬 JOIN CLOUD DISCORD</button>
+          </div>
+          <div class="cards-grid" id="crew-cards"></div>
+        </div>
+      </section>
+
+      <!-- OPS (Quick Operations) -->
+      <section class="screen" id="screen-ops">
+        <div class="glass-panel scroll-pane" style="width:100%;height:100%;">
+          <div class="card-eyebrow">CLOUD OPERATIONS &amp; DIAGNOSTICS</div>
+          <div class="cards-grid">
+            <div class="item-card">
+              <div class="setting-title">📦 Run .JAR Mod Installer</div>
+              <div class="setting-sub">Execute Forge, OptiFine, Fabric, or LabyMod .jar installers directly</div>
+              <button class="mini-btn primary" onclick="CloudUI.runJarInstaller()">SELECT .JAR FILE</button>
+            </div>
+            <div class="item-card">
+              <div class="setting-title">🎮 Touch Controls Rig Editor</div>
+              <div class="setting-sub">Customize on-screen buttons, opacity, size, and hotbar</div>
+              <button class="mini-btn primary" onclick="CloudUI.openControlsRig()">OPEN CONTROLS RIG</button>
+            </div>
+            <div class="item-card">
+              <div class="setting-title">🕹 Hardware Gamepad Mapper</div>
+              <div class="setting-sub">Bind Xbox, PlayStation, or telescopic USB-C controllers</div>
+              <button class="mini-btn primary" onclick="CloudUI.openGamepad()">MAP CONTROLLER</button>
+            </div>
+            <div class="item-card">
+              <div class="setting-title">🧹 Clear Launcher Cache</div>
+              <div class="setting-sub">Refresh version metadata &amp; free temporary cache files</div>
+              <button class="mini-btn primary" onclick="CloudUI.clearCache()">CLEAR CACHE</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- FILES (Prism File Explorer) -->
+      <section class="screen" id="screen-files">
+        <div class="glass-panel scroll-pane" style="width:100%;height:100%;">
+          <div class="setting-row" style="flex-wrap:wrap;">
+            <div>
+              <div class="setting-title">CLOUD FILE EXPLORER</div>
+              <div class="setting-sub" id="files-current-path">.minecraft</div>
+            </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              <button class="mini-btn" onclick="CloudUI.browseSub('')">ROOT</button>
+              <button class="mini-btn" onclick="CloudUI.browseSub('mods')">mods/</button>
+              <button class="mini-btn" onclick="CloudUI.browseSub('shaderpacks')">shaderpacks/</button>
+              <button class="mini-btn" onclick="CloudUI.browseSub('resourcepacks')">resourcepacks/</button>
+              <button class="mini-btn" onclick="CloudUI.browseSub('saves')">saves/</button>
+              <button class="mini-btn primary" onclick="CloudUI.openNativeFolder()">OPEN IN ANDROID</button>
+            </div>
+          </div>
+          <div id="files-list" style="display:flex;flex-direction:column;gap:5px;"></div>
+        </div>
+      </section>
+
+      <!-- CONSOLE (Live Log Viewer) -->
+      <section class="screen" id="screen-console">
+        <div class="glass-panel scroll-pane" style="width:100%;height:100%;">
+          <div class="setting-row">
+            <div>
+              <div class="setting-title">LIVEJVM &amp; RENDERER CONSOLE LOG</div>
+              <div class="setting-sub">Real-time latestlog.txt output from Cloud Launcher</div>
+            </div>
+            <div style="display:flex;gap:6px;">
+              <button class="mini-btn" onclick="CloudUI.loadConsole()">↻ REFRESH</button>
+              <button class="mini-btn primary" onclick="CloudUI.shareLogs()">📤 SHARE LOG</button>
+            </div>
+          </div>
+          <pre id="console-output" style="flex:1;margin:0;padding:12px;border-radius:14px;background:#0f172a;color:#e2e8f0;font-size:10.5px;overflow:auto;white-space:pre-wrap;user-select:text;">Cloud Launcher Engine Initialized.</pre>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Bottom Floating Frosted Pill Dock -->
+  <div class="bottom-dock-wrap">
+    <nav class="bottom-dock">
+      <button class="dock-btn plus-cloud" data-dock="forge" onclick="CloudUI.go('forge')">+ CLOUD</button>
+      <button class="dock-btn active" data-dock="hq" onclick="CloudUI.go('hq')">HQ</button>
+      <button class="dock-btn" data-dock="vault" onclick="CloudUI.go('vault')">VAULT</button>
+      <button class="dock-btn" data-dock="forge2" onclick="CloudUI.go('forge')">+ FORGE</button>
+      <button class="dock-btn" data-dock="armory" onclick="CloudUI.go('armory')">ARMORY</button>
+      <button class="dock-btn" data-dock="packs" onclick="CloudUI.go('packs')">PACKS</button>
+      <button class="dock-btn" data-dock="realms" onclick="CloudUI.go('realms')">REALMS</button>
+      <button class="dock-btn" data-dock="client" onclick="CloudUI.go('client')">CLIENT</button>
+      <button class="dock-btn" data-dock="crew" onclick="CloudUI.go('crew')">CREW</button>
+    </nav>
+  </div>
+
+  <div id="cloud-toast"></div>
+  <script src="app.js"></script>
+</body>
+</html>
