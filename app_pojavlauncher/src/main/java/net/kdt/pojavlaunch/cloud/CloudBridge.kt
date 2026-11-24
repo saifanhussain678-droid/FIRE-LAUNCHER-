@@ -1,10 +1,8 @@
 package net.kdt.pojavlaunch.cloud
 
-import android.app.Activity
 import android.content.Context
 import android.graphics.BitmapFactory
 import android.net.Uri
-import android.os.Build
 import android.util.Base64
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
@@ -15,14 +13,18 @@ import net.kdt.pojavlaunch.extra.ExtraConstants
 import net.kdt.pojavlaunch.extra.ExtraCore
 import net.kdt.pojavlaunch.fragments.MicrosoftLoginFragment
 import net.kdt.pojavlaunch.instances.Instances
+import net.kdt.pojavlaunch.modloaders.FabriclikeUtils
 import net.kdt.pojavlaunch.prefs.LauncherPreferences
 import net.kdt.pojavlaunch.progresskeeper.ProgressKeeper
+import net.kdt.pojavlaunch.utils.FileUtils
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
 import java.io.FileOutputStream
 import java.net.HttpURLConnection
 import java.net.URL
+import java.net.URLEncoder
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.max
 import kotlin.math.min
 
@@ -37,6 +39,55 @@ class CloudBridge(
     @Volatile private var customDlActive: Boolean = false
     @Volatile private var customDlTitle: String = ""
     @Volatile private var customDlPct: Int = 0
+
+    private val cachedLoaderMap = ConcurrentHashMap<String, List<AerixLoaderVersion>>()
+    @Volatile private var cachedMojangVersions: List<Pair<String, String>> = emptyList()
+
+    init {
+        // Warm up Mojang version manifest in background so Releases & Snapshots are always ready
+        Thread({
+            try {
+                val txt = httpGet("https://piston-meta.mojang.com/mc/game/version_manifest_v2.json")
+                if (!txt.isNullOrBlank()) {
+                    val arr = JSONObject(txt).optJSONArray("versions")
+                    if (arr != null && arr.length() > 0) {
+                        val out = ArrayList<Pair<String, String>>(arr.length())
+                        for (i in 0 until arr.length()) {
+                            val o = arr.getJSONObject(i)
+                            val id = o.optString("id")
+                            val rawType = o.optString("type")
+                            if (id.isNotBlank()) {
+                                val t = if (rawType == "release") "RELEASE" else "SNAPSHOT"
+                                out.add(id to t)
+                            }
+                        }
+                        cachedMojangVersions = out
+                        evalJs("window.CloudUI && CloudUI.syncFromNative()")
+                    }
+                }
+            } catch (_: Throwable) {}
+        }, "CloudManifestWarmup").start()
+    }
+
+    private fun httpGet(urlStr: String): String? {
+        var conn: HttpURLConnection? = null
+        return try {
+            conn = (URL(urlStr).openConnection() as HttpURLConnection).apply {
+                connectTimeout = 12_000
+                readTimeout = 18_000
+                instanceFollowRedirects = true
+                setRequestProperty("User-Agent", "CloudLauncher/2.5 (Android)")
+                setRequestProperty("Accept", "application/json")
+            }
+            if (conn.responseCode in 200..299) {
+                conn.inputStream.bufferedReader(Charsets.UTF_8).use { it.readText() }
+            } else null
+        } catch (_: Throwable) {
+            null
+        } finally {
+            conn?.disconnect()
+        }
+    }
 
     private fun prefs() = LauncherPreferences.DEFAULT_PREF
         ?: appCtx.getSharedPreferences("${appCtx.packageName}_preferences", Context.MODE_PRIVATE)
@@ -78,10 +129,12 @@ class CloudBridge(
 
             val accArr = JSONArray()
             val allAccs = PojavAccountBridge.accounts
-            for (a in allAccs) {
+            for ((idx, a) in allAccs.withIndex()) {
                 val ao = JSONObject()
+                ao.put("index", idx)
                 ao.put("username", a.username)
                 ao.put("type", a.authType.name)
+                ao.put("isMicrosoft", a.authType.name.contains("MICROSOFT", ignoreCase = true) || a.authType.name.contains("MSA", ignoreCase = true))
                 ao.put("selected", curAcc != null && curAcc.key == a.key)
                 accArr.put(ao)
             }
@@ -89,12 +142,14 @@ class CloudBridge(
 
             val selInst = PojavInstanceBridge.selected
             val instList = PojavInstanceBridge.instances
-            obj.put("selectedInstance", selInst?.name ?: "Cloud 1.21.4")
+            obj.put("selectedInstance", selInst?.name ?: "Fabric 1.21.4")
             obj.put("selectedVersion", selInst?.versionId ?: "1.21.4")
 
             val instArr = JSONArray()
-            for (inst in instList) {
+            for ((idx, inst) in instList.withIndex()) {
                 val io = JSONObject()
+                io.put("index", idx)
+                io.put("id", idx.toString())
                 io.put("name", inst.name)
                 io.put("versionId", inst.versionId)
                 io.put("selected", selInst != null && selInst.source === inst.source)
@@ -117,6 +172,7 @@ class CloudBridge(
                     val ro = JSONObject()
                     ro.put("id", id)
                     ro.put("label", lbl)
+                    ro.put("name", lbl)
                     rendArr.put(ro)
                     if (id == curRenderer) curRendererLabel = lbl
                 }
@@ -126,7 +182,7 @@ class CloudBridge(
                     "vulkan_zink" to "Mesa Zink (Vulkan Desktop GL)",
                     "opengles3_ltw" to "LTW GLES 3.2 Translator"
                 )) {
-                    rendArr.put(JSONObject().put("id", id).put("label", lbl))
+                    rendArr.put(JSONObject().put("id", id).put("label", lbl).put("name", lbl))
                     if (id == curRenderer) curRendererLabel = lbl
                 }
             }
@@ -156,7 +212,7 @@ class CloudBridge(
             val hasTasks = customDlActive || PojavTaskBridge.hasTasks() || ProgressKeeper.hasOngoingTasks()
             obj.put("taskActive", hasTasks)
             obj.put("taskTitle", if (customDlActive) customDlTitle else "Cloud Engine Downloading Assets...")
-            obj.put("taskPct", if (customDlActive) customDlPct else if (hasTasks) 55 else 0)
+            obj.put("taskPct", if (customDlActive) customDlPct else if (hasTasks) 58 else 0)
             obj.toString()
         } catch (t: Throwable) {
             JSONObject().put("accountName", "Cloud_OP").toString()
@@ -176,19 +232,311 @@ class CloudBridge(
     @JavascriptInterface
     fun getVersionsJson(): String {
         val arr = JSONArray()
+        val seen = HashSet<String>()
         val list = runCatching { PojavCreateInstanceBridge.gameVersions() }.getOrDefault(emptyList())
         for (v in list) {
-            val o = JSONObject()
-            o.put("id", v.id)
-            o.put("type", v.type.name)
-            arr.put(o)
+            if (seen.add(v.id)) {
+                arr.put(JSONObject().put("id", v.id).put("type", v.type.name))
+            }
+        }
+        for ((id, t) in cachedMojangVersions) {
+            if (seen.add(id)) {
+                arr.put(JSONObject().put("id", id).put("type", t))
+            }
+        }
+        if (arr.length() == 0) {
+            val defaults = listOf(
+                "1.21.4" to "RELEASE", "1.21.3" to "RELEASE", "1.21.1" to "RELEASE",
+                "1.20.6" to "RELEASE", "1.20.4" to "RELEASE", "1.20.2" to "RELEASE",
+                "1.20.1" to "RELEASE", "1.19.4" to "RELEASE", "1.19.2" to "RELEASE",
+                "1.18.2" to "RELEASE", "1.17.1" to "RELEASE", "1.16.5" to "RELEASE",
+                "1.12.2" to "RELEASE", "1.8.9" to "RELEASE", "1.7.10" to "RELEASE",
+                "25w09b" to "SNAPSHOT", "24w45a" to "SNAPSHOT"
+            )
+            for ((id, t) in defaults) {
+                arr.put(JSONObject().put("id", id).put("type", t))
+            }
         }
         return arr.toString()
     }
 
     @JavascriptInterface
+    fun fetchLoaderVersionsAsync(loaderName: String, mcVersion: String) {
+        Thread({
+            val upper = loaderName.uppercase()
+            val arr = JSONArray()
+            try {
+                val loaderEnum = runCatching { AerixLoader.valueOf(upper) }.getOrNull()
+                if (loaderEnum != null && loaderEnum != AerixLoader.VANILLA) {
+                    val nativeList = runCatching {
+                        PojavCreateInstanceBridge.loadLoaderVersions(loaderEnum, mcVersion)
+                    }.getOrDefault(emptyList())
+
+                    if (nativeList.isNotEmpty()) {
+                        cachedLoaderMap["$upper:$mcVersion"] = nativeList
+                        for (lv in nativeList.take(35)) {
+                            val prefix = when (loaderEnum) {
+                                AerixLoader.FABRIC -> "Fabric Loader "
+                                AerixLoader.QUILT -> "Quilt Loader "
+                                AerixLoader.FORGE -> "Forge "
+                                AerixLoader.NEOFORGE -> "NeoForge "
+                                else -> ""
+                            }
+                            val label = if (lv.label.startsWith(prefix, true)) lv.label else "$prefix${lv.label}"
+                            arr.put(JSONObject().put("id", lv.id).put("label", label).put("stable", lv.stable))
+                        }
+                    }
+                }
+
+                // Direct resilient HTTP fallback if PojavCreateInstanceBridge returned empty!
+                if (arr.length() == 0) {
+                    val encVer = URLEncoder.encode(mcVersion, "UTF-8")
+                    when (upper) {
+                        "FABRIC" -> {
+                            val raw = httpGet("https://meta.fabricmc.net/v2/versions/loader/$encVer")
+                            if (!raw.isNullOrBlank()) {
+                                val ja = JSONArray(raw)
+                                for (i in 0 until min(30, ja.length())) {
+                                    val lo = ja.getJSONObject(i).getJSONObject("loader")
+                                    val v = lo.getString("version")
+                                    val st = lo.optBoolean("stable", true)
+                                    arr.put(JSONObject().put("id", v).put("label", "Fabric Loader $v").put("stable", st))
+                                }
+                            }
+                            if (arr.length() == 0) {
+                                for (v in listOf("0.16.10", "0.16.9", "0.16.7", "0.16.5", "0.15.11", "0.14.25")) {
+                                    arr.put(JSONObject().put("id", v).put("label", "Fabric Loader $v").put("stable", true))
+                                }
+                            }
+                        }
+                        "QUILT" -> {
+                            val raw = httpGet("https://meta.quiltmc.org/v3/versions/loader/$encVer")
+                            if (!raw.isNullOrBlank()) {
+                                val ja = JSONArray(raw)
+                                for (i in 0 until min(25, ja.length())) {
+                                    val lo = ja.getJSONObject(i).getJSONObject("loader")
+                                    val v = lo.getString("version")
+                                    arr.put(JSONObject().put("id", v).put("label", "Quilt Loader $v").put("stable", !v.contains("beta")))
+                                }
+                            }
+                            if (arr.length() == 0) {
+                                for (v in listOf("0.27.1", "0.26.4", "0.25.0")) {
+                                    arr.put(JSONObject().put("id", v).put("label", "Quilt Loader $v").put("stable", true))
+                                }
+                            }
+                        }
+                        "FORGE" -> {
+                            val raw = httpGet("https://files.minecraftforge.net/net/minecraftforge/forge/promotions_slim.json")
+                            if (!raw.isNullOrBlank()) {
+                                val promos = JSONObject(raw).optJSONObject("promos")
+                                val rec = promos?.optString("$mcVersion-recommended", "") ?: ""
+                                val lat = promos?.optString("$mcVersion-latest", "") ?: ""
+                                if (rec.isNotBlank()) {
+                                    arr.put(JSONObject().put("id", "$mcVersion-$rec").put("label", "Forge $rec (Recommended)").put("stable", true))
+                                }
+                                if (lat.isNotBlank() && lat != rec) {
+                                    arr.put(JSONObject().put("id", "$mcVersion-$lat").put("label", "Forge $lat (Latest)").put("stable", false))
+                                }
+                            }
+                        }
+                        "NEOFORGE" -> {
+                            val raw = httpGet("https://maven.neoforged.net/api/maven/versions/releases/net/neoforged/neoforge")
+                            if (!raw.isNullOrBlank()) {
+                                val parts = mcVersion.split(".")
+                                val nfPrefix = if (parts.size >= 3) "${parts[1]}.${parts[2]}." else if (parts.size == 2) "${parts[1]}.0." else ""
+                                val vers = JSONObject(raw).optJSONArray("versions")
+                                if (vers != null && nfPrefix.isNotEmpty()) {
+                                    val matches = ArrayList<String>()
+                                    for (i in 0 until vers.length()) {
+                                        val v = vers.getString(i)
+                                        if (v.startsWith(nfPrefix)) matches.add(v)
+                                    }
+                                    for (v in matches.asReversed().take(20)) {
+                                        arr.put(JSONObject().put("id", v).put("label", "NeoForge $v").put("stable", !v.contains("beta")))
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (_: Throwable) {}
+
+            evalJs("window.CloudUI && CloudUI.onLoaderVersionsLoaded(${JSONObject.quote(upper)}, ${JSONObject.quote(mcVersion)}, ${arr.toString()})")
+        }, "CloudLoaderFetch").start()
+    }
+
+    private fun buildOfflineFabricProfileJson(mcVersion: String, loaderBuild: String): Pair<String, String> {
+        val versionId = "fabric-loader-$loaderBuild-$mcVersion"
+        val root = JSONObject()
+        root.put("id", versionId)
+        root.put("inheritsFrom", mcVersion)
+        root.put("type", "release")
+        root.put("mainClass", "net.fabricmc.loader.impl.launch.knot.KnotClient")
+        val args = JSONObject()
+        args.put("game", JSONArray())
+        args.put("jvm", JSONArray().put("-DFabricMcEmu= net.minecraft.client.main.Main "))
+        root.put("arguments", args)
+
+        val libs = JSONArray()
+        fun addLib(coord: String, repo: String = "https://maven.fabricmc.net/") {
+            libs.put(JSONObject().put("name", coord).put("url", repo))
+        }
+        addLib("net.fabricmc:tiny-mappings-parser:0.3.0+build.17")
+        addLib("net.fabricmc:sponge-mixin:0.15.4+mixin.0.8.7")
+        addLib("net.fabricmc:tiny-remapper:0.10.4")
+        addLib("net.fabricmc:access-widener:2.1.0")
+        addLib("org.ow2.asm:asm:9.7.1")
+        addLib("org.ow2.asm:asm-analysis:9.7.1")
+        addLib("org.ow2.asm:asm-commons:9.7.1")
+        addLib("org.ow2.asm:asm-tree:9.7.1")
+        addLib("org.ow2.asm:asm-util:9.7.1")
+        addLib("net.fabricmc:intermediary:$mcVersion")
+        addLib("net.fabricmc:fabric-loader:$loaderBuild")
+        root.put("libraries", libs)
+        return versionId to root.toString(2)
+    }
+
+    private fun installFabricOrQuiltDirect(isQuilt: Boolean, mcVersion: String, buildId: String): String {
+        val chosen = buildId.ifBlank { if (isQuilt) "0.27.1" else "0.16.10" }
+        // 1. Try Pojav's FabriclikeUtils first
+        val utils = if (isQuilt) FabriclikeUtils.QUILT_UTILS else FabriclikeUtils.FABRIC_UTILS
+        val viaPojav = runCatching { utils.install(mcVersion, chosen) }.getOrNull()
+        if (!viaPojav.isNullOrBlank()) return viaPojav
+
+        // 2. Direct HTTPS fetch to official Fabric/Quilt profile endpoint
+        val encMc = URLEncoder.encode(mcVersion, "UTF-8")
+        val encBuild = URLEncoder.encode(chosen, "UTF-8")
+        val profileUrl = if (isQuilt) {
+            "https://meta.quiltmc.org/v3/versions/loader/$encMc/$encBuild/profile/json"
+        } else {
+            "https://meta.fabricmc.net/v2/versions/loader/$encMc/$encBuild/profile/json"
+        }
+        val downloadedJson = httpGet(profileUrl)
+        if (!downloadedJson.isNullOrBlank()) {
+            val parsedId = runCatching { JSONObject(downloadedJson).getString("id") }.getOrNull()
+            if (!parsedId.isNullOrBlank()) {
+                val dir = File(Tools.DIR_HOME_VERSION, parsedId)
+                FileUtils.ensureDirectory(dir)
+                Tools.write(File(dir, "$parsedId.json"), downloadedJson)
+                return parsedId
+            }
+        }
+
+        // 3. Guaranteed synthesized Mojang-compatible Fabric profile fallback
+        val (synId, synJson) = buildOfflineFabricProfileJson(mcVersion, chosen)
+        val dir = File(Tools.DIR_HOME_VERSION, synId)
+        FileUtils.ensureDirectory(dir)
+        Tools.write(File(dir, "$synId.json"), synJson)
+        return synId
+    }
+
+    @JavascriptInterface
+    fun createInstance(loaderName: String, mcVersion: String, instanceName: String) {
+        createInstanceWithBuild(loaderName, mcVersion, "", instanceName)
+    }
+
+    @JavascriptInterface
+    fun createInstanceWithBuild(loaderName: String, mcVersion: String, buildId: String, instanceName: String) {
+        Thread({
+            try {
+                val upper = loaderName.uppercase()
+                val cleanName = instanceName.trim().ifBlank { "$loaderName $mcVersion" }
+                val prefix = upper.lowercase().replace(Regex("[^a-z0-9_-]"), "")
+
+                customDlActive = true
+                customDlTitle = "Installing $cleanName..."
+                customDlPct = 22
+                evalJs("window.CloudUI && CloudUI.onDownloadProgress(true, ${JSONObject.quote(customDlTitle)}, 22)")
+
+                when (upper) {
+                    "VANILLA" -> {
+                        customDlPct = 75
+                        val created = Instances.createInstance({ inst ->
+                            inst.name = cleanName
+                            inst.versionId = mcVersion
+                            inst.icon = "vanilla"
+                            inst.sharedData = true
+                        }, "vanilla")
+                        if (created != null) {
+                            Instances.setSelectedInstance(created)
+                        }
+                        PojavInstanceBridge.reload()
+                        customDlActive = false
+                        evalJs("window.CloudUI && CloudUI.onDownloadProgress(false, '', 100)")
+                        evalJs("window.CloudUI && CloudUI.onInstanceCreated(true, ${JSONObject.quote("Installed $cleanName!")})")
+                    }
+
+                    "FABRIC", "QUILT" -> {
+                        val isQuilt = upper == "QUILT"
+                        val chosenBuild = buildId.ifBlank { if (isQuilt) "0.27.1" else "0.16.10" }
+                        customDlTitle = "Installing $cleanName (Loader $chosenBuild)..."
+                        customDlPct = 55
+                        evalJs("window.CloudUI && CloudUI.onDownloadProgress(true, ${JSONObject.quote(customDlTitle)}, 55)")
+
+                        val installedVersionId = installFabricOrQuiltDirect(isQuilt, mcVersion, chosenBuild)
+                        customDlPct = 90
+                        val created = Instances.createInstance({ inst ->
+                            inst.name = cleanName
+                            inst.versionId = installedVersionId
+                            inst.icon = if (isQuilt) "quilt" else "fabric"
+                            inst.sharedData = true
+                        }, prefix)
+                        if (created != null) {
+                            Instances.setSelectedInstance(created)
+                        }
+                        PojavInstanceBridge.reload()
+                        customDlActive = false
+                        evalJs("window.CloudUI && CloudUI.onDownloadProgress(false, '', 100)")
+                        evalJs("window.CloudUI && CloudUI.onInstanceCreated(true, ${JSONObject.quote("Installed $cleanName ($chosenBuild)!")})")
+                    }
+
+                    else -> {
+                        // FORGE / NEOFORGE / OPTIFINE
+                        val loaderEnum = runCatching { AerixLoader.valueOf(upper) }.getOrDefault(AerixLoader.FORGE)
+                        customDlPct = 45
+                        val cached = cachedLoaderMap["$upper:$mcVersion"]
+                            ?: runCatching { PojavCreateInstanceBridge.loadLoaderVersions(loaderEnum, mcVersion) }.getOrDefault(emptyList())
+                        val loaderVer = cached.firstOrNull { it.id == buildId }
+                            ?: cached.firstOrNull()
+                            ?: if (buildId.isNotBlank()) AerixLoaderVersion(buildId, buildId, true, null) else null
+
+                        // Wait briefly if startup metadata task is still finishing
+                        var tries = 0
+                        while (ProgressKeeper.hasOngoingTasks() && tries < 10) {
+                            Thread.sleep(250)
+                            tries++
+                        }
+
+                        customDlPct = 72
+                        Tools.runOnUiThread {
+                            PojavCreateInstanceBridge.install(
+                                appCtx,
+                                loaderEnum,
+                                mcVersion,
+                                loaderVer,
+                                cleanName,
+                                null
+                            ) { ok ->
+                                customDlActive = false
+                                PojavInstanceBridge.reload()
+                                evalJs("window.CloudUI && CloudUI.onDownloadProgress(false, '', 100)")
+                                val msg = if (ok) "Installer launched for $cleanName!" else "Select a supported version for $upper"
+                                evalJs("window.CloudUI && CloudUI.onInstanceCreated($ok, ${JSONObject.quote(msg)})")
+                            }
+                        }
+                    }
+                }
+            } catch (t: Throwable) {
+                customDlActive = false
+                evalJs("window.CloudUI && CloudUI.onDownloadProgress(false, '', 0)")
+                evalJs("window.CloudUI && CloudUI.onInstanceCreated(false, ${JSONObject.quote("Error: " + (t.message ?: "Install failed"))})")
+            }
+        }, "CloudCreateInstance").start()
+    }
+
+    @JavascriptInterface
     fun launchGame(): String {
-        var retMsg = "Igniting Minecraft..."
+        val retMsg = "Igniting Minecraft..."
         Tools.runOnUiThread {
             try {
                 if (PojavAccountBridge.current == null) {
@@ -243,46 +591,6 @@ class CloudBridge(
     }
 
     @JavascriptInterface
-    fun createInstance(loaderName: String, mcVersion: String, instanceName: String) {
-        Thread({
-            try {
-                customDlActive = true
-                customDlTitle = "Preparing $instanceName ($loaderName $mcVersion)..."
-                customDlPct = 25
-                val loader = runCatching { AerixLoader.valueOf(loaderName.uppercase()) }.getOrDefault(AerixLoader.VANILLA)
-                val loaderVer: AerixLoaderVersion? = if (loader == AerixLoader.VANILLA) {
-                    null
-                } else {
-                    customDlPct = 45
-                    runCatching { PojavCreateInstanceBridge.loadLoaderVersions(loader, mcVersion).firstOrNull() }.getOrNull()
-                }
-                customDlPct = 70
-                Tools.runOnUiThread {
-                    PojavCreateInstanceBridge.install(
-                        appCtx,
-                        loader,
-                        mcVersion,
-                        loaderVer,
-                        instanceName.ifBlank { "Cloud $mcVersion" },
-                        null
-                    ) { ok ->
-                        customDlActive = false
-                        PojavInstanceBridge.reload()
-                        if (!ok) {
-                            evalJs("window.CloudUI && CloudUI.toast('Instance setup finished — check Vault!')")
-                        } else {
-                            evalJs("window.CloudUI && (CloudUI.syncFromNative(), CloudUI.go('hq'), CloudUI.toast('Created ' + ${JSONObject.quote(instanceName)} + '!'))")
-                        }
-                    }
-                }
-            } catch (t: Throwable) {
-                customDlActive = false
-                evalJs("window.CloudUI && CloudUI.toast('Error: ' + ${JSONObject.quote(t.message ?: "Failed")})")
-            }
-        }, "CloudCreateInstance").start()
-    }
-
-    @JavascriptInterface
     fun renameInstance(index: Int, newName: String) {
         Tools.runOnUiThread {
             val list = PojavInstanceBridge.instances
@@ -327,6 +635,7 @@ class CloudBridge(
             prefs().edit().putString("cloud_last_user", clean).apply()
             PojavAccountBridge.createOfflineAccount(clean)
             PojavAccountBridge.reload()
+            evalJs("window.CloudUI && CloudUI.syncFromNative()")
         }
     }
 
@@ -336,6 +645,8 @@ class CloudBridge(
             val list = PojavAccountBridge.accounts
             if (index in list.indices) {
                 PojavAccountBridge.select(list[index])
+                PojavAccountBridge.reload()
+                evalJs("window.CloudUI && CloudUI.syncFromNative()")
             }
         }
     }
@@ -346,6 +657,8 @@ class CloudBridge(
             val list = PojavAccountBridge.accounts
             if (index in list.indices) {
                 PojavAccountBridge.delete(list[index])
+                PojavAccountBridge.reload()
+                evalJs("window.CloudUI && CloudUI.syncFromNative()")
             }
         }
     }
@@ -488,7 +801,7 @@ class CloudBridge(
                     connectTimeout = 15_000
                     readTimeout = 30_000
                     instanceFollowRedirects = true
-                    setRequestProperty("User-Agent", "CloudLauncher/2.4.7 (Android)")
+                    setRequestProperty("User-Agent", "CloudLauncher/2.5 (Android)")
                 }
                 val total = conn.contentLengthLong
                 conn.inputStream.use { input ->

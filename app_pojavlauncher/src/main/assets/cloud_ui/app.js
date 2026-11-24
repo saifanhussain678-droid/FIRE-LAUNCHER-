@@ -1,86 +1,75 @@
 (function () {
-  const BUILTIN_SKINS = [
-    "skins/skin_cloud_op.png",
-    "skins/skin_prism_striker.png",
-    "skins/skin_sakura_mage.png",
-    "skins/skin_crystal_gold.png"
+  const bridge = () => (typeof window.CloudBridge !== "undefined" ? window.CloudBridge : null);
+
+  const PRESET_SKINS = [
+    { name: "Prism Steve", url: "skins/steve.png", slim: false },
+    { name: "Prism Alex", url: "skins/alex.png", slim: true }
   ];
 
-  const DEFAULT_VERSIONS = [
-    { id: "1.21.4", type: "RELEASE" },
-    { id: "1.21.3", type: "RELEASE" },
-    { id: "1.21.1", type: "RELEASE" },
-    { id: "1.20.6", type: "RELEASE" },
-    { id: "1.20.4", type: "RELEASE" },
-    { id: "1.20.2", type: "RELEASE" },
-    { id: "1.20.1", type: "RELEASE" },
-    { id: "1.19.4", type: "RELEASE" },
-    { id: "1.18.2", type: "RELEASE" },
-    { id: "1.17.1", type: "RELEASE" },
-    { id: "1.16.5", type: "RELEASE" },
-    { id: "1.12.2", type: "RELEASE" },
-    { id: "1.8.9", type: "RELEASE" }
+  const FALLBACK_FABRIC_BUILDS = [
+    { id: "0.16.10", label: "Fabric Loader 0.16.10", stable: true },
+    { id: "0.16.9", label: "Fabric Loader 0.16.9", stable: true },
+    { id: "0.16.7", label: "Fabric Loader 0.16.7", stable: true },
+    { id: "0.16.5", label: "Fabric Loader 0.16.5", stable: true },
+    { id: "0.15.11", label: "Fabric Loader 0.15.11", stable: true },
+    { id: "0.14.25", label: "Fabric Loader 0.14.25", stable: true }
   ];
 
-  const DEFAULT_SERVERS = [
-    { name: "Hypixel Network", address: "mc.hypixel.net", mode: "SkyWars · BedWars · SkyBlock" },
-    { name: "Minemen Club", address: "na.minemen.club", mode: "Competitive 1.8 / 1.20 PvP" },
-    { name: "Hoplite", address: "hoplite.gg", mode: "1.20+ Battle Royale & Duels" },
-    { name: "MCC Island", address: "play.mccisland.net", mode: "Modern Minigames · 1.21" }
+  const FALLBACK_QUILT_BUILDS = [
+    { id: "0.27.1", label: "Quilt Loader 0.27.1", stable: true },
+    { id: "0.26.4", label: "Quilt Loader 0.26.4", stable: true },
+    { id: "0.25.0", label: "Quilt Loader 0.25.0", stable: true }
   ];
 
   const state = {
     screen: "hq",
     settingsCat: "fps",
-    forgeLoader: "VANILLA",
-    forgeType: "RELEASE",
-    selectedMcVer: "1.21.4",
+    versionFilter: "RELEASE",
+    selectedMcVersion: "1.21.4",
+    modloader: "FABRIC",
+    selectedLoaderBuild: "0.16.10",
+    loaderBuilds: FALLBACK_FABRIC_BUILDS.slice(),
+    loadingBuilds: false,
+    slimModel: false,
+    skinWalking: true,
     packKind: "shader",
     skinIdx: 0,
-    viewer: null,
-    data: {
-      accountName: "Cloud_OP",
-      accountType: "ONLINE ID",
-      skinDataUrl: "",
-      accounts: [],
-      selectedInstance: "Prism PvP 1.21.4",
-      selectedVersion: "1.21.4",
-      instances: [],
+    customSkinData: localStorage.getItem("cloud_custom_skin") || "",
+    preset: localStorage.getItem("cloud_fps_preset") || "6gb",
+    accounts: [],
+    selectedAccount: null,
+    instances: [],
+    selectedInstance: null,
+    versions: [],
+    settings: {
       ramMb: 2816,
       maxRamMb: 8192,
-      freeRamMb: 3200,
       renderer: "opengles2",
-      rendererLabel: "MobileGlues (Vulkan 1.3 / OpenGL 4.6)",
       renderers: [
-        { id: "opengles2", label: "MobileGlues (Vulkan 1.3 / OpenGL 4.6)" },
-        { id: "vulkan_zink", label: "Mesa Zink (Vulkan Desktop GL)" },
-        { id: "opengles3_ltw", label: "LTW GLES 3.2 Translator" }
+        { id: "opengles2", name: "MobileGlues (Vulkan 1.3 / OpenGL 4.6)" },
+        { id: "vulkan_zink", name: "Mesa Zink (Vulkan Desktop GL)" },
+        { id: "opengles3_ltw", name: "LTW GLES 3.2 Translator" }
       ],
-      showRealFps: true,
-      unlock120Hz: true,
+      resolutionScale: 85,
       sustainedPerf: true,
-      fullScreen: true,
-      scaleFactor: 85,
-      jvmArgs: "-XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=50",
+      jvmArgs: "-XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=40",
+      fpsBoxEnabled: true,
       keystrokes: true,
       cpsCounter: true,
       toggleSprint: true,
-      zoomHud: true,
-      crosshair: false,
-      preset: "6gb",
-      versionName: "2.4.7",
-      packageName: "net.kdt.pojavlaunch.cloud",
-      taskActive: false,
-      taskTitle: "",
-      taskPct: 0
+      zoomOverlay: true,
+      crosshair: false
     },
-    versions: DEFAULT_VERSIONS.slice(),
-    servers: JSON.parse(localStorage.getItem("cloud_servers_v1") || "null") || DEFAULT_SERVERS
+    servers: JSON.parse(localStorage.getItem("cloud_servers") || JSON.stringify([
+      { name: "Hypixel Network", addr: "mc.hypixel.net", tag: "Official Account · Minigames" },
+      { name: "MCC Island", addr: "play.mccisland.net", tag: "1.20+ · Fast Arenas" },
+      { name: "Hoplite", addr: "hoplite.gg", tag: "1.20+ · Battle Royale" },
+      { name: "PvP Legacy", addr: "play.pvplegacy.net", tag: "1.20+ · Duels" }
+    ]))
   };
 
-  function bridge() {
-    return window.CloudBridge || null;
-  }
+  let hqSkinViewer = null;
+  let accSkinViewer = null;
 
   function toast(msg) {
     const el = document.getElementById("cloud-toast");
@@ -88,25 +77,142 @@
     el.textContent = msg;
     el.style.display = "block";
     clearTimeout(toast._t);
-    toast._t = setTimeout(() => { el.style.display = "none"; }, 2400);
+    toast._t = setTimeout(() => { el.style.display = "none"; }, 2800);
   }
 
-  function esc(str) {
-    return String(str == null ? "" : str)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
+  function safeParse(raw, fallback) {
+    try { return raw ? JSON.parse(raw) : fallback; } catch (_) { return fallback; }
   }
 
-  function currentSkinUrl() {
-    if (state.data.skinDataUrl && state.data.skinDataUrl.startsWith("data:image/")) {
-      return state.data.skinDataUrl;
+  function refreshStateFromNative() {
+    const nb = bridge();
+    if (!nb) {
+      if (!state.versions.length) {
+        state.versions = [
+          { id: "1.21.4", type: "RELEASE" },
+          { id: "1.21.3", type: "RELEASE" },
+          { id: "1.21.1", type: "RELEASE" },
+          { id: "1.20.6", type: "RELEASE" },
+          { id: "1.20.4", type: "RELEASE" },
+          { id: "1.20.1", type: "RELEASE" },
+          { id: "1.19.4", type: "RELEASE" },
+          { id: "1.18.2", type: "RELEASE" },
+          { id: "1.16.5", type: "RELEASE" },
+          { id: "1.12.2", type: "RELEASE" },
+          { id: "1.8.9", type: "RELEASE" },
+          { id: "25w09b", type: "SNAPSHOT" },
+          { id: "24w45a", type: "SNAPSHOT" }
+        ];
+      }
+      if (!state.instances.length) {
+        state.instances = [
+          { index: 0, name: "Fabric 1.21.4", versionId: "fabric-loader-0.16.10-1.21.4", selected: true }
+        ];
+        state.selectedInstance = state.instances[0];
+      }
+      if (!state.accounts.length) {
+        state.accounts = [{ index: 0, username: "Cloud_OP", isMicrosoft: false, selected: true }];
+        state.selectedAccount = state.accounts[0];
+      }
+      return;
     }
-    return BUILTIN_SKINS[state.skinIdx % BUILTIN_SKINS.length];
+
+    const snap = safeParse(nb.getStateJson(), {});
+    if (Array.isArray(snap.accounts)) {
+      state.accounts = snap.accounts.map((a, idx) => ({
+        index: typeof a.index === "number" ? a.index : idx,
+        username: a.username || "Cloud_OP",
+        isMicrosoft: !!(a.isMicrosoft || String(a.type || "").toUpperCase().includes("MSA") || String(a.type || "").toUpperCase().includes("MICROSOFT")),
+        selected: !!a.selected
+      }));
+    }
+    state.selectedAccount = state.accounts.find(a => a.selected) || state.accounts[0] || null;
+
+    if (snap.skinDataUrl) {
+      state.customSkinData = snap.skinDataUrl;
+    }
+
+    if (Array.isArray(snap.instances)) {
+      state.instances = snap.instances.map((inst, idx) => ({
+        index: typeof inst.index === "number" ? inst.index : idx,
+        name: inst.name || "Instance",
+        versionId: inst.versionId || "1.21.4",
+        selected: !!inst.selected
+      }));
+    }
+    state.selectedInstance = state.instances.find(i => i.selected) || state.instances[0] || null;
+
+    const vers = safeParse(nb.getVersionsJson(), []);
+    if (Array.isArray(vers) && vers.length) {
+      state.versions = vers;
+    }
+
+    if (typeof snap.ramMb === "number") state.settings.ramMb = snap.ramMb;
+    if (typeof snap.maxRamMb === "number") state.settings.maxRamMb = snap.maxRamMb;
+    if (snap.renderer) state.settings.renderer = snap.renderer;
+    if (Array.isArray(snap.renderers) && snap.renderers.length) {
+      state.settings.renderers = snap.renderers.map(r => ({ id: r.id, name: r.name || r.label || r.id }));
+    }
+    if (typeof snap.scaleFactor === "number") state.settings.resolutionScale = snap.scaleFactor;
+    if (typeof snap.sustainedPerf === "boolean") state.settings.sustainedPerf = snap.sustainedPerf;
+    if (typeof snap.jvmArgs === "string") state.settings.jvmArgs = snap.jvmArgs;
+    if (typeof snap.showRealFps === "boolean") state.settings.fpsBoxEnabled = snap.showRealFps;
+    if (typeof snap.keystrokes === "boolean") state.settings.keystrokes = snap.keystrokes;
+    if (typeof snap.cpsCounter === "boolean") state.settings.cpsCounter = snap.cpsCounter;
+    if (typeof snap.toggleSprint === "boolean") state.settings.toggleSprint = snap.toggleSprint;
+    if (typeof snap.zoomHud === "boolean") state.settings.zoomOverlay = snap.zoomHud;
+    if (typeof snap.crosshair === "boolean") state.settings.crosshair = snap.crosshair;
+    if (snap.preset) state.preset = snap.preset;
   }
 
-  function drawTopAvatar(skinSrc) {
+  function activeSkinUrl() {
+    return state.customSkinData || PRESET_SKINS[state.skinIdx % PRESET_SKINS.length].url;
+  }
+
+  function createOrUpdateSkinViewer(hostId, currentViewer, w, h) {
+    const host = document.getElementById(hostId);
+    if (!host) return null;
+    if (typeof window.skinview3d !== "undefined") {
+      try {
+        if (!currentViewer) {
+          host.innerHTML = "";
+          const canvas = document.createElement("canvas");
+          host.appendChild(canvas);
+          currentViewer = new window.skinview3d.SkinViewer({
+            canvas: canvas,
+            width: w,
+            height: h,
+            skin: activeSkinUrl(),
+            model: state.slimModel ? "slim" : "default"
+          });
+          currentViewer.fov = 48;
+          currentViewer.zoom = 0.88;
+          currentViewer.autoRotate = true;
+          currentViewer.autoRotateSpeed = 0.55;
+          if (window.skinview3d.WalkingAnimation) {
+            currentViewer.animation = new window.skinview3d.WalkingAnimation();
+            currentViewer.animation.speed = 0.55;
+          }
+        } else {
+          currentViewer.loadSkin(activeSkinUrl(), { model: state.slimModel ? "slim" : "default" });
+          currentViewer.animationPaused = !state.skinWalking;
+        }
+        return currentViewer;
+      } catch (_) {}
+    }
+    host.innerHTML = `<img src="${activeSkinUrl()}" style="height:135px;image-rendering:pixelated;">`;
+    return null;
+  }
+
+  function init3DSkins() {
+    hqSkinViewer = createOrUpdateSkinViewer("hq-skin-host", hqSkinViewer, 205, 225);
+    if (state.screen === "accounts") {
+      accSkinViewer = createOrUpdateSkinViewer("acc-skin-host", accSkinViewer, 210, 235);
+    }
+    renderTopAvatar();
+  }
+
+  function renderTopAvatar() {
     const c = document.getElementById("top-avatar-canvas");
     if (!c) return;
     const ctx = c.getContext("2d");
@@ -117,468 +223,456 @@
       ctx.drawImage(img, 8, 8, 8, 8, 0, 0, 32, 32);
       ctx.drawImage(img, 40, 8, 8, 8, 0, 0, 32, 32);
     };
-    img.src = skinSrc;
+    img.src = activeSkinUrl();
   }
 
-  function init3DSkin() {
-    const host = document.getElementById("hq-skin-host");
-    if (!host) return;
-    host.innerHTML = "";
-    const w = Math.max(150, host.clientWidth || 200);
-    const h = Math.max(180, host.clientHeight || 235);
-    try {
-      if (window.skinview3d && window.skinview3d.SkinViewer) {
-        const canvas = document.createElement("canvas");
-        const viewer = new window.skinview3d.SkinViewer({
-          canvas: canvas,
-          width: w,
-          height: h,
-          skin: currentSkinUrl()
-        });
-        viewer.pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
-        viewer.fov = 42;
-        viewer.zoom = 0.86;
-        if (window.skinview3d.IdleAnimation) {
-          viewer.animation = new window.skinview3d.IdleAnimation();
-        } else if (window.skinview3d.WalkingAnimation) {
-          viewer.animation = new window.skinview3d.WalkingAnimation();
-          viewer.animation.speed = 0.55;
-        }
-        viewer.playerObject.rotation.y = -0.42;
-        host.appendChild(canvas);
-        state.viewer = viewer;
-        drawTopAvatar(currentSkinUrl());
-        return;
-      }
-    } catch (e) {
-      console.warn("WebGL skinview fallback:", e);
-    }
-    // Crisp 2D pixel skin fallback if WebGL is unavailable
-    const fallback = document.createElement("canvas");
-    fallback.width = 160;
-    fallback.height = 220;
-    fallback.style.height = "92%";
-    fallback.style.imageRendering = "pixelated";
-    host.appendChild(fallback);
-    render2DSkinFallback(fallback, currentSkinUrl());
-    drawTopAvatar(currentSkinUrl());
-  }
+  function renderHeaderAndHQ() {
+    const accName = state.selectedAccount ? state.selectedAccount.username : "Cloud_OP";
+    const accMode = state.selectedAccount
+      ? (state.selectedAccount.isMicrosoft ? "· MICROSOFT ID" : "· OFFLINE ID")
+      : "· TAP TO SIGN IN";
+    document.getElementById("top-account-name").textContent = accName;
+    document.getElementById("top-account-mode").textContent = accMode;
 
-  function render2DSkinFallback(canvas, src) {
-    const ctx = canvas.getContext("2d");
-    const img = new Image();
-    img.onload = function () {
-      ctx.imageSmoothingEnabled = false;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      // Head
-      ctx.drawImage(img, 8, 8, 8, 8, 48, 14, 64, 64);
-      ctx.drawImage(img, 40, 8, 8, 8, 46, 12, 68, 68);
-      // Body
-      ctx.drawImage(img, 20, 20, 8, 12, 48, 78, 64, 72);
-      // Arms
-      ctx.drawImage(img, 44, 20, 4, 12, 20, 78, 28, 72);
-      ctx.drawImage(img, 36, 52, 4, 12, 112, 78, 28, 72);
-      // Legs
-      ctx.drawImage(img, 4, 20, 4, 12, 48, 150, 32, 64);
-      ctx.drawImage(img, 20, 52, 4, 12, 80, 150, 32, 64);
+    const subMap = {
+      hq: "",
+      forge: "· VERSION STUDIO",
+      accounts: "· ACCOUNT STUDIO",
+      vault: "· INSTANCE VAULT",
+      armory: "· MOD ARMORY",
+      packs: "· SHADERS & PACKS",
+      client: "· CLOUD CLIENT",
+      config: "· SETTINGS"
     };
-    img.src = src;
-  }
+    document.getElementById("header-sub-tag").textContent = subMap[state.screen] || "";
 
-  function updateSkinTexture() {
-    const src = currentSkinUrl();
-    drawTopAvatar(src);
-    if (state.viewer) {
-      try { state.viewer.loadSkin(src); } catch (e) {}
-    } else {
-      const fb = document.querySelector("#hq-skin-host canvas");
-      if (fb) render2DSkinFallback(fb, src);
+    const instName = state.selectedInstance ? state.selectedInstance.name : "Install Version";
+    const instVer = state.selectedInstance ? state.selectedInstance.versionId : "Tap + FORGE to create";
+    document.getElementById("top-inst-pill").textContent = instName;
+    document.getElementById("hq-active-name").textContent = instName;
+    document.getElementById("hq-active-ver").textContent = "Minecraft " + instVer + " · Ready to Launch";
+
+    const rObj = (state.settings.renderers || []).find(r => r.id === state.settings.renderer);
+    const rShort = rObj ? rObj.name.split("(")[0].trim().toUpperCase() : "MOBILEGLUES";
+    document.getElementById("hq-engine-status").textContent =
+      `ENGINE READY · ${rShort} · ${state.settings.ramMb}MB RAM`;
+
+    document.querySelectorAll(".preset-pill").forEach(b => {
+      b.classList.toggle("active", b.dataset.preset === state.preset);
+    });
+
+    const rack = document.getElementById("hq-rack-list");
+    if (rack) {
+      if (!state.instances.length) {
+        rack.innerHTML = `<div style="font-size:11px;color:#64748b;padding:8px;">No instances yet — tap <b>+ INSTALL VERSION</b> to install Vanilla, Fabric, or Forge!</div>`;
+      } else {
+        rack.innerHTML = state.instances.map((inst, idx) => `
+          <div class="rack-item ${inst.selected ? "selected" : ""}" onclick="CloudUI.selectInstance(${idx})">
+            <div class="rack-badge">${escapeHtml((inst.name || "M").slice(0, 2).toUpperCase())}</div>
+            <div class="rack-name">${escapeHtml(inst.name)} <span style="color:#64748b;font-weight:600;font-size:10px;">(${escapeHtml(inst.versionId)})</span></div>
+            <span style="font-size:10px;font-weight:800;color:#0284c7;">${inst.selected ? "ACTIVE" : "SELECT"}</span>
+          </div>
+        `).join("");
+      }
     }
   }
 
-  function syncFromBridge() {
-    const b = bridge();
-    if (!b) {
-      renderAll();
+  function updateDefaultInstanceName() {
+    const inp = document.getElementById("forge-inst-name");
+    if (!inp) return;
+    const prefixMap = {
+      VANILLA: "Minecraft",
+      FABRIC: "Fabric",
+      FORGE: "Forge",
+      NEOFORGE: "NeoForge",
+      QUILT: "Quilt"
+    };
+    const nextName = `${prefixMap[state.modloader] || state.modloader} ${state.selectedMcVersion}`;
+    inp.value = nextName;
+    const dirEl = document.getElementById("vs-dir-preview");
+    if (dirEl) dirEl.textContent = `📁 /CloudLauncher/instances/${nextName}`;
+
+    const minor = parseInt((state.selectedMcVersion.split(".")[1] || "21"), 10);
+    const jChip = document.getElementById("vs-java-chip");
+    if (jChip) jChip.textContent = minor >= 20 ? "☕ Java 21" : (minor >= 17 ? "☕ Java 17" : "☕ Java 8");
+  }
+
+  async function loadModloaderBuilds() {
+    const loader = state.modloader;
+    const mcVer = state.selectedMcVersion;
+
+    if (loader === "VANILLA") {
+      state.loaderBuilds = [{ id: "vanilla", label: `Official Mojang ${mcVer} (Pure Vanilla)`, stable: true }];
+      state.selectedLoaderBuild = "vanilla";
+      renderLoaderBuildsOnly();
       return;
     }
-    try {
-      const raw = JSON.parse(b.getStateJson());
-      Object.assign(state.data, raw);
-      const vers = JSON.parse(b.getVersionsJson() || "[]");
-      if (Array.isArray(vers) && vers.length > 0) {
-        state.versions = vers;
-      }
-    } catch (e) {
-      console.warn("syncFromBridge error:", e);
+
+    if (loader === "FABRIC") {
+      state.loaderBuilds = FALLBACK_FABRIC_BUILDS.slice();
+      state.selectedLoaderBuild = state.loaderBuilds[0].id;
+      renderLoaderBuildsOnly();
+    } else if (loader === "QUILT") {
+      state.loaderBuilds = FALLBACK_QUILT_BUILDS.slice();
+      state.selectedLoaderBuild = state.loaderBuilds[0].id;
+      renderLoaderBuildsOnly();
+    } else {
+      state.loadingBuilds = true;
+      state.loaderBuilds = [];
+      renderLoaderBuildsOnly();
     }
-    renderAll();
-    updateSkinTexture();
+
+    const nb = bridge();
+    if (nb && nb.fetchLoaderVersionsAsync) {
+      nb.fetchLoaderVersionsAsync(loader, mcVer);
+    }
+
+    try {
+      if (loader === "FABRIC") {
+        const res = await fetch(`https://meta.fabricmc.net/v2/versions/loader/${encodeURIComponent(mcVer)}`);
+        if (res.ok) {
+          const arr = await res.json();
+          if (Array.isArray(arr) && arr.length) {
+            state.loaderBuilds = arr.slice(0, 28).map(x => ({
+              id: x.loader.version,
+              label: `Fabric Loader ${x.loader.version}`,
+              stable: x.loader.stable !== false
+            }));
+            state.selectedLoaderBuild = (state.loaderBuilds.find(b => b.stable) || state.loaderBuilds[0]).id;
+          }
+        }
+      } else if (loader === "QUILT") {
+        const res = await fetch(`https://meta.quiltmc.org/v3/versions/loader/${encodeURIComponent(mcVer)}`);
+        if (res.ok) {
+          const arr = await res.json();
+          if (Array.isArray(arr) && arr.length) {
+            state.loaderBuilds = arr.slice(0, 24).map(x => ({
+              id: x.loader.version,
+              label: `Quilt Loader ${x.loader.version}`,
+              stable: !String(x.loader.version).includes("beta")
+            }));
+            state.selectedLoaderBuild = state.loaderBuilds[0].id;
+          }
+        }
+      }
+    } catch (_) {}
+
+    state.loadingBuilds = false;
+    renderLoaderBuildsOnly();
   }
 
-  function renderTopAndHQ() {
-    const d = state.data;
-    document.getElementById("top-account-name").textContent = d.accountName || "Cloud_OP";
-    document.getElementById("top-account-mode").textContent = "· " + (d.accountType || "CLOUD ID");
+  function renderLoaderBuildsOnly() {
+    const heading = document.getElementById("vs-loader-ver-heading");
+    const listEl = document.getElementById("vs-loader-ver-list");
+    if (!heading || !listEl) return;
 
-    const instTitle = d.selectedInstance || "Cloud 1.21.4";
-    const instVer = d.selectedVersion || "1.21.4";
-    document.getElementById("top-inst-pill").textContent = instTitle + " · " + instVer;
-    document.getElementById("hq-active-name").textContent = instTitle;
-    document.getElementById("hq-active-ver").textContent = "Minecraft " + instVer + " · Ready to Ignite";
+    const titleMap = {
+      VANILLA: "🟩 OFFICIAL MOJANG RUNTIME",
+      FABRIC: "🛡 FABRIC LOADER VERSION",
+      FORGE: "⚒ FORGE LOADER VERSION",
+      NEOFORGE: "🦊 NEOFORGE LOADER VERSION",
+      QUILT: "🟪 QUILT LOADER VERSION"
+    };
+    heading.textContent = titleMap[state.modloader] || "LOADER VERSION";
 
-    const shortRenderer = (d.rendererLabel || "MobileGlues").split("(")[0].trim().toUpperCase();
-    document.getElementById("hq-engine-status").textContent =
-      "ENGINE READY · " + shortRenderer + " · " + d.ramMb + " MB RAM" + (d.unlock120Hz ? " · 120HZ" : "");
-
-    // Top Downloader Bar
-    const dlBar = document.getElementById("top-downloader");
-    if (d.taskActive) {
-      dlBar.classList.add("active");
-      document.body.classList.add("has-dl");
-      document.getElementById("dl-title").textContent = d.taskTitle || "Cloud Downloader Active...";
-      const pct = Math.max(5, Math.min(100, d.taskPct || 45));
-      document.getElementById("dl-fill").style.width = pct + "%";
-      document.getElementById("dl-pct").textContent = pct + "%";
-    } else {
-      dlBar.classList.remove("active");
-      document.body.classList.remove("has-dl");
+    if (state.loadingBuilds && !state.loaderBuilds.length) {
+      listEl.innerHTML = `<div style="padding:10px;font-size:11.5px;font-weight:700;color:#2563eb;">Fetching ${state.modloader} versions for ${escapeHtml(state.selectedMcVersion)}...</div>`;
+      return;
     }
 
-    // Instance Rack
-    const rack = document.getElementById("hq-rack-list");
-    const list = d.instances && d.instances.length ? d.instances : [];
-    if (!list.length) {
-      rack.innerHTML = `
-        <div class="rack-item selected" onclick="CloudUI.quickCreateDefault()">
-          <div class="rack-badge">+</div>
-          <div class="rack-name">Tap to Create Minecraft 1.21.4 Instance</div>
-          <span class="dot-green"></span>
-        </div>`;
-    } else {
-      rack.innerHTML = list.map((it, idx) => `
-        <div class="rack-item ${it.selected ? "selected" : ""}" onclick="CloudUI.selectInstance(${idx})">
-          <div class="rack-badge">${esc((it.name || "C").slice(0, 2).toUpperCase())}</div>
-          <div style="flex:1;min-width:0;">
-            <div class="rack-name">${esc(it.name)}</div>
-            <div style="font-size:9.5px;color:#64748b;font-weight:700;">${esc(it.versionId || "1.21.4")}</div>
+    if (!state.loaderBuilds.length) {
+      listEl.innerHTML = `<div style="padding:10px;font-size:11px;color:#64748b;">No ${state.modloader} build published for Minecraft ${escapeHtml(state.selectedMcVersion)}. Pick 1.21.4, 1.21.1, or 1.20.1, or choose Fabric / Vanilla.</div>`;
+      return;
+    }
+
+    listEl.innerHTML = state.loaderBuilds.map(b => {
+      const sel = b.id === state.selectedLoaderBuild;
+      return `
+        <div class="ver-row ${sel ? "selected" : ""}" onclick="CloudUI.pickLoaderBuild('${escapeAttr(b.id)}')">
+          <div class="ver-row-left">
+            <span style="font-size:12px;">${escapeHtml(b.label || b.id)}</span>
+            ${b.stable ? `<span class="tag-pill-blue">STABLE</span>` : ""}
           </div>
-          ${it.selected ? '<span class="dot-green"></span>' : '<span style="color:#94a3b8;font-weight:900;">›</span>'}
+          ${sel ? `<span class="check-circle">✓</span>` : `<span style="color:#94a3b8;font-weight:900;">›</span>`}
         </div>
-      `).join("");
+      `;
+    }).join("");
+  }
+
+  function renderVersionStudio() {
+    const rSel = document.getElementById("vs-renderer-select");
+    if (rSel) {
+      rSel.innerHTML = (state.settings.renderers || []).map(r =>
+        `<option value="${escapeAttr(r.id)}" ${r.id === state.settings.renderer ? "selected" : ""}>${escapeHtml(r.name)}</option>`
+      ).join("");
     }
+    const ramSel = document.getElementById("vs-ram-select");
+    if (ramSel) {
+      ramSel.value = state.settings.ramMb >= 3800 ? "4096" : (state.settings.ramMb >= 2400 ? "2816" : "1792");
+    }
+
+    document.querySelectorAll("#vs-loader-tiles .loader-tile").forEach(tile => {
+      const isAct = tile.dataset.ldr === state.modloader;
+      tile.classList.toggle("active", isAct);
+      const chip = tile.querySelector(".loader-active-chip");
+      if (isAct && !chip) {
+        const s = document.createElement("span");
+        s.className = "loader-active-chip";
+        s.textContent = "ACTIVE";
+        tile.appendChild(s);
+      } else if (!isAct && chip) {
+        chip.remove();
+      }
+    });
+
+    document.getElementById("vtype-release")?.classList.toggle("active", state.versionFilter === "RELEASE");
+    document.getElementById("vtype-snapshot")?.classList.toggle("active", state.versionFilter === "SNAPSHOT");
+
+    const q = (document.getElementById("forge-search")?.value || "").trim().toLowerCase();
+    const list = state.versions.filter(v => {
+      const matchType = v.type === state.versionFilter || (state.versionFilter === "RELEASE" && v.type === "INSTALLED");
+      return matchType && (!q || v.id.toLowerCase().includes(q));
+    });
+
+    const mcHost = document.getElementById("vs-mc-list");
+    if (mcHost) {
+      mcHost.innerHTML = list.slice(0, 120).map(v => {
+        const sel = v.id === state.selectedMcVersion;
+        return `
+          <div class="ver-row ${sel ? "selected" : ""}" onclick="CloudUI.pickMcVersion('${escapeAttr(v.id)}')">
+            <div class="ver-row-left">
+              <span>🟩</span>
+              <span>${escapeHtml(v.id)}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;">
+              ${sel ? `<span class="tag-pill-blue">SELECTED</span><span class="check-circle">✓</span>` : `<span style="color:#94a3b8;font-weight:900;">›</span>`}
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    renderLoaderBuildsOnly();
+  }
+
+  function renderAccountStudio() {
+    const countEl = document.getElementById("saved-acc-count");
+    if (countEl) countEl.textContent = `${state.accounts.length} Saved`;
+
+    document.getElementById("model-classic")?.classList.toggle("active", !state.slimModel);
+    document.getElementById("model-slim")?.classList.toggle("active", state.slimModel);
+
+    const accHost = document.getElementById("accounts-list");
+    if (accHost) {
+      if (!state.accounts.length) {
+        accHost.innerHTML = `<div style="padding:14px;border-radius:14px;background:rgba(255,255,255,0.85);font-size:11.5px;color:#475569;">No accounts added yet. Sign in with <b>Microsoft</b> or enter a username under <b>Create Offline Account</b> on the left!</div>`;
+      } else {
+        accHost.innerHTML = state.accounts.map((a, idx) => `
+          <div class="saved-acc-card ${a.selected ? "active" : ""}">
+            <div class="acc-face-box">${escapeHtml((a.username || "P").slice(0, 2).toUpperCase())}</div>
+            <div style="flex:1;min-width:0;">
+              <div style="display:flex;align-items:center;gap:6px;">
+                <span style="font-size:13px;font-weight:900;color:#0f172a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(a.username)}</span>
+                ${a.selected ? `<span class="badge-active-green">ACTIVE</span>` : ""}
+              </div>
+              <div style="font-size:10px;font-weight:700;color:#64748b;margin-top:2px;">
+                ${a.isMicrosoft ? "👑 Microsoft Account" : "👤 Offline Account"}
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:5px;">
+              ${a.selected ? "" : `<button class="mini-btn" onclick="CloudUI.selectAcc(${idx})">⇄ SWITCH</button>`}
+              <button class="mini-btn danger" onclick="CloudUI.removeAcc(${idx})">✕</button>
+            </div>
+          </div>
+        `).join("");
+      }
+    }
+
+    accSkinViewer = createOrUpdateSkinViewer("acc-skin-host", accSkinViewer, 210, 235);
   }
 
   function renderVault() {
     const grid = document.getElementById("vault-grid");
-    const list = state.data.instances || [];
-    if (!list.length) {
-      grid.innerHTML = `
-        <div class="item-card">
-          <div class="setting-title">No Instances Yet</div>
-          <div class="setting-sub">Create a Vanilla, Fabric, Forge, NeoForge, or Quilt profile in 1 tap.</div>
-          <div class="item-actions">
-            <button class="mini-btn primary" onclick="CloudUI.quickCreateDefault()">+ Quick Create 1.21.4</button>
-            <button class="mini-btn" onclick="CloudUI.go('forge')">Open + FORGE</button>
-          </div>
-        </div>`;
+    if (!grid) return;
+    if (!state.instances.length) {
+      grid.innerHTML = `<div class="item-card"><div class="setting-title">No Instances Created Yet</div><div class="setting-sub">Open Version Studio (+ FORGE) to install Minecraft Vanilla, Fabric, Forge, NeoForge, or Quilt.</div><button class="mini-btn primary" onclick="CloudUI.go('forge')">+ OPEN VERSION STUDIO</button></div>`;
       return;
     }
-    grid.innerHTML = list.map((it, idx) => `
-      <div class="item-card" style="${it.selected ? 'border-color:#38bdf8;background:rgba(240,249,255,0.92);' : ''}">
+    grid.innerHTML = state.instances.map((inst, idx) => `
+      <div class="item-card" style="${inst.selected ? "border:2px solid #38bdf8;" : ""}">
         <div class="item-card-head">
-          <div class="item-icon">${esc((it.name || "MC").slice(0, 2).toUpperCase())}</div>
-          <div style="min-width:0;flex:1;">
-            <div class="setting-title" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(it.name)}</div>
-            <div class="setting-sub">${esc(it.versionId || "1.21.4")} ${it.selected ? "· ● ACTIVE" : ""}</div>
+          <div class="item-icon">${escapeHtml((inst.name || "M").slice(0, 2).toUpperCase())}</div>
+          <div style="min-width:0;">
+            <div class="setting-title" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(inst.name)}</div>
+            <div class="setting-sub">Version: ${escapeHtml(inst.versionId)}</div>
           </div>
         </div>
         <div class="item-actions">
-          <button class="mini-btn primary" onclick="CloudUI.selectAndLaunch(${idx})">► LAUNCH</button>
-          <button class="mini-btn" onclick="CloudUI.selectInstance(${idx})">SELECT</button>
-          <button class="mini-btn" onclick="CloudUI.renameInstance(${idx})">RENAME</button>
-          <button class="mini-btn" onclick="CloudUI.cloneInstance(${idx})">CLONE</button>
+          <button class="mini-btn primary" onclick="CloudUI.selectAndLaunch(${idx})">▶ PLAY</button>
+          <button class="mini-btn" onclick="CloudUI.selectInstance(${idx})">${inst.selected ? "✓ ACTIVE" : "SET ACTIVE"}</button>
+          <button class="mini-btn" onclick="CloudUI.go('armory')">⚔ MODS</button>
           <button class="mini-btn danger" onclick="CloudUI.deleteInstance(${idx})">DELETE</button>
         </div>
       </div>
     `).join("");
   }
 
-  function renderForgeVersions() {
-    const q = (document.getElementById("forge-search")?.value || "").trim().toLowerCase();
-    const listEl = document.getElementById("forge-versions-list");
-    const filtered = state.versions.filter(v => {
-      if (state.forgeType === "SNAPSHOT") {
-        if (v.type === "RELEASE") return false;
-      } else {
-        if (v.type && v.type !== "RELEASE") return false;
-      }
-      return !q || v.id.toLowerCase().includes(q);
-    }).slice(0, 48);
-
-    listEl.innerHTML = filtered.map(v => {
-      const sel = v.id === state.selectedMcVer;
-      return `
-        <div class="item-card" style="cursor:pointer;${sel ? 'border-color:#c084fc;background:linear-gradient(135deg,rgba(224,242,254,0.95),rgba(252,231,243,0.92));' : ''}"
-             onclick="CloudUI.pickMcVersion('${esc(v.id)}')">
-          <div class="item-card-head">
-            <div class="item-icon">⛏</div>
-            <div>
-              <div class="setting-title">Minecraft ${esc(v.id)}</div>
-              <div class="setting-sub">${esc(state.forgeLoader)} · ${esc(v.type || "RELEASE")}</div>
-            </div>
-          </div>
-        </div>`;
-    }).join("");
-  }
-
   function renderSettings() {
-    const pane = document.getElementById("settings-main-pane");
-    const d = state.data;
-    const cat = state.settingsCat;
-
-    document.querySelectorAll("[data-scat]").forEach(btn => {
-      btn.classList.toggle("active", btn.getAttribute("data-scat") === cat);
+    document.querySelectorAll(".rail-btn").forEach(b => {
+      b.classList.toggle("active", b.dataset.scat === state.settingsCat);
     });
+    const pane = document.getElementById("settings-main-pane");
+    if (!pane) return;
+    const s = state.settings;
+    const rObj = (s.renderers || []).find(r => r.id === s.renderer);
+    const rTag = rObj ? rObj.name.split(" ")[0] : "MobileGlues";
 
-    if (cat === "fps" || cat === "video") {
-      const rendererOpts = (d.renderers || []).map(r =>
-        `<option value="${esc(r.id)}" ${r.id === d.renderer ? "selected" : ""}>${esc(r.label)}</option>`
-      ).join("");
-      const shortRend = (d.rendererLabel || "MobileGlues").split("(")[0].trim();
-
+    if (state.settingsCat === "fps") {
       pane.innerHTML = `
         <div class="setting-row">
           <div>
-            <div class="setting-title">CLOUD FPS BOOST PRESETS (1-TAP OPTIMIZER)</div>
-            <div class="setting-sub">Auto-tunes RAM, Renderer, Resolution Scale &amp; G1GC Flags for your phone</div>
+            <div class="setting-title">1-Tap FPS Boost Presets</div>
+            <div class="setting-sub">Tuned RAM + Renderer + G1GC flags for 4GB, 6GB, and 8GB+ phones</div>
           </div>
           <div class="preset-group">
-            <button class="preset-pill ${d.preset === '4gb' ? 'active' : ''}" onclick="CloudUI.applyPreset('4gb')">4GB</button>
-            <button class="preset-pill ${d.preset === '6gb' ? 'active' : ''}" onclick="CloudUI.applyPreset('6gb')">6GB</button>
-            <button class="preset-pill ${d.preset === '8gb' ? 'active' : ''}" onclick="CloudUI.applyPreset('8gb')">8GB+</button>
+            <button class="preset-pill ${state.preset === "4gb" ? "active" : ""}" onclick="CloudUI.applyPreset('4gb')">4GB</button>
+            <button class="preset-pill ${state.preset === "6gb" ? "active" : ""}" onclick="CloudUI.applyPreset('6gb')">6GB</button>
+            <button class="preset-pill ${state.preset === "8gb" ? "active" : ""}" onclick="CloudUI.applyPreset('8gb')">8GB+</button>
           </div>
         </div>
-
-        <div class="setting-row">
-          <div style="min-width:165px;">
-            <div class="setting-title">Memory Allocation (RAM)</div>
-            <div class="setting-sub">Free Device RAM: ${d.freeRamMb} MB</div>
-          </div>
-          <input type="range" class="prism-slider" min="512" max="${Math.max(2048, d.maxRamMb)}" step="64" value="${d.ramMb}"
-                 oninput="document.getElementById('ram-val-lbl').textContent=this.value+' MB'"
-                 onchange="CloudUI.setRam(this.value)">
-          <div id="ram-val-lbl" style="font-weight:900;font-size:13px;min-width:74px;text-align:right;">${d.ramMb} MB</div>
-        </div>
-
         <div class="setting-row">
           <div>
-            <div class="setting-title">Show Real FPS Display</div>
-            <div class="setting-sub">Green (60+) · Yellow (30-59) · Red (&lt;30)</div>
+            <div class="setting-title">Show Real FPS Display Box</div>
+            <div class="setting-sub">Green (60+) / Yellow (30-59) / Red (&lt;30) live in-game telemetry box</div>
           </div>
           <div style="display:flex;align-items:center;gap:10px;">
-            <div class="fps-preview-box">
-              Fps - <span class="g">124</span> / Renderer - <span class="b">${esc(shortRend)}</span> / Ms - <span class="g">8.1 ms</span>
-            </div>
-            <div class="prism-switch ${d.showRealFps ? 'on' : ''}" onclick="CloudUI.togglePref('showRealFps')">
-              <div class="knob"></div>
-            </div>
+            <div class="fps-preview-box">Fps - <span class="g">124</span> | Renderer - <span class="b">${escapeHtml(rTag)}</span> | Ms - <span class="g">8.1</span></div>
+            <div class="prism-switch ${s.fpsBoxEnabled ? "on" : ""}" onclick="CloudUI.toggleFpsBox()"><div class="knob"></div></div>
           </div>
         </div>
-
+        <div class="setting-row" style="flex-direction:column;align-items:stretch;">
+          <div style="display:flex;justify-content:space-between;">
+            <span class="setting-title">Allocated Java Heap RAM</span>
+            <span class="setting-title" id="ram-val-lbl" style="color:#7c3aed;">${s.ramMb} MB</span>
+          </div>
+          <input type="range" class="prism-slider" min="1024" max="${Math.max(4096, s.maxRamMb || 8192)}" step="128" value="${s.ramMb}" oninput="CloudUI.setRam(this.value)">
+        </div>
+        <div class="setting-row" style="flex-direction:column;align-items:stretch;">
+          <span class="setting-title">Custom JVM Flags</span>
+          <input class="prism-input" value="${escapeAttr(s.jvmArgs || "")}" onchange="CloudUI.setJvmArgs(this.value)">
+        </div>
+      `;
+    } else if (state.settingsCat === "video") {
+      pane.innerHTML = `
         <div class="setting-row">
           <div>
-            <div class="setting-title">Graphics Renderer</div>
-            <div class="setting-sub">OpenGL / Vulkan backend engine for Minecraft</div>
+            <div class="setting-title">Graphics Renderer Engine</div>
+            <div class="setting-sub">Choose MobileGlues, LTW, or Vulkan Zink</div>
           </div>
           <select class="prism-select" onchange="CloudUI.setRenderer(this.value)">
-            ${rendererOpts}
+            ${(s.renderers || []).map(r => `<option value="${escapeAttr(r.id)}" ${r.id === s.renderer ? "selected" : ""}>${escapeHtml(r.name)}</option>`).join("")}
           </select>
         </div>
-
+        <div class="setting-row" style="flex-direction:column;align-items:stretch;">
+          <div style="display:flex;justify-content:space-between;">
+            <span class="setting-title">3D Resolution Scale</span>
+            <span class="setting-title" id="res-val-lbl" style="color:#0284c7;">${s.resolutionScale}%</span>
+          </div>
+          <input type="range" class="prism-slider" min="50" max="100" step="5" value="${s.resolutionScale}" oninput="CloudUI.setResolution(this.value)">
+        </div>
         <div class="setting-row">
           <div>
-            <div class="setting-title">Max Refresh Rate (120Hz Display Unlock)</div>
-            <div class="setting-sub">Unlocks 90Hz / 120Hz / 144Hz high-refresh display mode</div>
+            <div class="setting-title">Sustained Performance Mode</div>
+            <div class="setting-sub">Prevent thermal throttling during extended sessions</div>
           </div>
-          <div class="prism-switch ${d.unlock120Hz ? 'on' : ''}" onclick="CloudUI.togglePref('unlock120Hz')">
-            <div class="knob"></div>
-          </div>
-        </div>
-
-        <div class="setting-row">
-          <div style="min-width:165px;">
-            <div class="setting-title">Resolution Scale (${d.scaleFactor}%)</div>
-            <div class="setting-sub">Lower scale boosts FPS massively on 4GB/6GB GPUs</div>
-          </div>
-          <input type="range" class="prism-slider" min="35" max="100" step="5" value="${d.scaleFactor}"
-                 onchange="CloudUI.setScale(this.value)">
-          <div style="font-weight:900;font-size:13px;min-width:54px;text-align:right;">${d.scaleFactor}%</div>
-        </div>
-
-        <div class="setting-row">
-          <div style="flex:1;">
-            <div class="setting-title">JVM Launch Arguments</div>
-            <input class="prism-input" style="width:100%;margin-top:5px;" value="${esc(d.jvmArgs)}"
-                   onchange="CloudUI.setJvmArgs(this.value)">
-          </div>
+          <div class="prism-switch ${s.sustainedPerf ? "on" : ""}" onclick="CloudUI.toggleSustained()"><div class="knob"></div></div>
         </div>
       `;
-    } else if (cat === "appearance") {
+    } else if (state.settingsCat === "appearance") {
       pane.innerHTML = `
         <div class="setting-row">
           <div>
-            <div class="setting-title">Prism Iridescent Light Theme</div>
-            <div class="setting-sub">Signature Cloud Launcher Frosted White + Pastel Sky Aurora UI</div>
+            <div class="setting-title">Prism Light Crystal Glass UI</div>
+            <div class="setting-sub">Iridescent white, sky-blue, lavender, and soft pink frosted theme active</div>
           </div>
-          <span class="dl-badge">ACTIVE</span>
+          <span class="mini-btn primary">ACTIVE</span>
         </div>
         <div class="setting-row">
           <div>
-            <div class="setting-title">Edge-to-Edge Fullscreen Window</div>
-            <div class="setting-sub">Draw seamlessly across camera cutout &amp; system bars</div>
+            <div class="setting-title">Top Cloud Downloader Bar</div>
+            <div class="setting-sub">Preview the relocated top game-asset progress indicator</div>
           </div>
-          <div class="prism-switch ${d.fullScreen ? 'on' : ''}" onclick="CloudUI.togglePref('fullScreen')">
-            <div class="knob"></div>
-          </div>
-        </div>
-        <div class="setting-row">
-          <div>
-            <div class="setting-title">3D Operator Studio Skin Preset</div>
-            <div class="setting-sub">Cycle built-in HD Prism skins or equip your own .PNG</div>
-          </div>
-          <div style="display:flex;gap:6px;">
-            <button class="mini-btn" onclick="CloudUI.cycleSkin()">NEXT PRESET</button>
-            <button class="mini-btn primary" onclick="CloudUI.pickSkinFile()">IMPORT .PNG</button>
-          </div>
+          <button class="mini-btn" onclick="CloudUI.previewDownloader()">TEST BAR</button>
         </div>
       `;
-    } else if (cat === "controls") {
+    } else if (state.settingsCat === "controls") {
       pane.innerHTML = `
         <div class="setting-row">
           <div>
-            <div class="setting-title">Customize Touch Controls Rig</div>
-            <div class="setting-sub">Open visual layout editor for WASD, Attack, Jump, GUI &amp; Macros</div>
+            <div class="setting-title">Touch Controls Rig Editor</div>
+            <div class="setting-sub">Customize on-screen buttons, scale, opacity, and mouse sensitivity</div>
           </div>
           <button class="mini-btn primary" onclick="CloudUI.openControlsRig()">OPEN EDITOR</button>
         </div>
         <div class="setting-row">
           <div>
-            <div class="setting-title">Hardware Controller &amp; Gamepad Remapper</div>
-            <div class="setting-sub">Configure Bluetooth or USB-C gamepads</div>
+            <div class="setting-title">Controller &amp; Gamepad Remapper</div>
+            <div class="setting-sub">Configure Bluetooth or USB-C controllers</div>
           </div>
           <button class="mini-btn primary" onclick="CloudUI.openGamepad()">MAP GAMEPAD</button>
         </div>
       `;
-    } else if (cat === "client") {
-      pane.innerHTML = buildClientModulesHtml();
+    } else if (state.settingsCat === "client") {
+      pane.innerHTML = `
+        <div class="setting-row">
+          <div>
+            <div class="setting-title">Cloud Client PvP HUD Suite</div>
+            <div class="setting-sub">Manage Real FPS Box, Keystrokes, CPS, Toggle Sprint, and Crosshair</div>
+          </div>
+          <button class="mini-btn primary" onclick="CloudUI.go('client')">OPEN CLIENT HUB</button>
+        </div>
+      `;
     } else {
       pane.innerHTML = `
         <div class="setting-row">
           <div style="display:flex;align-items:center;gap:12px;">
-            <div class="brand-logo-box" style="width:48px;height:48px;"><img src="logo.png" alt="Cloud Launcher"></div>
+            <img src="logo.png" style="width:48px;height:48px;border-radius:12px;">
             <div>
-              <div class="setting-title">CLOUD LAUNCHER · Official Prism Edition</div>
-              <div class="setting-sub">Version ${esc(d.versionName)} · Package ${esc(d.packageName)}</div>
+              <div class="setting-title">Cloud Launcher · Prism Light Edition</div>
+              <div class="setting-sub">Standalone Android Java Edition Launcher · Version Studio &amp; Account Studio</div>
             </div>
-          </div>
-          <span class="dl-badge">VERIFIED</span>
-        </div>
-        <div class="setting-row">
-          <div>
-            <div class="setting-title">Standalone Android Package Architecture</div>
-            <div class="setting-sub">Installs cleanly alongside any other launcher with independent settings, Real FPS Display HUD, and Prism Light UI.</div>
           </div>
         </div>
       `;
     }
   }
 
-  function buildClientModulesHtml() {
-    const d = state.data;
+  function renderClientModules() {
+    const modHost = document.getElementById("client-modules-list");
+    if (!modHost) return;
     const mods = [
-      ["showRealFps", "Real FPS Display Box (Top-Left)", "Single box showing Fps, Renderer & Ms with Green / Yellow / Red dynamic colors"],
-      ["keystrokes", "RGB Keystrokes Overlay", "Shows live W / A / S / D / LMB / RMB badges in gameplay"],
-      ["cpsCounter", "Live CPS Counter", "Displays real-time clicks-per-second inside the HUD"],
-      ["toggleSprint", "Toggle Sprint Lock", "1-tap sprint indicator for competitive PvP"],
-      ["zoomHud", "Quick Optic Zoom Pill", "Instant C-key zoom button on the gameplay HUD"],
-      ["crosshair", "Precision PvP Crosshair", "Crisp center crosshair overlay"]
+      { key: "fpsBoxEnabled", nKey: "showRealFps", name: "Real FPS Display Box", sub: "Fps - | Renderer - | Ms - (Green / Yellow / Red)" },
+      { key: "keystrokes", nKey: "keystrokes", name: "RGB Keystrokes HUD", sub: "Live WASD + LMB/RMB overlay" },
+      { key: "cpsCounter", nKey: "cpsCounter", name: "Live CPS Counter", sub: "Real-time left & right click speed" },
+      { key: "toggleSprint", nKey: "toggleSprint", name: "Toggle Sprint Lock", sub: "1-tap sprint lock for PvP combos" },
+      { key: "zoomOverlay", nKey: "zoomHud", name: "OptiFine-Style Quick Zoom", sub: "Smooth cinematic zoom keybind" },
+      { key: "crosshair", nKey: "crosshair", name: "Precision Crosshair", sub: "High-contrast custom reticle" }
     ];
-    return mods.map(([key, title, sub]) => `
+    modHost.innerHTML = mods.map(m => `
       <div class="setting-row">
         <div>
-          <div class="setting-title">${esc(title)}</div>
-          <div class="setting-sub">${esc(sub)}</div>
+          <div class="setting-title">${m.name}</div>
+          <div class="setting-sub">${m.sub}</div>
         </div>
-        <div class="prism-switch ${d[key] ? 'on' : ''}" onclick="CloudUI.togglePref('${key}')">
-          <div class="knob"></div>
-        </div>
+        <div class="prism-switch ${state.settings[m.key] ? "on" : ""}" onclick="CloudUI.toggleClientMod('${m.key}','${m.nKey}')"><div class="knob"></div></div>
       </div>
     `).join("");
   }
 
-  function renderClientAndAccounts() {
-    document.getElementById("client-modules-list").innerHTML = buildClientModulesHtml();
-    const listEl = document.getElementById("accounts-list");
-    const accs = state.data.accounts || [];
-    if (!accs.length) {
-      listEl.innerHTML = `
-        <div class="setting-row">
-          <div>
-            <div class="setting-title">No Saved Account Yet</div>
-            <div class="setting-sub">Sign in with Microsoft or enter an Offline username above to play immediately!</div>
-          </div>
-        </div>`;
-      return;
-    }
-    listEl.innerHTML = accs.map((a, idx) => `
-      <div class="setting-row" style="${a.selected ? 'border-color:#38bdf8;background:rgba(240,249,255,0.92);' : ''}">
-        <div>
-          <div class="setting-title">${esc(a.username)} ${a.selected ? '· <span style="color:#10b981;">ACTIVE</span>' : ''}</div>
-          <div class="setting-sub">${esc(a.type)}</div>
-        </div>
-        <div style="display:flex;gap:5px;">
-          ${!a.selected ? `<button class="mini-btn primary" onclick="CloudUI.selectAccount(${idx})">USE</button>` : ''}
-          <button class="mini-btn danger" onclick="CloudUI.deleteAccount(${idx})">✕</button>
-        </div>
-      </div>
-    `).join("");
-  }
-
-  function renderRealmsAndCrew() {
-    const rg = document.getElementById("realms-grid");
-    rg.innerHTML = state.servers.map((s, idx) => `
-      <div class="item-card">
-        <div>
-          <div class="setting-title">🌐 ${esc(s.name)}</div>
-          <div class="setting-sub">${esc(s.address)} · ${esc(s.mode || "Multiplayer")}</div>
-        </div>
-        <div class="item-actions">
-          <button class="mini-btn primary" onclick="CloudUI.joinServer('${esc(s.address)}')">► JOIN SERVER</button>
-          ${idx >= DEFAULT_SERVERS.length ? `<button class="mini-btn danger" onclick="CloudUI.removeServer(${idx})">DELETE</button>` : ''}
-        </div>
-      </div>
-    `).join("");
-
-    const cc = document.getElementById("crew-cards");
-    const tag = "CLOUD-" + Math.abs((state.data.accountName || "OP").split("").reduce((a, c) => a * 31 + c.charCodeAt(0), 7) % 9000 + 1000);
-    cc.innerHTML = `
-      <div class="item-card">
-        <div class="setting-title">🪪 Your Cloud Squad ID</div>
-        <div class="setting-sub">Operator: <b>${esc(state.data.accountName)}</b> · Invite Code: <b>${tag}</b></div>
-        <button class="mini-btn primary" onclick="navigator.clipboard?.writeText('${tag}');CloudUI.toast('Copied Squad Code ${tag}!')">COPY INVITE CODE</button>
-      </div>
-      <div class="item-card">
-        <div class="setting-title">⚡ Direct LAN / Party Connect</div>
-        <div class="setting-sub">Jump straight into any friend's server IP with your active instance</div>
-        <button class="mini-btn primary" onclick="CloudUI.go('realms')">OPEN REALMS HUB</button>
-      </div>
-    `;
-  }
-
-  async function searchModrinth(projectType, query, targetGridId, subfolder) {
+  async function searchModrinth(projectType, query, targetGridId) {
     const grid = document.getElementById(targetGridId);
-    grid.innerHTML = `<div class="setting-row"><div class="setting-title">Searching Modrinth ${projectType}s...</div></div>`;
+    if (!grid) return;
+    grid.innerHTML = `<div class="setting-title" style="padding:12px;">Searching Modrinth ${projectType}s...</div>`;
     try {
       const facets = encodeURIComponent(JSON.stringify([[`project_type:${projectType}`]]));
       const url = `https://api.modrinth.com/v2/search?query=${encodeURIComponent(query || "")}&limit=16&facets=${facets}`;
@@ -586,392 +680,607 @@
       const data = await res.json();
       const hits = data.hits || [];
       if (!hits.length) {
-        grid.innerHTML = `<div class="setting-row"><div class="setting-title">No results found for "${esc(query)}"</div></div>`;
+        grid.innerHTML = `<div class="setting-sub" style="padding:12px;">No results found on Modrinth.</div>`;
         return;
       }
       grid.innerHTML = hits.map(h => `
         <div class="item-card">
           <div class="item-card-head">
-            ${h.icon_url ? `<img class="item-icon" src="${esc(h.icon_url)}" alt="">` : `<div class="item-icon">🧊</div>`}
-            <div style="min-width:0;flex:1;">
-              <div class="setting-title" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(h.title)}</div>
-              <div class="setting-sub">⬇ ${(h.downloads || 0).toLocaleString()} · by ${esc(h.author || "Creator")}</div>
+            ${h.icon_url ? `<img class="item-icon" src="${escapeAttr(h.icon_url)}">` : `<div class="item-icon">⚡</div>`}
+            <div style="min-width:0;">
+              <div class="setting-title" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(h.title)}</div>
+              <div class="setting-sub">${formatNum(h.downloads)} downloads</div>
             </div>
           </div>
-          <div class="setting-sub" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${esc(h.description || "")}</div>
+          <div class="setting-sub" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${escapeHtml(h.description || "")}</div>
           <div class="item-actions">
-            <button class="mini-btn primary" onclick="CloudUI.installModrinthProject('${esc(h.project_id)}', '${esc(h.title)}', '${subfolder}')">⬇ INSTALL TO INSTANCE</button>
+            <button class="mini-btn primary" onclick="CloudUI.installFromModrinth('${escapeAttr(h.project_id)}','${escapeAttr(projectType)}','${escapeAttr(h.title)}')">⬇ INSTALL TO INSTANCE</button>
           </div>
         </div>
       `).join("");
-    } catch (e) {
-      grid.innerHTML = `
-        <div class="item-card">
-          <div class="setting-title">Offline / Network Restricted</div>
-          <div class="setting-sub">Connect to Wi-Fi / Mobile Data to browse live Modrinth ${esc(projectType)}s, or use RUN .JAR /Installed Mods.</div>
-        </div>`;
+    } catch (_) {
+      grid.innerHTML = `<div class="setting-sub" style="padding:12px;">Connect to the internet to browse live Modrinth ${projectType}s, or tap INSTALLED (.JAR) to manage local files.</div>`;
     }
   }
 
-  function renderAll() {
-    renderTopAndHQ();
-    renderVault();
-    renderForgeVersions();
-    renderSettings();
-    renderClientAndAccounts();
-    renderRealmsAndCrew();
+  function renderRealmsAndCrew() {
+    const rGrid = document.getElementById("realms-grid");
+    if (rGrid) {
+      rGrid.innerHTML = state.servers.map((s, idx) => `
+        <div class="item-card">
+          <div class="item-card-head">
+            <div class="item-icon">🌐</div>
+            <div style="min-width:0;">
+              <div class="setting-title">${escapeHtml(s.name)}</div>
+              <div class="setting-sub">${escapeHtml(s.addr)}</div>
+            </div>
+          </div>
+          <div class="setting-sub">${escapeHtml(s.tag || "Multiplayer Server")}</div>
+          <div class="item-actions">
+            <button class="mini-btn primary" onclick="CloudUI.quickJoin('${escapeAttr(s.addr)}')">⚡ QUICK JOIN</button>
+            <button class="mini-btn danger" onclick="CloudUI.removeServer(${idx})">REMOVE</button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    const cGrid = document.getElementById("crew-cards");
+    if (cGrid) {
+      const code = "CLOUD-" + ((state.selectedAccount?.username || "OP").toUpperCase().slice(0, 6));
+      cGrid.innerHTML = `
+        <div class="item-card">
+          <div class="setting-title">🪪 Squad Invite Code: ${escapeHtml(code)}</div>
+          <div class="setting-sub">Copy your Cloud Squad Tag &amp; active server IP to invite friends</div>
+          <button class="mini-btn primary" onclick="CloudUI.copyInvite('${escapeAttr(code)}')">COPY SQUAD INVITE</button>
+        </div>
+        <div class="item-card">
+          <div class="setting-title">🌐 Direct Multiplayer Realms</div>
+          <div class="setting-sub">Jump straight into your saved Java servers</div>
+          <button class="mini-btn primary" onclick="CloudUI.go('realms')">OPEN REALMS</button>
+        </div>
+      `;
+    }
+  }
+
+  function escapeHtml(s) {
+    return String(s || "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+  function escapeAttr(s) { return escapeHtml(s); }
+  function formatNum(n) {
+    if (!n) return "0";
+    if (n >= 1e6) return (n / 1e6).toFixed(1) + "M";
+    if (n >= 1e3) return (n / 1e3).toFixed(1) + "K";
+    return String(n);
   }
 
   window.CloudUI = {
     toast,
-    syncFromNative: syncFromBridge,
-    updateDownloadProgress: function (active, title, pct) {
-      state.data.taskActive = !!active;
-      state.data.taskTitle = title || "";
-      state.data.taskPct = pct || 0;
-      renderTopAndHQ();
+
+    syncFromNative() {
+      refreshStateFromNative();
+      renderHeaderAndHQ();
+      init3DSkins();
+      if (state.screen === "vault") renderVault();
+      if (state.screen === "forge") renderVersionStudio();
+      if (state.screen === "accounts") renderAccountStudio();
+      if (state.screen === "config") renderSettings();
+      if (state.screen === "client") renderClientModules();
     },
-    onBackPressed: function () {
+
+    onBackPressed() {
       if (state.screen !== "hq") {
         this.go("hq");
         return true;
       }
       return false;
     },
-    go: function (scr) {
-      state.screen = scr;
+
+    go(screen) {
+      state.screen = screen;
       document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
-      const target = document.getElementById("screen-" + scr);
+      const target = document.getElementById("screen-" + screen);
       if (target) target.classList.add("active");
 
       document.querySelectorAll(".dock-btn").forEach(b => {
-        const d = b.getAttribute("data-dock");
-        b.classList.toggle("active", d === scr || (scr === "forge" && d === "forge2"));
+        b.classList.toggle("active", b.dataset.dock === screen);
       });
       document.querySelectorAll(".h-pill").forEach(b => {
-        b.classList.toggle("active", b.getAttribute("data-nav") === scr);
+        b.classList.toggle("active", b.dataset.nav === screen);
       });
 
-      if (scr === "armory" && !document.getElementById("armory-grid").children.length) {
-        this.searchMods();
-      } else if (scr === "packs" && !document.getElementById("packs-grid").children.length) {
-        this.searchPacks();
-      } else if (scr === "files") {
-        this.browseSub("");
-      } else if (scr === "console") {
-        this.loadConsole();
-      } else if (scr === "hq") {
-        setTimeout(() => { if (!state.viewer) init3DSkin(); }, 40);
+      refreshStateFromNative();
+      renderHeaderAndHQ();
+      if (screen === "vault") renderVault();
+      if (screen === "forge") {
+        updateDefaultInstanceName();
+        renderVersionStudio();
+        loadModloaderBuilds();
       }
+      if (screen === "accounts") renderAccountStudio();
+      if (screen === "config") renderSettings();
+      if (screen === "client") renderClientModules();
+      if (screen === "armory" && !document.getElementById("armory-grid").children.length) {
+        searchModrinth("mod", "", "armory-grid");
+      }
+      if (screen === "packs" && !document.getElementById("packs-grid").children.length) {
+        searchModrinth(state.packKind, "", "packs-grid");
+      }
+      if (screen === "realms" || screen === "crew") renderRealmsAndCrew();
+      if (screen === "files") this.browseSub("");
+      if (screen === "console") this.loadConsole();
     },
-    setCenterMode: function (mode) {
+
+    setCenterMode(mode) {
       document.getElementById("tab-reactor").classList.toggle("active", mode === "reactor");
       document.getElementById("tab-deck").classList.toggle("active", mode === "deck");
       document.getElementById("reactor-split-view").style.display = mode === "reactor" ? "grid" : "none";
       document.getElementById("command-deck-view").style.display = mode === "deck" ? "flex" : "none";
     },
-    cycleSkin: function () {
-      state.data.skinDataUrl = "";
-      state.skinIdx = (state.skinIdx + 1) % BUILTIN_SKINS.length;
-      updateSkinTexture();
-      toast("Equipped Cloud Wardrobe Skin #" + (state.skinIdx + 1));
+
+    cycleSkin() {
+      state.customSkinData = "";
+      localStorage.removeItem("cloud_custom_skin");
+      state.skinIdx = (state.skinIdx + 1) % PRESET_SKINS.length;
+      const p = PRESET_SKINS[state.skinIdx];
+      state.slimModel = !!p.slim;
+      init3DSkins();
+      renderAccountStudio();
+      toast("Equipped " + p.name);
     },
-    pickSkinFile: function () {
-      if (bridge()) bridge().pickSkinFile();
+
+    setPlayerModel(slim) {
+      state.slimModel = !!slim;
+      renderAccountStudio();
+      init3DSkins();
     },
-    launchGame: function () {
-      if (bridge()) {
-        const msg = bridge().launchGame();
-        if (msg) toast(msg);
-      } else {
-        toast("Launching " + state.data.selectedInstance + "...");
-      }
+
+    toggleSkinWalk() {
+      state.skinWalking = !state.skinWalking;
+      init3DSkins();
     },
-    selectInstance: function (idx) {
-      if (bridge()) bridge().selectInstance(idx);
-      syncFromBridge();
-      toast("Selected instance!");
-    },
-    selectAndLaunch: function (idx) {
-      if (bridge()) {
-        bridge().selectInstance(idx);
-        const msg = bridge().launchGame();
-        if (msg) toast(msg);
-      }
-    },
-    quickCreateDefault: function () {
-      if (bridge()) {
-        bridge().createInstance("VANILLA", "1.21.4", "Cloud 1.21.4");
-        setTimeout(syncFromBridge, 400);
-        toast("Created Cloud 1.21.4!");
-      }
-    },
-    renameInstance: function (idx) {
-      const cur = (state.data.instances[idx] || {}).name || "";
-      const next = prompt("New Instance Name:", cur);
-      if (next && next.trim() && bridge()) {
-        bridge().renameInstance(idx, next.trim());
-        syncFromBridge();
-      }
-    },
-    cloneInstance: function (idx) {
-      const cur = (state.data.instances[idx] || {}).name || "Instance";
-      const next = prompt("Clone Name:", cur + " Copy");
-      if (next && next.trim() && bridge()) {
-        bridge().cloneInstance(idx, next.trim());
-        setTimeout(syncFromBridge, 400);
-      }
-    },
-    deleteInstance: function (idx) {
-      const cur = (state.data.instances[idx] || {}).name || "this instance";
-      if (confirm("Delete " + cur + "?")) {
-        if (bridge()) bridge().deleteInstance(idx);
-        syncFromBridge();
-      }
-    },
-    setForgeLoader: function (loader, vtype) {
-      state.forgeLoader = loader;
-      state.forgeType = vtype;
-      document.querySelectorAll("#forge-loader-rail .rail-btn").forEach(b => {
-        const key = vtype === "SNAPSHOT" ? "SNAPSHOT" : loader;
-        b.classList.toggle("active", b.getAttribute("data-loader") === key);
-      });
-      const prefix = loader === "VANILLA" ? "Cloud" : ("Cloud " + loader.charAt(0) + loader.slice(1).toLowerCase());
-      document.getElementById("forge-inst-name").value = prefix + " " + state.selectedMcVer;
-      renderForgeVersions();
-    },
-    pickMcVersion: function (ver) {
-      state.selectedMcVer = ver;
-      const prefix = state.forgeLoader === "VANILLA" ? "Cloud" : ("Cloud " + state.forgeLoader.charAt(0) + state.forgeLoader.slice(1).toLowerCase());
-      document.getElementById("forge-inst-name").value = prefix + " " + ver;
-      renderForgeVersions();
-    },
-    installSelectedVersion: function () {
-      const name = (document.getElementById("forge-inst-name").value || ("Cloud " + state.selectedMcVer)).trim();
-      if (bridge()) {
-        toast("Installing " + name + "...");
-        bridge().createInstance(state.forgeLoader, state.selectedMcVer, name);
-      }
-    },
-    searchMods: function () {
-      const q = document.getElementById("armory-query").value || "";
-      searchModrinth("mod", q, "armory-grid", "mods");
-    },
-    showInstalledMods: function () {
-      if (!bridge()) return;
-      const items = JSON.parse(bridge().listFilesJson("mods") || "[]");
-      const grid = document.getElementById("armory-grid");
-      if (!items.length) {
-        grid.innerHTML = `<div class="item-card"><div class="setting-title">No .JAR mods installed in active instance yet</div><div class="setting-sub">Search Modrinth above to install mods in 1 tap!</div></div>`;
+
+    pickSkinFile() {
+      const nb = bridge();
+      if (nb && nb.pickSkinFile) {
+        nb.pickSkinFile();
         return;
       }
-      grid.innerHTML = items.map(f => `
+      const inp = document.createElement("input");
+      inp.type = "file";
+      inp.accept = "image/png";
+      inp.onchange = e => {
+        const f = e.target.files && e.target.files[0];
+        if (!f) return;
+        const reader = new FileReader();
+        reader.onload = ev => {
+          state.customSkinData = ev.target.result;
+          localStorage.setItem("cloud_custom_skin", state.customSkinData);
+          init3DSkins();
+          toast("Custom .PNG Skin Loaded!");
+        };
+        reader.readAsDataURL(f);
+      };
+      inp.click();
+    },
+
+    launchGame() {
+      const nb = bridge();
+      if (nb) {
+        const res = nb.launchGame();
+        if (res) toast(res);
+      } else {
+        toast("Launching " + (state.selectedInstance?.name || "Minecraft") + "...");
+      }
+    },
+
+    selectInstance(idx) {
+      const nb = bridge();
+      if (nb) nb.selectInstance(Number(idx) || 0);
+      setTimeout(() => this.syncFromNative(), 80);
+    },
+
+    selectAndLaunch(idx) {
+      const nb = bridge();
+      if (nb) {
+        nb.selectInstance(Number(idx) || 0);
+        setTimeout(() => nb.launchGame(), 100);
+      }
+    },
+
+    deleteInstance(idx) {
+      const nb = bridge();
+      if (nb) nb.deleteInstance(Number(idx) || 0);
+      setTimeout(() => this.syncFromNative(), 100);
+      toast("Instance removed");
+    },
+
+    setVersionFilter(vf) {
+      state.versionFilter = vf;
+      renderVersionStudio();
+    },
+
+    pickMcVersion(verId) {
+      state.selectedMcVersion = verId;
+      updateDefaultInstanceName();
+      renderVersionStudio();
+      loadModloaderBuilds();
+    },
+
+    pickModloader(ldr) {
+      state.modloader = ldr;
+      updateDefaultInstanceName();
+      renderVersionStudio();
+      loadModloaderBuilds();
+    },
+
+    pickLoaderBuild(buildId) {
+      state.selectedLoaderBuild = buildId;
+      renderLoaderBuildsOnly();
+    },
+
+    refreshLoaderBuilds() {
+      loadModloaderBuilds();
+      toast("Refreshing " + state.modloader + " versions...");
+    },
+
+    onLoaderVersionsLoaded(loader, mcVer, list) {
+      if (loader !== state.modloader || mcVer !== state.selectedMcVersion) return;
+      state.loadingBuilds = false;
+      if (Array.isArray(list) && list.length) {
+        state.loaderBuilds = list;
+        const preferred = list.find(x => x.id === state.selectedLoaderBuild) || list.find(x => x.stable) || list[0];
+        state.selectedLoaderBuild = preferred.id;
+      }
+      renderLoaderBuildsOnly();
+    },
+
+    installSelectedVersion() {
+      const name = (document.getElementById("forge-inst-name")?.value || "").trim()
+        || `${state.modloader} ${state.selectedMcVersion}`;
+      const buildId = state.selectedLoaderBuild || "";
+
+      if (state.modloader !== "VANILLA" && !buildId) {
+        toast("Please pick a " + state.modloader + " loader version first");
+        return;
+      }
+
+      const nb = bridge();
+      if (nb) {
+        nb.createInstanceWithBuild(state.modloader, state.selectedMcVersion, buildId, name);
+        toast(`Installing ${name}...`);
+      } else {
+        this.previewDownloader(`Installing ${name} (${buildId || "Vanilla"})...`);
+        state.instances.unshift({ index: 0, name, versionId: state.selectedMcVersion, selected: true });
+        this.go("hq");
+      }
+    },
+
+    onInstanceCreated(ok, msg) {
+      this.syncFromNative();
+      toast(msg || (ok ? "Instance installed & ready!" : "Install finished"));
+      if (ok) this.go("hq");
+    },
+
+    microsoftLogin() {
+      const nb = bridge();
+      if (nb) nb.microsoftLogin();
+      else toast("Opening Microsoft Xbox Live Sign-In...");
+    },
+
+    createOffline() {
+      const inp = document.getElementById("offline-username");
+      const name = (inp?.value || "").trim();
+      if (!name) {
+        toast("Enter a player username first!");
+        inp?.focus();
+        return;
+      }
+      const nb = bridge();
+      if (nb) {
+        nb.createOfflineAccount(name);
+      } else {
+        state.accounts.forEach(a => a.selected = false);
+        state.accounts.unshift({ index: 0, username: name, isMicrosoft: false, selected: true });
+      }
+      if (inp) inp.value = "";
+      setTimeout(() => {
+        this.syncFromNative();
+        toast("Signed in as " + name + "!");
+      }, 90);
+    },
+
+    selectAcc(idx) {
+      const nb = bridge();
+      if (nb) nb.selectAccount(Number(idx) || 0);
+      setTimeout(() => {
+        this.syncFromNative();
+        toast("Switched active account");
+      }, 90);
+    },
+
+    removeAcc(idx) {
+      const nb = bridge();
+      if (nb) nb.deleteAccount(Number(idx) || 0);
+      setTimeout(() => {
+        this.syncFromNative();
+        toast("Account removed");
+      }, 90);
+    },
+
+    setSettingsCat(cat) {
+      state.settingsCat = cat;
+      renderSettings();
+    },
+
+    applyPreset(tier) {
+      state.preset = tier;
+      localStorage.setItem("cloud_fps_preset", tier);
+      const nb = bridge();
+      if (nb) nb.applyPreset(tier);
+      setTimeout(() => {
+        this.syncFromNative();
+        toast("Applied " + tier.toUpperCase() + " FPS Boost Preset!");
+      }, 80);
+    },
+
+    toggleFpsBox() {
+      state.settings.fpsBoxEnabled = !state.settings.fpsBoxEnabled;
+      const nb = bridge();
+      if (nb) nb.setToggle("showRealFps", state.settings.fpsBoxEnabled);
+      renderSettings();
+      toast("Real FPS Display Box: " + (state.settings.fpsBoxEnabled ? "ON" : "OFF"));
+    },
+
+    setRam(val) {
+      state.settings.ramMb = parseInt(val, 10) || 2048;
+      const lbl = document.getElementById("ram-val-lbl");
+      if (lbl) lbl.textContent = state.settings.ramMb + " MB";
+      const nb = bridge();
+      if (nb) nb.setRamMb(state.settings.ramMb);
+      renderHeaderAndHQ();
+    },
+
+    setRenderer(id) {
+      state.settings.renderer = id;
+      const nb = bridge();
+      if (nb) nb.setRenderer(id);
+      renderHeaderAndHQ();
+      renderSettings();
+    },
+
+    setResolution(val) {
+      state.settings.resolutionScale = parseInt(val, 10) || 100;
+      const lbl = document.getElementById("res-val-lbl");
+      if (lbl) lbl.textContent = state.settings.resolutionScale + "%";
+      const nb = bridge();
+      if (nb) nb.setIntPref("resolutionRatio", state.settings.resolutionScale);
+    },
+
+    toggleSustained() {
+      state.settings.sustainedPerf = !state.settings.sustainedPerf;
+      const nb = bridge();
+      if (nb) nb.setToggle("sustainedPerformance", state.settings.sustainedPerf);
+      renderSettings();
+    },
+
+    setJvmArgs(val) {
+      state.settings.jvmArgs = val;
+      const nb = bridge();
+      if (nb) nb.setStringPref("javaArgs", val);
+      toast("Saved JVM arguments");
+    },
+
+    toggleClientMod(key, nativeKey) {
+      state.settings[key] = !state.settings[key];
+      const nb = bridge();
+      if (nb) nb.setToggle(nativeKey || key, !!state.settings[key]);
+      renderClientModules();
+    },
+
+    searchMods() {
+      const q = document.getElementById("armory-query")?.value || "";
+      searchModrinth("mod", q, "armory-grid");
+    },
+
+    showInstalledMods() {
+      const grid = document.getElementById("armory-grid");
+      if (!grid) return;
+      const nb = bridge();
+      const list = nb ? safeParse(nb.listFilesJson("mods"), []) : [];
+      if (!list.length) {
+        grid.innerHTML = `<div class="setting-sub" style="padding:12px;">No local .jar mods installed in this instance yet. Search Modrinth above to install!</div>`;
+        return;
+      }
+      grid.innerHTML = list.map(f => `
         <div class="item-card">
-          <div class="setting-title">🧩 ${esc(f.name)}</div>
-          <div class="setting-sub">${esc(f.size)}</div>
+          <div class="setting-title">${escapeHtml(f.name)}</div>
+          <div class="setting-sub">${escapeHtml(String(f.size || ""))}</div>
           <div class="item-actions">
-            <button class="mini-btn danger" onclick="CloudUI.deleteModFile('${esc(f.name)}')">DELETE</button>
+            <button class="mini-btn danger" onclick="CloudUI.deleteModJar('${encodeURIComponent(f.name)}')">DELETE</button>
           </div>
         </div>
       `).join("");
     },
-    deleteModFile: function (name) {
-      if (bridge()) {
-        bridge().deleteRelativeFile("mods/" + name);
-        this.showInstalledMods();
-      }
+
+    deleteModJar(encName) {
+      const nb = bridge();
+      if (nb) nb.deleteRelativeFile("mods/" + decodeURIComponent(encName));
+      this.showInstalledMods();
     },
-    setPackKind: function (kind) {
+
+    setPackKind(kind) {
       state.packKind = kind;
       document.getElementById("pack-tab-shader").classList.toggle("primary", kind === "shader");
       document.getElementById("pack-tab-rp").classList.toggle("primary", kind === "resourcepack");
       this.searchPacks();
     },
-    searchPacks: function () {
-      const q = document.getElementById("packs-query").value || "";
-      const folder = state.packKind === "shader" ? "shaderpacks" : "resourcepacks";
-      searchModrinth(state.packKind, q, "packs-grid", folder);
+
+    searchPacks() {
+      const q = document.getElementById("packs-query")?.value || "";
+      searchModrinth(state.packKind, q, "packs-grid");
     },
-    installModrinthProject: async function (projectId, title, subfolder) {
+
+    async installFromModrinth(projectId, kind, title) {
+      toast("Fetching " + title + "...");
       try {
-        toast("Resolving " + title + "...");
         const res = await fetch(`https://api.modrinth.com/v2/project/${encodeURIComponent(projectId)}/version`);
-        const versions = await res.json();
-        if (!Array.isArray(versions) || !versions.length) {
+        const vers = await res.json();
+        const first = Array.isArray(vers) && vers[0];
+        const file = first && first.files && first.files[0];
+        if (!file || !file.url) {
           toast("No downloadable file found");
           return;
         }
-        const mcVer = state.data.selectedVersion || "1.21.4";
-        const match = versions.find(v => (v.game_versions || []).includes(mcVer)) || versions[0];
-        const file = (match.files || [])[0];
-        if (!file || !file.url) {
-          toast("No file URL available");
-          return;
+        const folder = kind === "shader" ? "shaderpacks" : (kind === "resourcepack" ? "resourcepacks" : "mods");
+        const nb = bridge();
+        if (nb) {
+          nb.downloadUrlToSubfolder(file.url, file.filename, folder);
+        } else {
+          this.previewDownloader("Downloading " + file.filename + "...");
         }
-        if (bridge()) {
-          bridge().downloadUrlToSubfolder(file.url, file.filename, subfolder);
-          toast("Downloading " + file.filename + " -> " + subfolder + "/");
-        }
-      } catch (e) {
-        toast("Download error: " + e.message);
+      } catch (_) {
+        toast("Download failed — check connection");
       }
     },
-    setSettingsCat: function (cat) {
-      state.settingsCat = cat;
-      renderSettings();
-    },
-    applyPreset: function (p) {
-      if (bridge()) bridge().applyPreset(p);
-      syncFromBridge();
-      toast("Applied " + p.toUpperCase() + " Cloud FPS Boost Preset!");
-    },
-    setRam: function (mb) {
-      if (bridge()) bridge().setRamMb(parseInt(mb, 10));
-      syncFromBridge();
-      toast("RAM Allocation set to " + mb + " MB");
-    },
-    setRenderer: function (id) {
-      if (bridge()) bridge().setRenderer(id);
-      syncFromBridge();
-      toast("Renderer updated!");
-    },
-    setScale: function (pct) {
-      if (bridge()) bridge().setIntPref("resolutionRatio", parseInt(pct, 10));
-      syncFromBridge();
-      toast("Resolution Scale: " + pct + "%");
-    },
-    setJvmArgs: function (args) {
-      if (bridge()) bridge().setStringPref("javaArgs", args);
-      syncFromBridge();
-      toast("Saved JVM Arguments");
-    },
-    togglePref: function (key) {
-      state.data[key] = !state.data[key];
-      if (bridge()) bridge().setToggle(key, !!state.data[key]);
-      syncFromBridge();
-    },
-    microsoftLogin: function () {
-      if (bridge()) bridge().microsoftLogin();
-    },
-    createOffline: function () {
-      const inp = document.getElementById("offline-username");
-      const name = (inp.value || "").trim();
-      if (!name) {
-        toast("Enter an Offline username first!");
-        return;
-      }
-      if (bridge()) {
-        bridge().createOfflineAccount(name);
-        inp.value = "";
-        setTimeout(syncFromBridge, 250);
-        toast("Signed in as " + name + "!");
-      }
-    },
-    selectAccount: function (idx) {
-      if (bridge()) bridge().selectAccount(idx);
-      syncFromBridge();
-    },
-    deleteAccount: function (idx) {
-      if (bridge()) bridge().deleteAccount(idx);
-      syncFromBridge();
-    },
-    addServer: function () {
-      const n = (document.getElementById("srv-name").value || "").trim();
-      const a = (document.getElementById("srv-addr").value || "").trim();
-      if (!a) { toast("Enter a server IP/domain"); return; }
-      state.servers.push({ name: n || a, address: a, mode: "Custom Realm" });
-      localStorage.setItem("cloud_servers_v1", JSON.stringify(state.servers));
-      document.getElementById("srv-name").value = "";
-      document.getElementById("srv-addr").value = "";
+
+    addServer() {
+      const name = (document.getElementById("srv-name")?.value || "").trim();
+      const addr = (document.getElementById("srv-addr")?.value || "").trim();
+      if (!addr) { toast("Enter server IP address"); return; }
+      state.servers.unshift({ name: name || addr, addr, tag: "Saved Server" });
+      localStorage.setItem("cloud_servers", JSON.stringify(state.servers));
       renderRealmsAndCrew();
+      toast("Added " + (name || addr));
     },
-    removeServer: function (idx) {
+
+    removeServer(idx) {
       state.servers.splice(idx, 1);
-      localStorage.setItem("cloud_servers_v1", JSON.stringify(state.servers));
+      localStorage.setItem("cloud_servers", JSON.stringify(state.servers));
       renderRealmsAndCrew();
     },
-    joinServer: function (addr) {
-      if (bridge()) {
-        const msg = bridge().joinServer(addr);
-        if (msg) toast(msg);
-      }
+
+    quickJoin(addr) {
+      const nb = bridge();
+      if (nb) nb.joinServer(addr);
+      else toast("Joining " + addr + "...");
     },
-    openControlsRig: function () {
-      if (bridge()) bridge().openControlsRig();
+
+    copyInvite(code) {
+      if (navigator.clipboard) navigator.clipboard.writeText(code);
+      toast("Copied Squad Code: " + code);
     },
-    openGamepad: function () {
-      if (bridge()) bridge().openGamepad();
+
+    openControlsRig() {
+      const nb = bridge();
+      if (nb) nb.openControlsRig();
+      else toast("Opening Touch Controls Rig...");
     },
-    runJarInstaller: function () {
-      if (bridge()) bridge().runJarInstaller();
+
+    runJarInstaller() {
+      const nb = bridge();
+      if (nb) nb.runJarInstaller();
+      else toast("Select .JAR Mod Installer...");
     },
-    clearCache: function () {
-      if (bridge()) bridge().clearCache();
-      toast("Cleared metadata & temp cache!");
+
+    openGamepad() {
+      const nb = bridge();
+      if (nb) nb.openGamepad();
+      else toast("Opening Gamepad Mapper...");
     },
-    openDiscord: function () {
-      if (bridge()) bridge().openUrl("https://discord.gg/RS7q9KaCm6");
+
+    shareLogs() {
+      const nb = bridge();
+      if (nb) nb.shareLogs();
+      else toast("Sharing latestlog.txt...");
     },
-    browseSub: function (sub) {
+
+    openDiscord() {
+      const nb = bridge();
+      if (nb) nb.openUrl("https://discord.gg/minecraft");
+    },
+
+    clearCache() {
+      const nb = bridge();
+      if (nb) nb.clearCache();
+      toast("Cache cleared!");
+    },
+
+    browseSub(sub) {
       document.getElementById("files-current-path").textContent = ".minecraft/" + (sub || "");
-      const el = document.getElementById("files-list");
-      if (!bridge()) return;
-      const items = JSON.parse(bridge().listFilesJson(sub) || "[]");
+      const host = document.getElementById("files-list");
+      if (!host) return;
+      const nb = bridge();
+      const items = nb ? safeParse(nb.listFilesJson(sub), []) : [
+        { name: "mods", isDir: true, size: "Folder" },
+        { name: "shaderpacks", isDir: true, size: "Folder" },
+        { name: "options.txt", isDir: false, size: "4 KB" }
+      ];
       if (!items.length) {
-        el.innerHTML = `<div class="setting-row"><div class="setting-title">Folder is empty</div></div>`;
+        host.innerHTML = `<div class="setting-sub" style="padding:10px;">Folder is empty.</div>`;
         return;
       }
-      el.innerHTML = items.map(f => `
-        <div class="setting-row" style="padding:7px 12px;">
-          <div style="display:flex;align-items:center;gap:8px;">
-            <span>${f.isDir ? "📁" : "📄"}</span>
-            <div>
-              <div class="setting-title" style="font-size:12px;">${esc(f.name)}</div>
-              <div class="setting-sub">${esc(f.size)}</div>
-            </div>
-          </div>
-          ${f.isDir
-            ? `<button class="mini-btn" onclick="CloudUI.browseSub('${esc((sub ? sub + '/' : '') + f.name)}')">OPEN</button>`
-            : `<button class="mini-btn danger" onclick="CloudUI.deleteFileInExplorer('${esc(sub)}', '${esc(f.name)}')">DELETE</button>`}
+      host.innerHTML = items.map(f => `
+        <div class="setting-row" style="padding:8px 12px;">
+          <div style="font-size:12px;font-weight:700;">${f.isDir ? "📁" : "📄"} ${escapeHtml(f.name)}</div>
+          <div style="font-size:11px;color:#64748b;">${escapeHtml(String(f.size || ""))}</div>
         </div>
       `).join("");
     },
-    deleteFileInExplorer: function (sub, name) {
-      if (confirm("Delete " + name + "?") && bridge()) {
-        bridge().deleteRelativeFile((sub ? sub + "/" : "") + name);
-        this.browseSub(sub);
+
+    openNativeFolder() {
+      const nb = bridge();
+      if (nb) nb.openGameFolder();
+    },
+
+    loadConsole() {
+      const pre = document.getElementById("console-output");
+      const nb = bridge();
+      if (pre && nb) {
+        pre.textContent = nb.getConsoleLog() || "Cloud Launcher Ready.";
       }
     },
-    openNativeFolder: function () {
-      if (bridge()) bridge().openGameFolder();
+
+    refreshAll() {
+      this.syncFromNative();
     },
-    loadConsole: function () {
-      if (bridge()) {
-        document.getElementById("console-output").textContent = bridge().getConsoleLog() || "No log output yet.";
+
+    previewDownloader(customLabel) {
+      this.onDownloadProgress(true, customLabel || "Downloading Minecraft 1.21.4 Assets...", 64);
+      setTimeout(() => this.onDownloadProgress(false, "", 100), 3200);
+    },
+
+    onDownloadProgress(active, label, pct) {
+      const bar = document.getElementById("top-downloader");
+      if (!bar) return;
+      bar.classList.toggle("active", !!active);
+      document.body.classList.toggle("has-dl", !!active);
+      if (active) {
+        document.getElementById("dl-title").textContent = label || "Cloud Downloader Active...";
+        const clamped = Math.max(4, Math.min(100, Math.round(pct || 0)));
+        document.getElementById("dl-fill").style.width = clamped + "%";
+        document.getElementById("dl-pct").textContent = clamped + "%";
       }
-    },
-    shareLogs: function () {
-      if (bridge()) bridge().shareLogs();
-    },
-    refreshAll: function () {
-      if (bridge()) bridge().reloadBackend();
-      syncFromBridge();
-      toast("Refreshed instances & accounts");
     }
   };
 
-  window.addEventListener("DOMContentLoaded", function () {
-    syncFromBridge();
-    setTimeout(init3DSkin, 80);
-    setInterval(function () {
-      const b = bridge();
-      if (!b) return;
-      try {
-        const p = JSON.parse(b.getProgressJson());
-        if (p.active !== state.data.taskActive || p.pct !== state.data.taskPct || p.title !== state.data.taskTitle) {
-          window.CloudUI.updateDownloadProgress(p.active, p.title, p.pct);
-        }
-      } catch (e) {}
-    }, 800);
+  // Poll native task progress every 900ms so the relocated Top CLOUD DOWNLOADER bar tracks all asset downloads!
+  setInterval(() => {
+    const nb = bridge();
+    if (!nb || !nb.getProgressJson) return;
+    const p = safeParse(nb.getProgressJson(), null);
+    if (p) window.CloudUI.onDownloadProgress(!!p.active, p.title, p.pct);
+  }, 900);
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const instInp = document.getElementById("forge-inst-name");
+    if (instInp) {
+      instInp.addEventListener("input", () => {
+        const d = document.getElementById("vs-dir-preview");
+        if (d) d.textContent = "📁 /CloudLauncher/instances/" + (instInp.value || "Instance");
+      });
+    }
+    refreshStateFromNative();
+    renderHeaderAndHQ();
+    init3DSkins();
   });
 })();
