@@ -699,6 +699,48 @@ def page_header(kicker: str, title: str, lede: str) -> str:
 """
 
 
+def all_ui_gallery_section() -> str:
+    shots = [
+        ("assets/screenshots/fire-launcher-prism-light-ui.png", "1. HQ Home Dashboard (3-Wing Bento Deck)", "Top Command Header (Operator ID, Config/Ops/Files/Console, Active Instance + IGNITE), Left 3D Skin Studio, Center 2×2 Pastel Bento Cards, Right Active Instance & Rack, and Bottom Floating Dock."),
+        ("assets/screenshots/fire-ui-version-install.png", "2. Version & Mod Loader Install (+ FORGE) + Top Downloading Bar", "Relocated Top Prism Downloading Bar (68% · 24.8 MB/s · ETA 00:08), Mod Loader selector (Vanilla, Fabric, Quilt, Forge, NeoForge, OptiFine), Minecraft 1.21.4–1.8.9 list, and Java 21 Auto setup."),
+        ("assets/screenshots/fire-ui-mods-install.png", "3. Mod Armory — Mods, Shaders & Modpacks Install", "Built-in Modrinth & CurseForge Armory with 1-tap install and live Cyan-Indigo-Pink progress bars for Sodium, Lithium, Iris Shaders, FerriteCore, Complementary Shaders, and ImmediatelyFast."),
+        ("assets/screenshots/fire-ui-settings.png", "4. Settings, Renderers & 4GB/6GB/8GB FPS Boost (CONFIG)", "Inverted Right-side Category Rail + 1-Tap FIRE FPS Boost Presets (4GB · 1728 MB, 6GB · 2816 MB, 8GB+ · 4096 MB), RAM Slider, MobileGlues Vulkan + Turnip .ZIP Driver, and 120Hz Unlock."),
+        ("assets/screenshots/fire-ui-instance-vault.png", "5. Instance Vault (Multi-Version Library)", "Left Active Instance Inspector (Prism PvP 1.21.4 · Fabric · OpenJDK 21 · MobileGlues) with IGNITE / Edit / Mods / Folder / Crash Logs + Right Multi-Instance Cartridge Grid."),
+        ("assets/screenshots/fire-ui-accounts-client.png", "6. Accounts, 3D Skin/Cape Wardrobe & Fire Client HUD", "3D Character & Rainbow Cape Studio, Account Vault (Microsoft Xbox Live, Ely.by, Offline Username), and Fire Client PvP Toggles (120Hz FPS Pill, RGB Keystrokes + CPS, ToggleSprint, Zoom, 1080p60 Audio Recorder)."),
+        ("assets/screenshots/fire-ui-controls-ingame.png", "7. In-Game Custom Controls Rig & Floating FIRE LAUNCHER Menu", "Live 224 FPS · 120Hz pill, RGB Keystrokes + CPS, translucent frosted touch buttons, and the floating 3D Prismatic Flame button open to FIRE LAUNCHER MENU + 1080p60 Internal Audio Recording."),
+        ("assets/branding/fire-launcher-logo.png", "8. Official FIRE LAUNCHER 3D Prismatic Flame + Cube Emblem", "Signature crystalline prism flame cradling an isometric Minecraft cube — installed across Android Adaptive Icons, Splash Screen, Top Header, Bottom Dock, and In-Game Menu."),
+    ]
+    cards = []
+    for src, title, desc in shots:
+        cards.append(f"""        <article class="card" style="padding:16px 0;display:flex;flex-direction:column;gap:12px">
+          <div class="showcase-frame" style="aspect-ratio:16/9;display:grid;place-items:center">
+            <img src="{src}" alt="{title}" loading="lazy" style="width:100%;height:100%;object-fit:cover">
+          </div>
+          <div style="padding:4px 2px">
+            <h3>{title}</h3>
+            <p>{desc}</p>
+          </div>
+        </article>""")
+    joined = "\n".join(cards)
+    return f"""
+  <section class="section" id="ui-gallery">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="kicker">📸 Complete Launcher UI Gallery</span>
+        <h2>All 7 Screens Installed in <span class="gradient-text">FIRE LAUNCHER</span></h2>
+        <p class="lede">
+          Every screen of FIRE LAUNCHER — HQ Home, Version &amp; Loader Installer, Mod Armory, Settings &amp; FPS Boost,
+          Instance Vault, Accounts &amp; Fire Client, and In-Game Controls Overlay.
+        </p>
+      </div>
+      <div class="grid grid-2">
+{joined}
+      </div>
+    </div>
+  </section>
+"""
+
+
 def build_index() -> str:
     return (
         head(
@@ -779,6 +821,7 @@ def build_index() -> str:
     </div>
   </section>
 """
+        + all_ui_gallery_section()
         + ui_explorer_section()
         + ram_fps_section()
         + all_systems_section()
@@ -789,53 +832,22 @@ def build_index() -> str:
 
 
 def build_screenshots() -> str:
-    shots = [
-        ("assets/screenshots/fire-launcher-prism-light-ui.png", "1. HQ 3-Wing Bento Dashboard", "Top Command Header (Account, Config/Ops/Files/Console, Active Instance + IGNITE), Left 3D Skin Wardrobe, Center 2×2 Tactical Bento Cards, Right Active Instance & Rack, and Bottom Floating Dock."),
-        ("assets/branding/fire-launcher-logo.png", "2. Official FIRE LAUNCHER Emblem", "3D Crystalline Prismatic Flame cradling a faceted Minecraft prism cube — used across Adaptive Icons, Top Header, Bottom Dock, Splash Screen & In-Game Floating Button."),
-        ("assets/screenshots/shot-instances.jpg", "3. Instance Vault & +Forge Builder", "Create isolated instances for any Minecraft version (1.0 – 1.21.4+) with 1-click Fabric, Quilt, Forge, NeoForge, OptiFine, or Legacy Fabric installation."),
-        ("assets/screenshots/shot-discover.jpg", "4. Mod Armory (Modrinth & CurseForge)", "Search and install Mods, Shaders, Resource Packs, Worlds, and complete Modpacks directly inside the launcher with background queue progress."),
-        ("assets/screenshots/shot-renderer.jpg", "5. 12 Renderers & GPU Driver Studio", "Pick MobileGlues, Vulkan Zink, VirGL, or Holy GL4ES per instance and import custom Adreno Turnip .zip Vulkan drivers."),
-        ("assets/screenshots/shot-accounts.jpg", "6. Accounts & 3D Skin/Cape Wardrobe", "Manage Microsoft Xbox Live OAuth, Ely.by, and Offline accounts with live 3D character rotation and cape toggles."),
-    ]
-    cards = []
-    for src, title, desc in shots:
-        cards.append(f"""        <article class="card" style="padding:16px 0;display:flex;flex-direction:column;gap:12px">
-          <div class="showcase-frame" style="aspect-ratio:16/10;display:grid;place-items:center">
-            <img src="{src}" alt="{title}" style="width:100%;height:100%;object-fit:cover">
-          </div>
-          <div style="padding:4px 2px">
-            <h3>{title}</h3>
-            <p>{desc}</p>
-          </div>
-        </article>""")
-    joined = "\n".join(cards)
     return (
         head(
-            "All Launcher UIs & Interactive Tour — FIRE LAUNCHER",
-            "Inspect every UI screen of FIRE LAUNCHER: HQ 3-Wing Bento Deck, Top Downloading Bar, Instance Vault, Mod Armory, Fire Client HUD, Controls Rig, and Settings.",
+            "All Launcher UIs & Complete Visual Gallery — FIRE LAUNCHER",
+            "Inspect all 7 generated UI screens of FIRE LAUNCHER: HQ 3-Wing Bento Deck, Version & Loader Install + Top Downloading Bar, Mod Armory, Settings & FPS Boost, Instance Vault, Accounts & Fire Client, and In-Game Controls.",
             "screenshots.html",
         )
         + nav("screenshots.html")
         + page_header(
             "🖥 Complete UI Showcase",
-            "Every Screen of FIRE LAUNCHER",
-            "Test all 8 interactive UI modules live below, or browse the visual showcase cards underneath.",
+            "Every Screen Installed in FIRE LAUNCHER",
+            "Full HD showcase of all 7 Prism Light Multi-Color screens + interactive UI simulator underneath.",
         )
         + "<main id=\"main\">"
+        + all_ui_gallery_section()
         + ui_explorer_section()
-        + f"""
-  <section class="section">
-    <div class="wrap">
-      <div class="section-head">
-        <span class="kicker">📸 Visual Breakdown</span>
-        <h2>Key Interface Modules</h2>
-      </div>
-      <div class="grid grid-2">
-{joined}
-      </div>
-    </div>
-  </section>
-</main>"""
+        + "</main>"
         + FOOTER
     )
 
