@@ -1,5 +1,5 @@
 /* ============================================================================
- * FIRE LAUNCHER — Frameless Editorial Interactive Engine (Zero Box Fill)
+ * CLOUD LAUNCHER — Frameless Editorial Interactive Engine (Zero Box Fill)
  * ============================================================================ */
 
 (function () {
@@ -140,7 +140,7 @@
     client: () => `
       <div class="sim-stage-body" style="grid-template-columns:1.1fr 0.9fr">
         <div class="sim-pane">
-          <span class="tag">BUILT-IN FIRE CLIENT HUD</span>
+          <span class="tag">BUILT-IN CLOUD CLIENT HUD</span>
           <h3>Competitive PvP &amp; FPS Overlay Suite</h3>
           <div class="pastel-grid-2x2">
             <div class="pastel-tile">FPS &amp; Frame-Time Pill</div>
@@ -152,7 +152,7 @@
         <div class="sim-pane">
           <span class="tag">IN-GAME RECORDER &amp; MENU</span>
           <h3>🎥 1080p60 Screen + Internal Audio Recorder</h3>
-          <p style="font-size:13px;color:#2B4C73">Tap the floating in-game FIRE LAUNCHER crystal flame button to record lag-free MP4 gameplay with internal game sound, live FPS counter, and instant log overlay.</p>
+          <p style="font-size:13px;color:#2B4C73">Tap the floating in-game CLOUD LAUNCHER crystal flame button to record lag-free MP4 gameplay with internal game sound, live FPS counter, and instant log overlay.</p>
         </div>
       </div>`,
 

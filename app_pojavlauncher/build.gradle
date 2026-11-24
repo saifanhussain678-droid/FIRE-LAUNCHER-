@@ -160,7 +160,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "net.al.aerixlauncher"
+        applicationId "net.kdt.pojavlaunch.cloud"
         minSdkVersion 23
         targetSdkVersion 36
         versionCode AERIX_VERSION_CODE
@@ -220,11 +220,11 @@ android {
             shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.customDebug
-            resValue "string", "app_name", "FIRE LAUNCHER (Debug)"
-            resValue "string", "app_short_name", "FIRE LAUNCHER (Debug)"
-            resValue "string", "aerix_app_label", "FIRE LAUNCHER (Debug)"
-            resValue 'string', 'application_package', 'net.al.aerixlauncher.debug'
-            resValue 'string', 'storageProviderAuthorities', 'net.al.aerixlauncher.scoped.gamefolder.debug'
+            resValue "string", "app_name", "Cloud Launcher (Debug)"
+            resValue "string", "app_short_name", "Cloud Launcher (Debug)"
+            resValue "string", "aerix_app_label", "Cloud Launcher (Debug)"
+            resValue 'string', 'application_package', 'net.kdt.pojavlaunch.cloud.debug'
+            resValue 'string', 'storageProviderAuthorities', 'net.kdt.pojavlaunch.cloud.scoped.gamefolder.debug'
         }
         // Nightly is the testing channel. It keeps the debug applicationId, signing key and
         // versionCode, so it installs over an existing debug build and behaves exactly like it.
@@ -233,9 +233,9 @@ android {
             initWith debug
             signingConfig signingConfigs.customDebug
             matchingFallbacks += List.of("debug")
-            resValue "string", "app_name", "FIRE LAUNCHER"
-            resValue "string", "app_short_name", "FIRE LAUNCHER"
-            resValue "string", "aerix_app_label", "FIRE LAUNCHER"
+            resValue "string", "app_name", "Cloud Launcher"
+            resValue "string", "app_short_name", "Cloud Launcher"
+            resValue "string", "aerix_app_label", "Cloud Launcher"
         }
         proguard {
             initWith debug
@@ -253,11 +253,11 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.aerixRelease
-            resValue "string", "app_name", "FIRE LAUNCHER"
-            resValue "string", "app_short_name", "FIRE LAUNCHER"
-            resValue "string", "aerix_app_label", "FIRE LAUNCHER"
-            resValue 'string', 'application_package', 'net.al.aerixlauncher'
-            resValue 'string', 'storageProviderAuthorities', 'net.al.aerixlauncher.scoped.gamefolder'
+            resValue "string", "app_name", "Cloud Launcher"
+            resValue "string", "app_short_name", "Cloud Launcher"
+            resValue "string", "aerix_app_label", "Cloud Launcher"
+            resValue 'string', 'application_package', 'net.kdt.pojavlaunch.cloud'
+            resValue 'string', 'storageProviderAuthorities', 'net.kdt.pojavlaunch.cloud.scoped.gamefolder'
         }
         gplay {
             initWith release
@@ -268,11 +268,11 @@ android {
             initWith release
             signingConfig signingConfigs.customDebug // WIP, changeme
             applicationIdSuffix '.pub'
-            resValue "string", "app_name", "FIRE LAUNCHER (Nightly)"
-            resValue "string", "app_short_name", "FIRE LAUNCHER (Nightly)"
-            resValue "string", "aerix_app_label", "FIRE LAUNCHER (Nightly)"
-            resValue 'string', 'application_package', 'net.al.aerixlauncher.pub'
-            resValue 'string', 'storageProviderAuthorities', 'net.al.aerixlauncher.pub.scoped.gamefolder'
+            resValue "string", "app_name", "Cloud Launcher (Nightly)"
+            resValue "string", "app_short_name", "Cloud Launcher (Nightly)"
+            resValue "string", "aerix_app_label", "Cloud Launcher (Nightly)"
+            resValue 'string', 'application_package', 'net.kdt.pojavlaunch.cloud.pub'
+            resValue 'string', 'storageProviderAuthorities', 'net.kdt.pojavlaunch.cloud.pub.scoped.gamefolder'
             matchingFallbacks += List.of("release")
         }
     }

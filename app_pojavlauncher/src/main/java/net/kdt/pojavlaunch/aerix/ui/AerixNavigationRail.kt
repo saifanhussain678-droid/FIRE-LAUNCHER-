@@ -1,5 +1,5 @@
 /*
- * Fire Launcher Top Tactical Command Bar & Bottom Floating Molten Dock.
+ * Cloud Launcher Top Tactical Command Bar & Bottom Floating Molten Dock.
  * Replaces both vertical side rails of the old UI:
  *   - Top Command Header: Operator ID (Top-Left), System Utility Strip & Fire Crest (Top-Center),
  *     Active Instance Cartridge + Blazing IGNITE Launch Trigger (Top-Right).
@@ -159,19 +159,19 @@ fun AerixNavigationRail(
                         .border(BorderStroke(1.dp, activeAccent.copy(alpha = 0.55f)), FireShapes.hudChip)
                         .bringFocusedItemIntoView()
                         .clickable(role = Role.Button) { onNavigate(LauncherSection.HOME) }
-                        .semantics { contentDescription = "Fire Launcher HQ" }
+                        .semantics { contentDescription = "Cloud Launcher HQ" }
                         .padding(horizontal = 8.dp, vertical = if (compact) 5.dp else 6.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(5.dp)
                 ) {
                     Image(
                         painter = painterResource(R.drawable.ic_aerix_mark),
-                        contentDescription = "FIRE LAUNCHER",
+                        contentDescription = "CLOUD LAUNCHER",
                         modifier = Modifier.size(if (compact) 18.dp else 21.dp)
                     )
                     if (!compact || configuration.screenWidthDp >= 640) {
                         Text(
-                            text = "FIRE LAUNCHER",
+                            text = "CLOUD LAUNCHER",
                             fontSize = 9.5.sp,
                             letterSpacing = 1.1.sp,
                             fontWeight = FontWeight.Black,
@@ -318,7 +318,7 @@ fun AerixHomeUtilityRail(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(AerixSpacing.xsPlus)
         ) {
-            // 1. TOP-LEFT: Operator Account Pod + FIRE LAUNCHER Brand Title
+            // 1. TOP-LEFT: Operator Account Pod + CLOUD LAUNCHER Brand Title
             AccountAvatarHudPod(
                 account = account,
                 selected = selectedSection == LauncherSection.ACCOUNTS ||
@@ -336,11 +336,11 @@ fun AerixHomeUtilityRail(
                 ) {
                     Image(
                         painter = painterResource(R.drawable.ic_aerix_mark),
-                        contentDescription = "FIRE LAUNCHER Logo",
+                        contentDescription = "CLOUD LAUNCHER Logo",
                         modifier = Modifier.size(22.dp)
                     )
                     Text(
-                        text = "FIRE LAUNCHER",
+                        text = "CLOUD LAUNCHER",
                         color = AerixSurface.textPrimary,
                         fontSize = 12.sp,
                         letterSpacing = 0.8.sp,

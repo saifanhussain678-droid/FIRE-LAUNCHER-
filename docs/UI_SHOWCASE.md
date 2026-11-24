@@ -1,13 +1,13 @@
-# 🔥 FIRE LAUNCHER — Complete All-UI Visual Showcase
+# 🔥 CLOUD LAUNCHER — Complete All-UI Visual Showcase
 
-Neeche **FIRE LAUNCHER** me lagi hui **saari 7 Prism Light Multi-Color UI Screens + Official 3D Flame-Cube Logo** ek saath di gayi hain:
+Neeche **CLOUD LAUNCHER** me lagi hui **saari 7 Prism Light Multi-Color UI Screens + Official 3D Flame-Cube Logo** ek saath di gayi hain:
 
 ---
 
 ## 1. HQ Home Dashboard (`3-Wing Bento Deck`)
-- **Top Command Header**: Account Pod (`ONLINE ID`) + **FIRE LAUNCHER** Logo + `CONFIG / OPS / FILES / CONSOLE` + Active Instance + **`▶ IGNITE`**
+- **Top Command Header**: Account Pod (`ONLINE ID`) + **CLOUD LAUNCHER** Logo + `CONFIG / OPS / FILES / CONSOLE` + Active Instance + **`▶ IGNITE`**
 - **Center 3-Wing Stage**: Left `OPERATOR STUDIO` (3D Skin & Rainbow Aura), Center `2×2 Pastel Bento Cards` (`CREW & PARTY`, `MOD ARMORY`, `CONTROL RIG`, `RUN .JAR`), Right `ACTIVE INSTANCE` + `INSTANCE RACK`
-- **Bottom Floating Dock**: `FIRE LAUNCHER`, `HQ`, `VAULT`, `+ FORGE`, `ARMORY`, `PACKS`, `REALMS`, `CLIENT`, `CREW`
+- **Bottom Floating Dock**: `CLOUD LAUNCHER`, `HQ`, `VAULT`, `+ FORGE`, `ARMORY`, `PACKS`, `REALMS`, `CLIENT`, `CREW`
 
 ![1. HQ Home Dashboard](assets/screenshots/fire-launcher-prism-light-ui.png)
 
@@ -30,7 +30,7 @@ Neeche **FIRE LAUNCHER** me lagi hui **saari 7 Prism Light Multi-Color UI Screen
 ---
 
 ## 4. Settings, Show Real FPS Display Toggle & 4GB / 6GB / 8GB+ FPS Boost (`⚙ CONFIG`)
-- **Inverted Right Category Rail**: `Appearance`, `Video & Renderers`, `Java & FPS Boost`, `Controls Rig`, `Fire Client`, `About`
+- **Inverted Right Category Rail**: `Appearance`, `Video & Renderers`, `Java & FPS Boost`, `Controls Rig`, `Cloud Client`, `About`
 - **Show Real FPS Display (`ON / OFF`)**: Settings me ON/OFF switch + live preview (`Fps - 124 / Renderer - MobileGlues / Ms - 8.1 ms`) with `Green (60+) · Yellow (30-59) · Red (<30)` color states
 - **1-Tap Optimizer Card**: **`4GB`**, **`6GB`**, **`8GB+`** FPS Boost presets, Smooth RAM Allocation Slider, `MobileGlues` + `Turnip .ZIP Driver`, aur `120Hz Display Unlock ON`
 
@@ -46,26 +46,26 @@ Neeche **FIRE LAUNCHER** me lagi hui **saari 7 Prism Light Multi-Color UI Screen
 
 ---
 
-## 6. Accounts, 3D Skin/Cape Wardrobe & Fire Client HUD (`◆ CLIENT`)
+## 6. Accounts, 3D Skin/Cape Wardrobe & Cloud Client HUD (`◆ CLIENT`)
 - **3D Skin & Cape Wardrobe**: 3D rotatable character + pastel cape + rainbow ring
 - **Account Vault**: `Microsoft Xbox Live (Active ✓)`, `Ely.by Skin Server`, `+ Add Offline Username`
-- **Fire Client PvP & HUD Modules**: `120Hz FPS Pill`, `RGB Keystrokes + CPS`, `ToggleSprint`, `Zoom`, aur `1080p60 Internal Audio Recorder`
+- **Cloud Client PvP & HUD Modules**: `120Hz FPS Pill`, `RGB Keystrokes + CPS`, `ToggleSprint`, `Zoom`, aur `1080p60 Internal Audio Recorder`
 
-![6. Accounts, 3D Skin Wardrobe & Fire Client](assets/screenshots/fire-ui-accounts-client.png)
+![6. Accounts, 3D Skin Wardrobe & Cloud Client](assets/screenshots/fire-ui-accounts-client.png)
 
 ---
 
-## 7. In-Game Real FPS Display Box (`Fps / Renderer / Ms`) & Floating `FIRE LAUNCHER MENU`
+## 7. In-Game Real FPS Display Box (`Fps / Renderer / Ms`) & Floating `CLOUD LAUNCHER MENU`
 - Top-left **Color-Shifting Real FPS Display Box**:
   - `Fps - 144` (**Green** 60+ · **Yellow** 30–59 · **Red** <30)
   - `Renderer - MobileGlues`
   - `Ms - 6.9 ms` (**Green / Yellow / Red** real frame-time milliseconds)
-- **RGB Keystrokes + `14 CPS`**, frosted touch controls, aur floating **3D Crystalline Prismatic Flame** button se khulne wala **`FIRE LAUNCHER MENU`**
+- **RGB Keystrokes + `14 CPS`**, frosted touch controls, aur floating **3D Crystalline Prismatic Flame** button se khulne wala **`CLOUD LAUNCHER MENU`**
 
 ![7. In-Game Real FPS Box & Floating Menu](assets/screenshots/fire-ui-controls-ingame.png)
 
 ---
 
-## 8. Official `FIRE LAUNCHER` 3D Prismatic Flame + Cube Logo
+## 8. Official `CLOUD LAUNCHER` 3D Prismatic Flame + Cube Logo
 
-![8. FIRE LAUNCHER Official Logo](assets/branding/fire-launcher-logo.png)
+![8. CLOUD LAUNCHER Official Logo](assets/branding/fire-launcher-logo.png)

@@ -1,5 +1,5 @@
 /*
- * Aerix Launcher UI layer for PojavLauncher.
+ * Cloud Launcher UI layer for PojavLauncher.
  * Ported from mirai-launcher- (Zalith Launcher 2 fork):
  *   MiraiLauncher/src/main/java/com/movtery/zalithlauncher/ui/screens/content/SettingsScreen.kt
  *   MiraiLauncher/src/main/java/com/movtery/zalithlauncher/ui/screens/content/settings/RendererSettingsScreen.kt
@@ -225,7 +225,7 @@ fun SettingsScreen(activity: FragmentActivity, tabKey: String, onTabChanged: (St
     ) {
         val sideModuleRack = maxWidth >= 560.dp
         if (sideModuleRack) {
-            // Fire Launcher inverted Settings layout:
+            // Cloud Launcher inverted Settings layout:
             //   - LEFT (weight 1f): Active Engine Configuration Stage
             //   - RIGHT (178.dp): Vertical Chamfered System Module Rack
             Row(
@@ -379,7 +379,7 @@ private fun FontStylesTab(activity: FragmentActivity) {
                     Column(Modifier.weight(1f)) {
                         Text(choice.label, fontFamily = previewFamily, fontSize = 16.sp,
                             color = AerixSurface.textPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                        Text("Aerix Launcher · Aa 123", fontFamily = previewFamily, fontSize = 12.sp,
+                        Text("Cloud Launcher · Aa 123", fontFamily = previewFamily, fontSize = 12.sp,
                             color = AerixSurface.textSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
                     RadioButton(selected = active, onClick = { AerixFonts.select(activity, choice) },
@@ -485,7 +485,7 @@ private fun RendererTabContent(activity: FragmentActivity) {
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "Aerix Launcher v${BuildConfig.VERSION_NAME} \u2022 Built by entitybrian",
+                        text = "Cloud Launcher v${BuildConfig.VERSION_NAME} \u2022 Official Cloud Edition",
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.SemiBold,
                         color = AerixSurface.textPrimary
@@ -1863,7 +1863,7 @@ private fun AboutInfoTabContent(activity: FragmentActivity) {
         contentPadding = PaddingValues(bottom = AerixSpacing.xxl),
         verticalArrangement = Arrangement.spacedBy(AerixSpacing.md)
     ) {
-        // Card 1: FIRE LAUNCHER + maintainer + Discord
+        // Card 1: CLOUD LAUNCHER + maintainer + Discord
         item {
             Surface(
                 modifier = Modifier.fillMaxWidth(),
@@ -1880,7 +1880,7 @@ private fun AboutInfoTabContent(activity: FragmentActivity) {
                     AboutRowCard(
                         iconRes = R.drawable.ic_aerix_mark,
                         iconTint = Color.Unspecified,
-                        title = "FIRE LAUNCHER",
+                        title = "CLOUD LAUNCHER",
                         subtitle = "Launcher Version: ${BuildConfig.VERSION_NAME}",
                         actions = {
                             AboutPillButton("Check for Updates", accent) {
@@ -1899,7 +1899,7 @@ private fun AboutInfoTabContent(activity: FragmentActivity) {
                         iconRes = R.drawable.aerix_img_avatar_entitybrian,
                         iconTint = Color.Unspecified,
                         title = "entitybrian",
-                        subtitle = "Owner and maintainer of Aerix Launcher.",
+                        subtitle = "Owner and maintainer of Cloud Launcher.",
                         actions = {
                             AboutPillButton("GitHub profile", accent) {
                                 PojavNavigator.openUrl(activity, "https://github.com/entitybrian69-bit")

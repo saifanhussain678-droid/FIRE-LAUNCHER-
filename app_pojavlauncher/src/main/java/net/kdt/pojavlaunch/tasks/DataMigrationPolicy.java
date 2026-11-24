@@ -21,6 +21,9 @@ final class DataMigrationPolicy {
         authorities.add("net.al.aerixlauncher.scoped.gamefolder");
         authorities.add("net.al.aerixlauncher.scoped.gamefolder.debug");
         authorities.add("net.al.aerixlauncher.pub.scoped.gamefolder");
+        authorities.add("net.kdt.pojavlaunch.cloud.scoped.gamefolder");
+        authorities.add("net.kdt.pojavlaunch.cloud.scoped.gamefolder.debug");
+        authorities.add("net.kdt.pojavlaunch.cloud.pub.scoped.gamefolder");
         TRUSTED_AUTHORITIES = Collections.unmodifiableSet(authorities);
     }
 

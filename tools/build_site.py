@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Builds the official FIRE LAUNCHER website into docs/.
+"""Builds the official CLOUD LAUNCHER website into docs/.
 
 Run from the repository root:
     python3 tools/build_site.py
@@ -25,11 +25,11 @@ VERSION = current_version()
 RELEASE_DATE = "23 Nov 2026"
 
 REPO_URL = "https://github.com/saifanhussain678-droid/FIRE-LAUNCHER-"
-UPSTREAM_RELEASE_REPO = "https://github.com/entitybrian69-bit/Aerix-launcher"
-RELEASES_LATEST_URL = f"{UPSTREAM_RELEASE_REPO}/releases/latest"
-DOWNLOAD_PRIMARY_URL = f"{UPSTREAM_RELEASE_REPO}/releases/latest/download/Aerix-Launcher.apk"
-DOWNLOAD_ARM64_URL = f"{UPSTREAM_RELEASE_REPO}/releases/download/v2.4.6/Aerix-Launcher-2.4.6-arm64-v8a.apk"
-DOWNLOAD_NORUNTIME_URL = f"{UPSTREAM_RELEASE_REPO}/releases/latest/download/Aerix-Launcher-noruntime.apk"
+CLOUD_APK_URL = "https://github.com/saifanhussain678-droid/FIRE-LAUNCHER-/raw/arena/e6e0cc14-fire-launcher/apk/Cloud-Launcher.apk"
+RELEASES_LATEST_URL = f"{REPO_URL}/tree/arena/e6e0cc14-fire-launcher/apk"
+DOWNLOAD_PRIMARY_URL = CLOUD_APK_URL
+DOWNLOAD_ARM64_URL = CLOUD_APK_URL
+DOWNLOAD_NORUNTIME_URL = CLOUD_APK_URL
 SITE_URL = "https://fire-launcher.vercel.app/"
 DISCORD_URL = "https://discord.gg/RS7q9KaCm6"
 
@@ -59,12 +59,12 @@ def head(title: str, description: str, page: str) -> str:
 <link rel="apple-touch-icon" href="assets/aerix-logo.png">
 <link rel="canonical" href="{canonical}">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="FIRE LAUNCHER">
+<meta property="og:site_name" content="CLOUD LAUNCHER">
 <meta property="og:title" content="{title}">
 <meta property="og:description" content="{description}">
 <meta property="og:url" content="{canonical}">
 <meta property="og:image" content="{og_img}">
-<meta property="og:image:alt" content="FIRE LAUNCHER Prism Light UI">
+<meta property="og:image:alt" content="CLOUD LAUNCHER Prism Light UI">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="site.css">
 </head>
@@ -89,13 +89,13 @@ def nav(page: str) -> str:
 <header class="nav">
   <div class="wrap nav-inner">
     <a class="brand" href="index.html">
-      <img src="assets/branding/fire-mark.png" alt="FIRE LAUNCHER logo" width="36" height="36">
-      <span>FIRE LAUNCHER<small>MINECRAFT JAVA · ANDROID</small></span>
+      <img src="assets/branding/fire-mark.png" alt="CLOUD LAUNCHER logo" width="36" height="36">
+      <span>CLOUD LAUNCHER<small>MINECRAFT JAVA · ANDROID</small></span>
     </a>
     <nav class="nav-links" id="navLinks" aria-label="Primary">
 {joined}
     </nav>
-    <a class="nav-cta" data-direct-apk="universal" href="{DOWNLOAD_PRIMARY_URL}" download>⬇ Direct APK</a>
+    <a class="nav-cta" data-direct-apk="universal" href="{DOWNLOAD_PRIMARY_URL}" download="Cloud-Launcher.apk">⬇ Direct APK</a>
     <button class="nav-toggle" id="navToggle" type="button" aria-expanded="false" aria-controls="navLinks" aria-label="Menu">☰</button>
   </div>
 </header>
@@ -109,8 +109,8 @@ FOOTER = f"""
       <div class="footer-grid">
         <div>
           <a class="brand" href="index.html">
-            <img src="assets/branding/fire-mark.png" alt="FIRE LAUNCHER" width="36" height="36">
-            <span>FIRE LAUNCHER<small>VERSION {VERSION}</small></span>
+            <img src="assets/branding/fire-mark.png" alt="CLOUD LAUNCHER" width="36" height="36">
+            <span>CLOUD LAUNCHER<small>VERSION {VERSION}</small></span>
           </a>
           <p style="margin-top:10px;font-size:13.5px;color:#2C4870;max-width:36ch">
             Next-generation Minecraft: Java Edition launcher for Android — featuring the inverted
@@ -145,7 +145,7 @@ FOOTER = f"""
         </div>
       </div>
       <div class="footer-bottom">
-        <span>© 2026 FIRE LAUNCHER · Licensed under GNU GPL v3.0</span>
+        <span>© 2026 CLOUD LAUNCHER · Licensed under GNU GPL v3.0</span>
         <span>Not an official Minecraft product · Not approved by or associated with Mojang or Microsoft.</span>
       </div>
     </div>
@@ -163,7 +163,7 @@ def ui_explorer_section() -> str:
     <div class="wrap">
       <div class="section-head">
         <span class="kicker">✦ Complete Launcher UI Tour</span>
-        <h2>Explore Every Screen of <span class="gradient-text">FIRE LAUNCHER</span></h2>
+        <h2>Explore Every Screen of <span class="gradient-text">CLOUD LAUNCHER</span></h2>
         <p class="lede">
           Every button, dock, downloading bar, and studio panel has been redesigned from scratch.
           Click any tab below to inspect all 8 live launcher screens right inside this white-glass simulator.
@@ -176,7 +176,7 @@ def ui_explorer_section() -> str:
           <button class="ui-tab-btn" type="button" data-ui-tab="downloader">⬇ 2. Top Downloading Bar</button>
           <button class="ui-tab-btn" type="button" data-ui-tab="vault">📦 3. Instance Vault &amp; +Forge</button>
           <button class="ui-tab-btn" type="button" data-ui-tab="armory">🧩 4. Mod Armory &amp; Packs</button>
-          <button class="ui-tab-btn" type="button" data-ui-tab="client">⚡ 5. Fire Client &amp; Recorder</button>
+          <button class="ui-tab-btn" type="button" data-ui-tab="client">⚡ 5. Cloud Client &amp; Recorder</button>
           <button class="ui-tab-btn" type="button" data-ui-tab="controls">🎮 6. Custom Controls Rig</button>
           <button class="ui-tab-btn" type="button" data-ui-tab="renderers">🔬 7. 12 Renderers &amp; Drivers</button>
           <button class="ui-tab-btn" type="button" data-ui-tab="accounts">👤 8. Accounts, Skins &amp; Files</button>
@@ -202,7 +202,7 @@ def ui_explorer_section() -> str:
           <div class="sim-top-bar">
             <div style="display:flex;align-items:center;gap:8px">
               <img src="assets/branding/fire-mark.png" alt="" width="24" height="24">
-              <strong style="font-size:12.5px;letter-spacing:0.6px">FIRE LAUNCHER</strong>
+              <strong style="font-size:12.5px;letter-spacing:0.6px">CLOUD LAUNCHER</strong>
               <span class="tag">ONLINE ID</span>
             </div>
             <div style="display:flex;gap:6px;flex-wrap:wrap">
@@ -222,7 +222,7 @@ def ui_explorer_section() -> str:
 
           <!-- Bottom Floating Dock -->
           <div class="sim-bottom-dock" style="justify-content:center;gap:8px">
-            <span class="tag">🔥 FIRE LAUNCHER</span>
+            <span class="tag">🔥 CLOUD LAUNCHER</span>
             <span class="sim-mini-btn">⌂ HQ</span>
             <span class="sim-mini-btn">❖ VAULT</span>
             <span class="sim-mini-btn">＋ FORGE</span>
@@ -526,8 +526,8 @@ def all_systems_section() -> str:
         ("⬇️", "Top Prism Downloading Bar", "Relocated top multi-threaded download dock with Pause/Cancel, expandable sub-task list, real-time MB/s speed, ETA, and SHA-1 integrity checks.", ["Multi-Thread", "Pause/Resume", "SHA-1"]),
         ("🛠️", "Every Mod Loader Built-In", "1-click automatic installation for Vanilla, Fabric, Quilt, Forge, NeoForge, OptiFine, Legacy Fabric, Better Than Adventure, plus .jar execution.", ["Fabric", "Forge", "NeoForge", "Quilt"]),
         ("📦", "Modrinth & CurseForge Armory", "Browse and install Mods, Full Modpacks (.mrpack & CurseForge), Shaders, Resource Packs, and Worlds with automatic dependency resolution.", ["Modrinth", "CurseForge", "Auto-Deps"]),
-        ("⚡", "Built-In Fire Client HUD", "Zero-setup competitive HUD overlays: FPS Pill, CPS Counter, RGB Keystrokes, ToggleSprint, Zoom, Armor Status, Crosshair Editor & Fullbright.", ["PvP HUD", "Keystrokes", "CPS"]),
-        ("🎥", "1080p60 Screen + Audio Recorder", "Record smooth gameplay with internal game audio directly from the floating in-game FIRE LAUNCHER crystal flame menu — no extra recorder app needed.", ["60 FPS MP4", "Internal Audio"]),
+        ("⚡", "Built-In Cloud Client HUD", "Zero-setup competitive HUD overlays: FPS Pill, CPS Counter, RGB Keystrokes, ToggleSprint, Zoom, Armor Status, Crosshair Editor & Fullbright.", ["PvP HUD", "Keystrokes", "CPS"]),
+        ("🎥", "1080p60 Screen + Audio Recorder", "Record smooth gameplay with internal game audio directly from the floating in-game CLOUD LAUNCHER crystal flame menu — no extra recorder app needed.", ["60 FPS MP4", "Internal Audio"]),
         ("📱", "120Hz / 144Hz Display Unlocker", "Requests native high-refresh display modes on 90Hz, 120Hz, and 144Hz gaming phones with frame-pacing tuning and resolution scaler (25%–100%).", ["120Hz", "144Hz", "Resolution Scale"]),
         ("🎮", "Controls Rig, Gyro & Gamepad", "Full touch layout studio with 11 animated button themes, custom macros, Gyroscope aiming, Xbox/PS5 Bluetooth gamepads, and OTG Keyboard/Mouse capture.", ["Touch Studio", "Gyro", "Mouse/KB"]),
         ("👤", "Accounts & 3D Skin Wardrobe", "Sign in with official Microsoft Xbox Live OAuth, Ely.by skin servers, or unlimited Offline accounts — complete with 3D rotatable Skin & Cape preview.", ["Microsoft", "Ely.by", "Offline"]),
@@ -548,7 +548,7 @@ def all_systems_section() -> str:
     <div class="wrap">
       <div class="section-head">
         <span class="kicker">🛠 Complete System Architecture</span>
-        <h2>Every Engine &amp; Subsystem Inside <span class="gradient-text">FIRE LAUNCHER</span></h2>
+        <h2>Every Engine &amp; Subsystem Inside <span class="gradient-text">CLOUD LAUNCHER</span></h2>
         <p class="lede">
           Everything you need to run modern Minecraft: Java Edition on Android is built straight into one unified glass launcher — zero external helper apps required.
         </p>
@@ -622,7 +622,7 @@ def requirements_and_download_section() -> str:
     <div class="wrap">
       <div class="section-head">
         <span class="kicker">⬇ Official Release Downloads · v{VERSION}</span>
-        <h2>Download <span class="gradient-text">FIRE LAUNCHER</span></h2>
+        <h2>Download <span class="gradient-text">CLOUD LAUNCHER</span></h2>
         <p class="lede">
           Free, open-source (GPL-3.0), zero ads, zero telemetry. Pick the APK build that matches your Android device below.
         </p>
@@ -631,41 +631,41 @@ def requirements_and_download_section() -> str:
       <div class="grid grid-3">
         <article class="card dl-card primary-dl">
           <div class="ram-badge"><span>⭐ RECOMMENDED FOR ALL PHONES</span><span>v{VERSION}</span></div>
-          <h3>FIRE LAUNCHER — Full Universal APK</h3>
-          <p>Includes bundled OpenJDK runtime, all 12 renderers (MobileGlues, Vulkan Zink, GL4ES), Fire Client HUD, and Modrinth/CurseForge Armory ready out of the box.</p>
+          <h3>CLOUD LAUNCHER — Full Universal APK</h3>
+          <p>Includes bundled OpenJDK runtime, all 12 renderers (MobileGlues, Vulkan Zink, GL4ES), Cloud Client HUD, and Modrinth/CurseForge Armory ready out of the box.</p>
           <div class="tag-row">
             <span class="tag">Android 8.0+</span>
             <span class="tag">ARM64 + ARMv7 + x86_64</span>
             <span class="tag">Bundled Java</span>
           </div>
-          <a class="btn btn-primary mt-20" data-primary-download data-direct-apk="universal" href="{DOWNLOAD_PRIMARY_URL}" download>
+          <a class="btn btn-primary mt-20" data-primary-download data-direct-apk="universal" href="{DOWNLOAD_PRIMARY_URL}" download="Cloud-Launcher.apk">
             ⬇ Direct Download APK (v{VERSION})
           </a>
         </article>
 
         <article class="card dl-card">
           <div class="ram-badge"><span>⚡ 64-BIT OPTIMIZED</span><span>arm64-v8a</span></div>
-          <h3>FIRE LAUNCHER — ARM64 Edition</h3>
+          <h3>CLOUD LAUNCHER — ARM64 Edition</h3>
           <p>Smaller APK stripped of legacy 32-bit libraries — built specifically for modern 4GB, 6GB, 8GB, and 12GB+ 64-bit Android smartphones.</p>
           <div class="tag-row">
             <span class="tag">64-bit Phones</span>
             <span class="tag">Fast Install</span>
             <span class="tag">Full Renderers</span>
           </div>
-          <a class="btn btn-ghost mt-20" data-direct-apk="arm64" href="{DOWNLOAD_ARM64_URL}" download>
+          <a class="btn btn-ghost mt-20" data-direct-apk="arm64" href="{DOWNLOAD_ARM64_URL}" download="Cloud-Launcher.apk">
             ⬇ Direct Download ARM64 APK
           </a>
         </article>
 
         <article class="card dl-card">
           <div class="ram-badge"><span>🪶 ULTRA-LIGHT DOWNLOAD</span><span>No-Runtime</span></div>
-          <h3>FIRE LAUNCHER — Lightweight APK</h3>
+          <h3>CLOUD LAUNCHER — Lightweight APK</h3>
           <p>Smallest initial APK size. Downloads the exact OpenJDK 8 / 17 / 21 runtime automatically through the Top Downloading Bar on first launch.</p>
           <div class="tag-row">
             <span class="tag">Minimal APK</span>
             <span class="tag">Auto Runtime Fetch</span>
           </div>
-          <a class="btn btn-ghost mt-20" data-direct-apk="lite" href="{DOWNLOAD_NORUNTIME_URL}" download>
+          <a class="btn btn-ghost mt-20" data-direct-apk="lite" href="{DOWNLOAD_NORUNTIME_URL}" download="Cloud-Launcher.apk">
             ⬇ Direct Download Lite APK
           </a>
         </article>
@@ -780,9 +780,9 @@ def all_ui_gallery_section() -> str:
         ("assets/screenshots/fire-ui-mods-install.png", "3. Mod Armory — Mods, Shaders & Modpacks Install", "Built-in Modrinth & CurseForge Armory with 1-tap install and live Cyan-Indigo-Pink progress bars for Sodium, Lithium, Iris Shaders, FerriteCore, Complementary Shaders, and ImmediatelyFast."),
         ("assets/screenshots/fire-ui-settings.png", "4. Settings, Show Real FPS Display Toggle & 4GB/6GB/8GB Boost", "Inverted Right Category Rail + Show Real FPS Display ON/OFF switch (Green/Yellow/Red preview) + 1-Tap 4GB / 6GB / 8GB+ FPS Boost Presets, RAM Slider, MobileGlues Vulkan, and 120Hz Unlock."),
         ("assets/screenshots/fire-ui-instance-vault.png", "5. Instance Vault (Multi-Version Library)", "Left Active Instance Inspector (Prism PvP 1.21.4 · Fabric · OpenJDK 21 · MobileGlues) with IGNITE / Edit / Mods / Folder / Crash Logs + Right Multi-Instance Cartridge Grid."),
-        ("assets/screenshots/fire-ui-accounts-client.png", "6. Accounts, 3D Skin/Cape Wardrobe & Fire Client HUD", "3D Character & Rainbow Cape Studio, Account Vault (Microsoft Xbox Live, Ely.by, Offline Username), and Fire Client PvP Toggles (120Hz FPS Pill, RGB Keystrokes + CPS, ToggleSprint, Zoom, 1080p60 Audio Recorder)."),
-        ("assets/screenshots/fire-ui-controls-ingame.png", "7. In-Game Real FPS Box (Fps / Renderer / Ms) & Floating Menu", "Top-left color-shifting Real FPS Display Box (Fps - 144 / Renderer - MobileGlues / Ms - 6.9 ms), RGB Keystrokes + CPS, frosted touch controls, and floating FIRE LAUNCHER MENU."),
-        ("assets/branding/fire-launcher-logo.png", "8. Official FIRE LAUNCHER 3D Prismatic Flame + Cube Emblem", "Signature crystalline prism flame cradling an isometric Minecraft cube — installed across Android Adaptive Icons, Splash Screen, Top Header, Bottom Dock, and In-Game Menu."),
+        ("assets/screenshots/fire-ui-accounts-client.png", "6. Accounts, 3D Skin/Cape Wardrobe & Cloud Client HUD", "3D Character & Rainbow Cape Studio, Account Vault (Microsoft Xbox Live, Ely.by, Offline Username), and Cloud Client PvP Toggles (120Hz FPS Pill, RGB Keystrokes + CPS, ToggleSprint, Zoom, 1080p60 Audio Recorder)."),
+        ("assets/screenshots/fire-ui-controls-ingame.png", "7. In-Game Real FPS Box (Fps / Renderer / Ms) & Floating Menu", "Top-left color-shifting Real FPS Display Box (Fps - 144 / Renderer - MobileGlues / Ms - 6.9 ms), RGB Keystrokes + CPS, frosted touch controls, and floating CLOUD LAUNCHER MENU."),
+        ("assets/branding/fire-launcher-logo.png", "8. Official CLOUD LAUNCHER 3D Prismatic Flame + Cube Emblem", "Signature crystalline prism flame cradling an isometric Minecraft cube — installed across Android Adaptive Icons, Splash Screen, Top Header, Bottom Dock, and In-Game Menu."),
     ]
     cards = []
     for src, title, desc in shots:
@@ -801,10 +801,10 @@ def all_ui_gallery_section() -> str:
     <div class="wrap">
       <div class="section-head">
         <span class="kicker">📸 Complete Launcher UI Gallery</span>
-        <h2>All 7 Screens Installed in <span class="gradient-text">FIRE LAUNCHER</span></h2>
+        <h2>All 7 Screens Installed in <span class="gradient-text">CLOUD LAUNCHER</span></h2>
         <p class="lede">
-          Every screen of FIRE LAUNCHER — HQ Home, Version &amp; Loader Installer, Mod Armory, Settings &amp; FPS Boost,
-          Instance Vault, Accounts &amp; Fire Client, and In-Game Controls Overlay.
+          Every screen of CLOUD LAUNCHER — HQ Home, Version &amp; Loader Installer, Mod Armory, Settings &amp; FPS Boost,
+          Instance Vault, Accounts &amp; Cloud Client, and In-Game Controls Overlay.
         </p>
       </div>
       <div class="grid grid-2">
@@ -818,8 +818,8 @@ def all_ui_gallery_section() -> str:
 def build_index() -> str:
     return (
         head(
-            f"FIRE LAUNCHER v{VERSION} — Official Website · All UIs, 4GB/6GB/8GB FPS & APK Download",
-            "Official FIRE LAUNCHER website for Android: explore all 8 launcher UIs, 12 graphics renderers, 4GB / 6GB / 8GB RAM FPS benchmarks, system architecture, and direct APK downloads.",
+            f"CLOUD LAUNCHER v{VERSION} — Official Website · All UIs, 4GB/6GB/8GB FPS & APK Download",
+            "Official CLOUD LAUNCHER website for Android: explore all 8 launcher UIs, 12 graphics renderers, 4GB / 6GB / 8GB RAM FPS benchmarks, system architecture, and direct APK downloads.",
             "index.html",
         )
         + nav("index.html")
@@ -831,7 +831,7 @@ def build_index() -> str:
         <div class="glass-box hero-glass">
           <div>
             <div class="hero-crest-row">
-              <img class="hero-crest" src="assets/branding/fire-mark.png" alt="FIRE LAUNCHER emblem">
+              <img class="hero-crest" src="assets/branding/fire-mark.png" alt="CLOUD LAUNCHER emblem">
               <div>
                 <span class="kicker" style="margin-bottom:4px">🔥 Official Android Release · v{VERSION}</span>
                 <div style="font-size:12px;font-weight:800;color:#527199">Updated {RELEASE_DATE} · Open-Source GPL-3.0</div>
@@ -839,7 +839,7 @@ def build_index() -> str:
             </div>
 
             <h1 style="margin-top:16px">
-              <span class="gradient-text">FIRE LAUNCHER</span><br>
+              <span class="gradient-text">CLOUD LAUNCHER</span><br>
               Java Edition Reimagined in Blue &amp; Glass.
             </h1>
             <p class="lede">
@@ -857,7 +857,7 @@ def build_index() -> str:
           </div>
 
           <div class="btn-row">
-            <a class="btn btn-primary" data-primary-download data-direct-apk="universal" href="{DOWNLOAD_PRIMARY_URL}" download>⬇ Direct Download APK</a>
+            <a class="btn btn-primary" data-primary-download data-direct-apk="universal" href="{DOWNLOAD_PRIMARY_URL}" download="Cloud-Launcher.apk">⬇ Direct Download APK</a>
             <a class="btn btn-ghost" href="#best-settings">🚀 4GB / 6GB / 8GB Best Settings</a>
             <a class="btn btn-ghost" href="#all-ui">🖥 All UIs</a>
           </div>
@@ -865,10 +865,10 @@ def build_index() -> str:
 
         <div class="glass-box hero-showcase">
           <div class="showcase-frame">
-            <img src="assets/screenshots/fire-launcher-prism-light-ui.png" alt="FIRE LAUNCHER Prism Light 3-Wing Bento UI">
+            <img src="assets/screenshots/fire-launcher-prism-light-ui.png" alt="CLOUD LAUNCHER Prism Light 3-Wing Bento UI">
           </div>
           <div class="showcase-bar">
-            <span>✦ <b>FIRE LAUNCHER UI:</b> Top Command Header · 3-Wing Bento Deck · Bottom Floating Dock</span>
+            <span>✦ <b>CLOUD LAUNCHER UI:</b> Top Command Header · 3-Wing Bento Deck · Bottom Floating Dock</span>
             <a href="screenshots.html">Full UI Gallery →</a>
           </div>
         </div>
@@ -909,14 +909,14 @@ def build_index() -> str:
 def build_screenshots() -> str:
     return (
         head(
-            "All Launcher UIs & Complete Visual Gallery — FIRE LAUNCHER",
-            "Inspect all 7 generated UI screens of FIRE LAUNCHER: HQ 3-Wing Bento Deck, Version & Loader Install + Top Downloading Bar, Mod Armory, Settings & FPS Boost, Instance Vault, Accounts & Fire Client, and In-Game Controls.",
+            "All Launcher UIs & Complete Visual Gallery — CLOUD LAUNCHER",
+            "Inspect all 7 generated UI screens of CLOUD LAUNCHER: HQ 3-Wing Bento Deck, Version & Loader Install + Top Downloading Bar, Mod Armory, Settings & FPS Boost, Instance Vault, Accounts & Cloud Client, and In-Game Controls.",
             "screenshots.html",
         )
         + nav("screenshots.html")
         + page_header(
             "🖥 Complete UI Showcase",
-            "Every Screen Installed in FIRE LAUNCHER",
+            "Every Screen Installed in CLOUD LAUNCHER",
             "Full HD showcase of all 7 Prism Light Multi-Color screens + Real FPS Display Box demo + interactive UI simulator.",
         )
         + "<main id=\"main\">"
@@ -931,14 +931,14 @@ def build_screenshots() -> str:
 def build_features() -> str:
     return (
         head(
-            "All Systems & Engine Architecture — FIRE LAUNCHER",
-            "Complete technical breakdown of FIRE LAUNCHER: 12 graphics renderers, OpenJDK 8/17/21, Top Downloading Bar, Modrinth/CurseForge Armory, Fire Client HUD, and Controls Studio.",
+            "All Systems & Engine Architecture — CLOUD LAUNCHER",
+            "Complete technical breakdown of CLOUD LAUNCHER: 12 graphics renderers, OpenJDK 8/17/21, Top Downloading Bar, Modrinth/CurseForge Armory, Cloud Client HUD, and Controls Studio.",
             "features.html",
         )
         + nav("features.html")
         + page_header(
             "⚙ Engine & Subsystems",
-            "What Powers FIRE LAUNCHER",
+            "What Powers CLOUD LAUNCHER",
             "From native Vulkan/OpenGL translation and automatic multi-Java switching to built-in PvP HUD mods and 1080p60 internal-audio recording.",
         )
         + "<main id=\"main\">"
@@ -966,7 +966,7 @@ def build_renderers() -> str:
     )
     return (
         head(
-            "4GB, 6GB & 8GB RAM FPS Guide & Renderers — FIRE LAUNCHER",
+            "4GB, 6GB & 8GB RAM FPS Guide & Renderers — CLOUD LAUNCHER",
             "Detailed Minecraft Java FPS benchmarks on 4GB, 6GB, and 8GB+ Android phones, interactive FPS & JVM calculator, and renderer comparison.",
             "renderers.html",
         )
@@ -998,7 +998,7 @@ def build_renderers() -> str:
 def build_install() -> str:
     steps = [
         ("Step 1 · Download the Official APK", "Tap the primary Download FIRE-Launcher.apk button below. On Android, allow installation from your browser when prompted."),
-        ("Step 2 · Automatic Runtime Verification", "Open FIRE LAUNCHER. The bundled OpenJDK runtime unpacks automatically (or downloads via the Top Prism Downloading Bar on the Lightweight build)."),
+        ("Step 2 · Automatic Runtime Verification", "Open CLOUD LAUNCHER. The bundled OpenJDK runtime unpacks automatically (or downloads via the Top Prism Downloading Bar on the Lightweight build)."),
         ("Step 3 · Sign In (Microsoft, Ely.by or Offline)", "Tap the Top-Left Operator Pod to log in with your Microsoft account, Ely.by profile, or create an instant Offline username."),
         ("Step 4 · Create Instance, Tune RAM & Hit IGNITE", "Open + FORGE in the Bottom Dock, pick Minecraft 1.21.4 + Fabric (add Sodium from Armory for 2×–3× FPS!), set RAM (1.8GB on 4GB phones, 3GB on 6GB, 4.3GB on 8GB+), and press ▶ IGNITE!"),
     ]
@@ -1012,14 +1012,14 @@ def build_install() -> str:
     )
     return (
         head(
-            f"Download & Install FIRE LAUNCHER v{VERSION} (APK)",
-            "Download FIRE LAUNCHER APK for Android (Universal, ARM64, and Lightweight editions), view system requirements, and follow the 4-step setup guide.",
+            f"Download & Install CLOUD LAUNCHER v{VERSION} (APK)",
+            "Download CLOUD LAUNCHER APK for Android (Universal, ARM64, and Lightweight editions), view system requirements, and follow the 4-step setup guide.",
             "install.html",
         )
         + nav("install.html")
         + page_header(
             f"⬇ Download & Setup · v{VERSION}",
-            "Install FIRE LAUNCHER in 60 Seconds",
+            "Install CLOUD LAUNCHER in 60 Seconds",
             "Direct APK downloads, 4-step first-launch setup, and recommended RAM settings for 4GB, 6GB, and 8GB+ Android devices.",
         )
         + f"""
@@ -1063,8 +1063,8 @@ def build_faq() -> str:
     joined = "\n".join(items)
     return (
         head(
-            "FAQ & Troubleshooting — FIRE LAUNCHER",
-            "Frequently asked questions about FIRE LAUNCHER: 4GB/6GB/8GB FPS settings, APK selection, Modrinth/CurseForge mods, shaders, Microsoft & Offline login, and crash fixes.",
+            "FAQ & Troubleshooting — CLOUD LAUNCHER",
+            "Frequently asked questions about CLOUD LAUNCHER: 4GB/6GB/8GB FPS settings, APK selection, Modrinth/CurseForge mods, shaders, Microsoft & Offline login, and crash fixes.",
             "faq.html",
         )
         + nav("faq.html")
@@ -1090,8 +1090,8 @@ def build_faq() -> str:
 def build_404() -> str:
     return (
         head(
-            "404 Page Not Found — FIRE LAUNCHER",
-            "Page not found — return to the official FIRE LAUNCHER website.",
+            "404 Page Not Found — CLOUD LAUNCHER",
+            "Page not found — return to the official CLOUD LAUNCHER website.",
             "404.html",
         )
         + nav("")
@@ -1102,9 +1102,9 @@ def build_404() -> str:
       <div class="glass-box center" style="padding:56px 24px">
         <span class="kicker">404 · Not Found</span>
         <h1>Page Not Found</h1>
-        <p class="lede" style="margin-inline:auto">Head back to the FIRE LAUNCHER homepage, UI tour, FPS calculator, or APK download center:</p>
+        <p class="lede" style="margin-inline:auto">Head back to the CLOUD LAUNCHER homepage, UI tour, FPS calculator, or APK download center:</p>
         <div class="btn-row" style="justify-content:center">
-          <a class="btn btn-primary" href="index.html">🏠 FIRE LAUNCHER Home</a>
+          <a class="btn btn-primary" href="index.html">🏠 CLOUD LAUNCHER Home</a>
           <a class="btn btn-ghost" href="screenshots.html">🖥 All UIs</a>
           <a class="btn btn-ghost" href="renderers.html">📊 RAM &amp; FPS</a>
           <a class="btn btn-ghost" href="install.html">⬇ Download APK</a>

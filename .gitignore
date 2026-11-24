@@ -11,7 +11,8 @@ app_pojavlauncher/.cxx/
 /curseforge_key.txt
 /app_pojavlauncher/libs/ltw-release.aar
 site-preview/
-apk/
+apk/*
+!apk/Cloud-Launcher.apk
 
 # Python tooling scratch, never an artifact of the asset generator.
 __pycache__/

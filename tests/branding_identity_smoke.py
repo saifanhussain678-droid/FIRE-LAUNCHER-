@@ -8,38 +8,41 @@ ROOT = Path(__file__).resolve().parents[1]
 APP = ROOT / "app_pojavlauncher"
 RES = APP / "src/main/res"
 ACTIVE_PACKAGES = {
-    "net.al.aerixlauncher",
-    "net.al.aerixlauncher.debug",
-    "net.al.aerixlauncher.pub",
+    "net.kdt.pojavlaunch.cloud",
+    "net.kdt.pojavlaunch.cloud.debug",
+    "net.kdt.pojavlaunch.cloud.pub",
 }
 LEGACY_PACKAGES = {
     "net.kdt.pojavlaunch",
     "net.kdt.pojavlaunch.debug",
     "net.kdt.pojavlaunch.pub",
+    "net.al.aerixlauncher",
+    "net.kdt.pojavlaunch.cloud.debug",
+    "net.al.aerixlauncher.pub",
 }
 
 
 class BrandingIdentitySmoke(unittest.TestCase):
     def test_application_ids_and_provider_authorities(self):
         gradle = (APP / "build.gradle").read_text()
-        self.assertIn('applicationId "net.al.aerixlauncher"', gradle)
+        self.assertIn('applicationId "net.kdt.pojavlaunch.cloud"', gradle)
         self.assertNotIn('applicationId "net.kdt.pojavlaunch"', gradle)
         for package in ACTIVE_PACKAGES:
             self.assertIn("'application_package', '" + package + "'", gradle)
         for authority in (
-            "net.al.aerixlauncher.scoped.gamefolder",
-            "net.al.aerixlauncher.scoped.gamefolder.debug",
-            "net.al.aerixlauncher.pub.scoped.gamefolder",
+            "net.kdt.pojavlaunch.cloud.scoped.gamefolder",
+            "net.kdt.pojavlaunch.cloud.scoped.gamefolder.debug",
+            "net.kdt.pojavlaunch.cloud.pub.scoped.gamefolder",
         ):
             self.assertIn("'storageProviderAuthorities', '" + authority + "'", gradle)
         # The source namespace remains stable; applicationId controls the installed APK identity.
         self.assertIn("namespace 'net.kdt.pojavlaunch'", gradle)
 
         debug_workflow = (ROOT / ".github/workflows/aerix-debug.yml").read_text()
-        self.assertIn("applicationId net.al.aerixlauncher.debug confirmed", debug_workflow)
-        self.assertIn("package: net.al.aerixlauncher.debug", debug_workflow)
+        self.assertIn("applicationId net.kdt.pojavlaunch.cloud.debug confirmed", debug_workflow)
+        self.assertIn("package: net.kdt.pojavlaunch.cloud.debug", debug_workflow)
         play_workflow = (ROOT / ".github/workflows/android.yml").read_text()
-        self.assertIn("packageName: net.al.aerixlauncher", play_workflow)
+        self.assertIn("packageName: net.kdt.pojavlaunch.cloud", play_workflow)
 
     def test_existing_signing_and_debug_version_configuration(self):
         gradle = (APP / "build.gradle").read_text()

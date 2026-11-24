@@ -51,7 +51,7 @@ internal object LauncherUpdater {
         phase = LauncherUpdatePhase.CHECKING; error = ""
         job = scope.launch {
             try {
-                val response = open("https://api.github.com/repos/entitybrian69-bit/Aerix-launcher/releases/latest")
+                val response = open("https://api.github.com/repos/saifanhussain678-droid/FIRE-LAUNCHER-/releases/latest")
                 val result = try {
                     if (response.responseCode == 404) null else {
                         require(response.responseCode == 200) { "GitHub returned HTTP ${response.responseCode}. Please try again later." }
@@ -93,7 +93,7 @@ internal object LauncherUpdater {
                     if (phase == LauncherUpdatePhase.CURRENT && isTestChannel()) {
                         releaseChannelNotice = "This is a testing build, so it will not update itself. " +
                             "Updates are for the release launcher - install that one from " +
-                            "github.com/entitybrian69-bit/Aerix-launcher/releases/latest"
+                            "github.com/saifanhussain678-droid/FIRE-LAUNCHER-/releases/latest"
                     } else {
                         releaseChannelNotice = ""
                     }

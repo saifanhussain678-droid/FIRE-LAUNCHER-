@@ -5,7 +5,7 @@ name: Aerix Nightly (testing)
 # release). The only APK on that tag is Aerix-Nightly.apk; older debug-named assets are removed on
 # every publish, so there is one testing build to download.
 # This workflow only ever builds the "noruntimeNightly" variant: same applicationId
-# (net.al.aerixlauncher.debug), same debug signing key and same monotonic versionCode as the old
+# (net.kdt.pojavlaunch.cloud.debug), same debug signing key and same monotonic versionCode as the old
 # debug APK, only the launcher label differs - so it installs straight over an existing debug
 # install and keeps its data, while never being able to overwrite a release APK.
 # Public releases are built by release.yml, which only runs after a typed confirmation.
@@ -301,8 +301,8 @@ jobs:
           BADGING_ALL="$("$BT_DIR/aapt2" dump badging "$APK_PATH")"
           BADGING="$(printf '%s' "$BADGING_ALL" | head -n 1)"
           echo "$BADGING"
-          [[ "$BADGING" == "package: name='net.al.aerixlauncher.debug' "* ]]
-          echo "applicationId net.al.aerixlauncher.debug confirmed"
+          [[ "$BADGING" == "package: name='net.kdt.pojavlaunch.cloud.debug' "* ]]
+          echo "applicationId net.kdt.pojavlaunch.cloud.debug confirmed"
           VCODE="$(printf '%s' "$BADGING" | sed -n "s/.*versionCode='\([0-9]*\)'.*/\1/p")"
           echo "version_code=$VCODE" >> "$GITHUB_OUTPUT"
           echo "::notice title=apk-verified::$BADGING"
@@ -343,11 +343,11 @@ jobs:
             echo "run: $GITHUB_RUN_ID"
             echo "built: $BUILT_AT"
             echo "sha256: $SHA256"
-            echo "package: net.al.aerixlauncher.debug"
+            echo "package: net.kdt.pojavlaunch.cloud.debug"
             echo "note: side-by-side testing build; public stable releases live under v* tags"
           } > "$STAGE/$INFO_NAME"
           {
-            echo "Side-by-side testing build (\`net.al.aerixlauncher.debug\`) — installs next to the public launcher without touching its data."
+            echo "Side-by-side testing build (\`net.kdt.pojavlaunch.cloud.debug\`) — installs next to the public launcher without touching its data."
             echo ""
             echo "- **Direct download:** [\`$APK_NAME\`](https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/$APK_NAME)"
             echo "- **Commit-stamped download (avoids browser filename cache):** [\`$STAMPED_NAME\`](https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/$STAMPED_NAME)"
@@ -356,7 +356,7 @@ jobs:
             echo "- **versionCode:** \`$VERSION_CODE\`"
             echo "- **Built:** \`$BUILT_AT\`"
             echo "- **SHA-256:** \`$SHA256\`"
-            echo "- **Package / signing:** \`net.al.aerixlauncher.debug\`, \`app_pojavlauncher/debug.keystore\`"
+            echo "- **Package / signing:** \`net.kdt.pojavlaunch.cloud.debug\`, \`app_pojavlauncher/debug.keystore\`"
             echo ""
             echo "All non-release updates and testing happen on this APK. Stable builds stay under the \`v*\` releases."
           } > "$STAGE/RELEASE_NOTES.md"

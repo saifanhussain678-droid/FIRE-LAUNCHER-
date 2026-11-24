@@ -239,6 +239,9 @@
         <package android:name="net.al.aerixlauncher"/>
         <package android:name="net.al.aerixlauncher.debug"/>
         <package android:name="net.al.aerixlauncher.pub"/>
+        <package android:name="net.kdt.pojavlaunch.cloud"/>
+        <package android:name="net.kdt.pojavlaunch.cloud.debug"/>
+        <package android:name="net.kdt.pojavlaunch.cloud.pub"/>
         <!-- The renderer plugins this launcher brands. Listed explicitly so they stay visible
              even on devices that withhold QUERY_ALL_PACKAGES. -->
         <package android:name="com.entitybrian.emesis"/>

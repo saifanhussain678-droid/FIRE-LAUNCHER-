@@ -30,7 +30,7 @@ internal object LauncherUpdatePolicy {
         val uri = URI(url)
         uri.scheme == "https" && uri.host == "github.com" && uri.port == -1 && uri.userInfo == null &&
             uri.query == null && uri.fragment == null && uri.path == URI(null, null, uri.path, null).normalize().path &&
-            uri.path.startsWith("/entitybrian69-bit/Aerix-launcher/releases/download/")
+            uri.path.startsWith("/saifanhussain678-droid/FIRE-LAUNCHER-/releases/download/")
     }.getOrDefault(false)
 
     /**
@@ -127,7 +127,7 @@ internal object LauncherUpdatePolicy {
             .firstOrNull()
             ?: error("This release has no APK for your launcher edition")
         val url = selected.get("browser_download_url").asString
-        require(trustedAsset(url) && URI(url).path == "/entitybrian69-bit/Aerix-launcher/releases/download/$tag/${selected.get("name").asString}") { "Untrusted update download location" }
+        require(trustedAsset(url) && URI(url).path == "/saifanhussain678-droid/FIRE-LAUNCHER-/releases/download/$tag/${selected.get("name").asString}") { "Untrusted update download location" }
         val size = selected.get("size").asLong
         require(size in 1..MAX_APK_BYTES) { "Invalid update size" }
         val digest = selected.get("digest")?.takeUnless { it.isJsonNull }?.asString

@@ -483,7 +483,7 @@ public class LauncherActivity extends BaseActivity {
         if (System.currentTimeMillis() < snoozedUntil) return;
 
         final String[] legacyPackages = {
-                "net.kdt.pojavlaunch", "net.kdt.pojavlaunch.debug", "net.kdt.pojavlaunch.pub"
+                "net.kdt.pojavlaunch", "net.kdt.pojavlaunch.debug", "net.kdt.pojavlaunch.pub", "net.al.aerixlauncher", "net.al.aerixlauncher.debug", "net.al.aerixlauncher.pub"
         };
         for (String packageName : legacyPackages) {
             Intent launchIntent = getPackageManager().getLaunchIntentForPackage(packageName);

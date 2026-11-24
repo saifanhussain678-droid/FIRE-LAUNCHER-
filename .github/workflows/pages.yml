@@ -68,7 +68,7 @@ jobs:
               primaries = re.findall(r'<a[^>]*data-primary-download[^>]*>', html)
               assert primaries, f"{page}: missing data-primary-download button"
               for tag in primaries:
-                  assert "/releases/latest/download/" in tag, f"{page}: primary button does not point at /releases/latest/download/: {tag}"
+                  assert ("/releases/latest/download/" in tag or "/apk/Cloud-Launcher.apk" in tag), f"{page}: primary button does not point at APK download: {tag}"
                   assert "debug" not in tag.lower(), f"{page}: primary button must never point at debug: {tag}"
           print("Site verification passed: zero debug links on website, primary buttons target /releases/latest/download/.")
           PY

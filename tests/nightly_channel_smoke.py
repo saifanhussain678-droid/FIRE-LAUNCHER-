@@ -16,7 +16,7 @@ class NightlyChannelSmoke(unittest.TestCase):
         self.assertIn("initWith debug", nightly)
         self.assertIn("signingConfig signingConfigs.customDebug", nightly)
         self.assertIn('matchingFallbacks += List.of("debug")', nightly)
-        self.assertIn('resValue "string", "aerix_app_label", "FIRE LAUNCHER"', nightly)
+        self.assertIn('resValue "string", "aerix_app_label", "Cloud Launcher"', nightly)
         self.assertNotIn("applicationIdSuffix", nightly)
         self.assertIn('onVariants(selector().withBuildType("nightly"))', GRADLE)
         self.assertIn("output.versionCode.set(AERIX_DEBUG_VERSION_CODE)", GRADLE)
@@ -32,7 +32,7 @@ class NightlyChannelSmoke(unittest.TestCase):
         self.assertIn('INFO_NAME="NIGHTLY_BUILD.txt"', WORKFLOW)
         # The testing build kept the debug identity, and the debug identity is now
         # net.al.aerixlauncher.debug: Aerix moved off net.kdt.pojavlaunch (see docs/APP_ID_MIGRATION.md).
-        self.assertIn('package: name=\'net.al.aerixlauncher.debug\'', WORKFLOW)
+        self.assertIn('package: name=\'net.kdt.pojavlaunch.cloud.debug\'', WORKFLOW)
         self.assertIn("Aerix-Launcher-debug*", WORKFLOW)
         self.assertIn('--title "Aerix Nightly (latest)"', WORKFLOW)
 
