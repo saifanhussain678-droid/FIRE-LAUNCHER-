@@ -806,6 +806,66 @@ private fun GameTabContent(activity: FragmentActivity) {
 
         item {
             val maxRam = remember { PojavSettingsBridge.safeMaxRam(activity) }
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(AerixRadii.card),
+                color = AerixSurface.firePanel,
+                border = BorderStroke(1.dp, AerixSurface.fireBorder)
+            ) {
+                Column(
+                    modifier = Modifier.padding(AerixSpacing.md),
+                    verticalArrangement = Arrangement.spacedBy(AerixSpacing.xsPlus)
+                ) {
+                    Text(
+                        text = "FIRE FPS BOOST PRESETS (1-TAP OPTIMIZER)",
+                        color = Color(0xFF0284C7),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 0.8.sp
+                    )
+                    Text(
+                        text = "Automatically sets optimal Heap RAM, enables Rapid Launch, and applies low-stutter G1GC flags for your phone's RAM tier.",
+                        color = AerixSurface.textSecondary,
+                        fontSize = 11.5.sp
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(AerixSpacing.xsPlus)
+                    ) {
+                        AboutPillButton("4GB Phone Boost", Color(0xFF0EA5E9)) {
+                            PojavSettingsBridge.writeInt(activity, "allocation", 1728.coerceAtMost(maxRam))
+                            PojavSettingsBridge.writeBoolean(activity, "fastStartupCheck", true)
+                            PojavSettingsBridge.writeString(
+                                activity,
+                                "javaArgs",
+                                "-XX:+UnlockExperimentalVMOptions -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=45 -XX:G1NewSizePercent=20 -XX:G1HeapRegionSize=8M -XX:+PerfDisableSharedMem -Dsodium.checks.issue2561=false"
+                            )
+                        }
+                        AboutPillButton("6GB Phone Boost", Color(0xFF2563EB)) {
+                            PojavSettingsBridge.writeInt(activity, "allocation", 2816.coerceAtMost(maxRam))
+                            PojavSettingsBridge.writeBoolean(activity, "fastStartupCheck", true)
+                            PojavSettingsBridge.writeString(
+                                activity,
+                                "javaArgs",
+                                "-XX:+UnlockExperimentalVMOptions -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=38 -XX:G1NewSizePercent=20 -XX:G1HeapRegionSize=16M -XX:+AlwaysPreTouch -XX:+PerfDisableSharedMem -Dsodium.checks.issue2561=false"
+                            )
+                        }
+                        AboutPillButton("8GB+ Ultra Boost", Color(0xFF4F46E5)) {
+                            PojavSettingsBridge.writeInt(activity, "allocation", 4096.coerceAtMost(maxRam))
+                            PojavSettingsBridge.writeBoolean(activity, "fastStartupCheck", true)
+                            PojavSettingsBridge.writeString(
+                                activity,
+                                "javaArgs",
+                                "-XX:+UnlockExperimentalVMOptions -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=30 -XX:G1NewSizePercent=20 -XX:G1HeapRegionSize=16M -XX:+AlwaysPreTouch -XX:+PerfDisableSharedMem -Dsodium.checks.issue2561=false"
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        item {
+            val maxRam = remember { PojavSettingsBridge.safeMaxRam(activity) }
             SettingsCardColumn(modifier = Modifier.fillMaxWidth()) {
                 MiraiSliderSettingsCard(
                     position = CardPosition.Top,

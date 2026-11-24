@@ -19,6 +19,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -29,6 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -155,13 +157,12 @@ fun AerixBackground(modifier: Modifier = Modifier, content: @Composable BoxScope
  */
 @Composable
 private fun PrismLightAuroraMesh(modifier: Modifier = Modifier) {
-    Canvas(modifier = modifier) {
-        val w = size.width
-        val h = size.height
-        val r = size.maxDimension * 0.66f
-
-        drawRect(
-            brush = Brush.linearGradient(
+    Spacer(
+        modifier = modifier.drawWithCache {
+            val w = size.width
+            val h = size.height
+            val r = size.maxDimension * 0.66f
+            val baseBrush = Brush.linearGradient(
                 colors = listOf(
                     Color(0xFFEAF6FF),
                     Color(0xFFF3EEFF),
@@ -171,70 +172,73 @@ private fun PrismLightAuroraMesh(modifier: Modifier = Modifier) {
                 start = Offset.Zero,
                 end = Offset(w, h)
             )
-        )
-        drawRect(
-            brush = Brush.radialGradient(
+            val skyOrb = Brush.radialGradient(
                 colors = listOf(Color(0xA67DD3FC), Color.Transparent),
                 center = Offset(w * 0.12f, h * 0.16f),
                 radius = r * 0.78f
             )
-        )
-        drawRect(
-            brush = Brush.radialGradient(
+            val pinkOrb = Brush.radialGradient(
                 colors = listOf(Color(0xA0F9A8D4), Color.Transparent),
                 center = Offset(w * 0.88f, h * 0.18f),
                 radius = r * 0.76f
             )
-        )
-        drawRect(
-            brush = Brush.radialGradient(
+            val lavenderOrb = Brush.radialGradient(
                 colors = listOf(Color(0x96C4B5FD), Color.Transparent),
                 center = Offset(w * 0.50f, h * 0.46f),
                 radius = r * 0.72f
             )
-        )
-        drawRect(
-            brush = Brush.radialGradient(
+            val mintOrb = Brush.radialGradient(
                 colors = listOf(Color(0x9E6EE7B7), Color.Transparent),
                 center = Offset(w * 0.16f, h * 0.88f),
                 radius = r * 0.74f
             )
-        )
-        drawRect(
-            brush = Brush.radialGradient(
+            val peachOrb = Brush.radialGradient(
                 colors = listOf(Color(0x9EFDBA74), Color(0x70FDE047), Color.Transparent),
                 center = Offset(w * 0.86f, h * 0.86f),
                 radius = r * 0.75f
             )
-        )
-    }
+            onDrawBehind {
+                drawRect(baseBrush)
+                drawRect(skyOrb)
+                drawRect(pinkOrb)
+                drawRect(lavenderOrb)
+                drawRect(mintOrb)
+                drawRect(peachOrb)
+            }
+        }
+    )
 }
 
 @Composable
 private fun PrismDaylightSheenOverlay(accent: Color) {
-    Canvas(modifier = Modifier.fillMaxSize()) {
-        val w = size.width
-        val h = size.height
-        drawRect(
-            brush = Brush.verticalGradient(
-                colorStops = arrayOf(
-                    0.00f to Color.White.copy(alpha = 0.24f),
-                    0.50f to Color.White.copy(alpha = 0.10f),
-                    1.00f to accent.copy(alpha = 0.06f)
+    Spacer(
+        modifier = Modifier
+            .fillMaxSize()
+            .drawWithCache {
+                val w = size.width
+                val h = size.height
+                val sheen = Brush.verticalGradient(
+                    colorStops = arrayOf(
+                        0.00f to Color.White.copy(alpha = 0.24f),
+                        0.50f to Color.White.copy(alpha = 0.10f),
+                        1.00f to accent.copy(alpha = 0.06f)
+                    )
                 )
-            )
-        )
-        val step = 56.dp.toPx().coerceAtLeast(36f)
-        val gridColor = Color.White.copy(alpha = 0.32f)
-        var x = step
-        while (x < w) {
-            drawLine(gridColor, Offset(x, 0f), Offset(x, h), strokeWidth = 1f)
-            x += step
-        }
-        var y = step
-        while (y < h) {
-            drawLine(gridColor, Offset(0f, y), Offset(w, y), strokeWidth = 1f)
-            y += step
-        }
-    }
+                val step = 56.dp.toPx().coerceAtLeast(36f)
+                val gridColor = Color.White.copy(alpha = 0.32f)
+                onDrawBehind {
+                    drawRect(sheen)
+                    var x = step
+                    while (x < w) {
+                        drawLine(gridColor, Offset(x, 0f), Offset(x, h), strokeWidth = 1f)
+                        x += step
+                    }
+                    var y = step
+                    while (y < h) {
+                        drawLine(gridColor, Offset(0f, y), Offset(w, y), strokeWidth = 1f)
+                        y += step
+                    }
+                }
+            }
+    )
 }

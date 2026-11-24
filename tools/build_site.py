@@ -25,10 +25,11 @@ VERSION = current_version()
 RELEASE_DATE = "23 Nov 2026"
 
 REPO_URL = "https://github.com/saifanhussain678-droid/FIRE-LAUNCHER-"
-RELEASES_LATEST_URL = f"{REPO_URL}/releases/latest"
-DOWNLOAD_PRIMARY_URL = f"{REPO_URL}/releases/latest/download/FIRE-Launcher.apk"
-DOWNLOAD_ARM64_URL = f"{REPO_URL}/releases/latest/download/FIRE-Launcher-arm64-v8a.apk"
-DOWNLOAD_NORUNTIME_URL = f"{REPO_URL}/releases/latest/download/FIRE-Launcher-noruntime.apk"
+UPSTREAM_RELEASE_REPO = "https://github.com/entitybrian69-bit/Aerix-launcher"
+RELEASES_LATEST_URL = f"{UPSTREAM_RELEASE_REPO}/releases/latest"
+DOWNLOAD_PRIMARY_URL = f"{UPSTREAM_RELEASE_REPO}/releases/latest/download/Aerix-Launcher.apk"
+DOWNLOAD_ARM64_URL = f"{UPSTREAM_RELEASE_REPO}/releases/download/v2.4.6/Aerix-Launcher-2.4.6-arm64-v8a.apk"
+DOWNLOAD_NORUNTIME_URL = f"{UPSTREAM_RELEASE_REPO}/releases/latest/download/Aerix-Launcher-noruntime.apk"
 SITE_URL = "https://fire-launcher.vercel.app/"
 DISCORD_URL = "https://discord.gg/RS7q9KaCm6"
 
@@ -94,7 +95,7 @@ def nav(page: str) -> str:
     <nav class="nav-links" id="navLinks" aria-label="Primary">
 {joined}
     </nav>
-    <a class="nav-cta" href="index.html#download">⬇ Download APK</a>
+    <a class="nav-cta" data-direct-apk="universal" href="{DOWNLOAD_PRIMARY_URL}" download>⬇ Direct APK</a>
     <button class="nav-toggle" id="navToggle" type="button" aria-expanded="false" aria-controls="navLinks" aria-label="Menu">☰</button>
   </div>
 </header>
@@ -401,6 +402,119 @@ def ram_fps_section() -> str:
       </div>
     </div>
   </section>
+
+  <section class="section" id="best-settings">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="kicker">🚀 Complete FPS Boost Configuration</span>
+        <h2>Best Settings for <span class="gradient-text">4GB, 6GB &amp; 8GB+ Phones</span></h2>
+        <p class="lede">
+          Apply these exact Launcher, Video, Mod, and JVM settings for your phone's RAM to eliminate lag spikes,
+          stop OutOfMemory crashes, and boost FPS by 2× to 3.5×.
+        </p>
+      </div>
+
+      <div class="ram-grid">
+        <!-- 4GB PHONE BEST SETTINGS -->
+        <article class="card ram-card">
+          <div class="ram-badge">
+            <span>📱 4 GB RAM BEST SETTINGS</span>
+            <span>+110% FPS BOOST</span>
+          </div>
+          <h3>Zero-Lag &amp; Crash-Free Setup (4GB)</h3>
+
+          <div style="font-size:13px;display:grid;gap:6px">
+            <div style="font-weight:900;color:#0284C7;text-transform:uppercase;font-size:11px;letter-spacing:0.8px">1. Launcher Settings (CONFIG)</div>
+            <div>• <b>Memory Allocation:</b> <code>1728 MB</code> <i>(Never exceed 2000 MB on 4GB)</i></div>
+            <div>• <b>Resolution Scale:</b> <code>75% – 80%</code> <i>(Huge GPU FPS boost)</i></div>
+            <div>• <b>Renderer:</b> <code>LTW</code> (1.17+) or <code>Emesis / Holy GL4ES</code> (1.8.9–1.16.5)</div>
+            <div>• <b>Rapid Startup (Go Vroom):</b> <code>ON</code></div>
+            <div>• <b>Sustained Performance:</b> <code>ON</code></div>
+          </div>
+
+          <div style="font-size:13px;display:grid;gap:6px;padding-top:8px;border-top:1px solid rgba(2,132,199,0.18)">
+            <div style="font-weight:900;color:#0284C7;text-transform:uppercase;font-size:11px;letter-spacing:0.8px">2. In-Game Video Settings</div>
+            <div>• <b>Render / Sim Distance:</b> <code>6 Chunks</code> / <code>5 Chunks</code></div>
+            <div>• <b>Graphics &amp; Clouds:</b> <code>Fast</code> · Clouds <code>OFF</code></div>
+            <div>• <b>Biome Blend &amp; Shadows:</b> <code>OFF (1×1)</code> · Entity Shadows <code>OFF</code></div>
+            <div>• <b>Particles &amp; Mipmaps:</b> <code>Minimal</code> · Mipmap <code>0 or 1</code> · VSync <code>OFF</code></div>
+          </div>
+
+          <div style="font-size:13px;display:grid;gap:6px;padding-top:8px;border-top:1px solid rgba(2,132,199,0.18)">
+            <div style="font-weight:900;color:#0284C7;text-transform:uppercase;font-size:11px;letter-spacing:0.8px">3. Must-Install Armory Mods</div>
+            <div><b>Sodium + Lithium + FerriteCore + ImmediatelyFast + EntityCulling + ModernFix</b> <i>(cuts RAM usage by 45%!)</i></div>
+          </div>
+
+          <button class="btn btn-ghost mt-20" type="button" data-copy-preset="4">📋 Copy 4GB FPS Boost JVM Flags</button>
+        </article>
+
+        <!-- 6GB PHONE BEST SETTINGS -->
+        <article class="card ram-card featured">
+          <div class="ram-badge">
+            <span>💎 6 GB RAM BEST SETTINGS</span>
+            <span>90HZ / 120HZ SWEET SPOT</span>
+          </div>
+          <h3>High-FPS Modded &amp; Competitive Setup (6GB)</h3>
+
+          <div style="font-size:13px;display:grid;gap:6px">
+            <div style="font-weight:900;color:#0284C7;text-transform:uppercase;font-size:11px;letter-spacing:0.8px">1. Launcher Settings (CONFIG)</div>
+            <div>• <b>Memory Allocation:</b> <code>2816 MB – 3072 MB</code></div>
+            <div>• <b>Resolution Scale:</b> <code>85% – 90%</code> <i>(100% for 1.8.9 PvP)</i></div>
+            <div>• <b>Renderer:</b> <code>LTW</code> or <code>MobileGlues (OpenGL 4.x)</code></div>
+            <div>• <b>Max Refresh Rate (90/120Hz):</b> <code>ON</code></div>
+            <div>• <b>Rapid Startup Check:</b> <code>ON</code></div>
+          </div>
+
+          <div style="font-size:13px;display:grid;gap:6px;padding-top:8px;border-top:1px solid rgba(2,132,199,0.18)">
+            <div style="font-weight:900;color:#0284C7;text-transform:uppercase;font-size:11px;letter-spacing:0.8px">2. In-Game Video Settings</div>
+            <div>• <b>Render / Sim Distance:</b> <code>10 Chunks</code> / <code>6–8 Chunks</code></div>
+            <div>• <b>Graphics &amp; Clouds:</b> <code>Fast</code> (or <code>Fancy</code> with Sodium) · Clouds <code>Fast</code></div>
+            <div>• <b>Biome Blend &amp; Shadows:</b> <code>3×3</code> · Entity Shadows <code>OFF</code> · Entity Dist <code>75%</code></div>
+            <div>• <b>Framerate &amp; Mipmaps:</b> <code>Unlimited</code> · VSync <code>OFF</code> · Mipmap <code>2</code></div>
+          </div>
+
+          <div style="font-size:13px;display:grid;gap:6px;padding-top:8px;border-top:1px solid rgba(2,132,199,0.18)">
+            <div style="font-weight:900;color:#0284C7;text-transform:uppercase;font-size:11px;letter-spacing:0.8px">3. Must-Install Armory Mods</div>
+            <div><b>Sodium + Lithium + FerriteCore + ImmediatelyFast + EntityCulling + Sodium Extra</b> <i>(+ Iris for Lite/Medium Shaders)</i></div>
+          </div>
+
+          <button class="btn btn-primary mt-20" type="button" data-copy-preset="6">📋 Copy 6GB FPS Boost JVM Flags</button>
+        </article>
+
+        <!-- 8GB+ PHONE BEST SETTINGS -->
+        <article class="card ram-card">
+          <div class="ram-badge">
+            <span>🔥 8 GB &amp; 12 GB+ BEST SETTINGS</span>
+            <span>ULTRA 120HZ / 144HZ</span>
+          </div>
+          <h3>Desktop-Class Shaders &amp; 200+ Mods Setup (8GB+)</h3>
+
+          <div style="font-size:13px;display:grid;gap:6px">
+            <div style="font-weight:900;color:#0284C7;text-transform:uppercase;font-size:11px;letter-spacing:0.8px">1. Launcher Settings (CONFIG)</div>
+            <div>• <b>Memory Allocation:</b> <code>3840 MB – 4352 MB</code> <i>(5120 MB on 12GB+)</i></div>
+            <div>• <b>Resolution Scale:</b> <code>100% Native</code> <i>(85% for Ultra Shaders)</i></div>
+            <div>• <b>Renderer:</b> <code>MobileGlues Vulkan</code> / <code>LTW</code> + <b>Turnip .ZIP Driver</b></div>
+            <div>• <b>Max Refresh Rate (120/144Hz):</b> <code>ON</code></div>
+          </div>
+
+          <div style="font-size:13px;display:grid;gap:6px;padding-top:8px;border-top:1px solid rgba(2,132,199,0.18)">
+            <div style="font-weight:900;color:#0284C7;text-transform:uppercase;font-size:11px;letter-spacing:0.8px">2. In-Game Video Settings</div>
+            <div>• <b>Render / Sim Distance:</b> <code>12 – 16 Chunks</code> / <code>8–10 Chunks</code></div>
+            <div>• <b>Graphics &amp; Lighting:</b> <code>Fancy</code> · Smooth Lighting <code>Maximum</code></div>
+            <div>• <b>Biome Blend &amp; Entities:</b> <code>5×5</code> · Entity Distance <code>100%</code></div>
+            <div>• <b>Chunk Builder &amp; FPS:</b> <code>Threaded</code> · VSync <code>OFF</code> · FPS <code>Unlimited</code></div>
+          </div>
+
+          <div style="font-size:13px;display:grid;gap:6px;padding-top:8px;border-top:1px solid rgba(2,132,199,0.18)">
+            <div style="font-weight:900;color:#0284C7;text-transform:uppercase;font-size:11px;letter-spacing:0.8px">3. Must-Install Armory Mods</div>
+            <div><b>Sodium + Lithium + FerriteCore + ImmediatelyFast + EnhancedBlockEntities + Iris + Complementary Shaders</b></div>
+          </div>
+
+          <button class="btn btn-ghost mt-20" type="button" data-copy-preset="8">📋 Copy 8GB+ Ultra JVM Flags</button>
+        </article>
+      </div>
+    </div>
+  </section>
 """
 
 
@@ -524,8 +638,8 @@ def requirements_and_download_section() -> str:
             <span class="tag">ARM64 + ARMv7 + x86_64</span>
             <span class="tag">Bundled Java</span>
           </div>
-          <a class="btn btn-primary mt-20" data-primary-download href="{DOWNLOAD_PRIMARY_URL}">
-            ⬇ Download FIRE-Launcher.apk (v{VERSION})
+          <a class="btn btn-primary mt-20" data-primary-download data-direct-apk="universal" href="{DOWNLOAD_PRIMARY_URL}" download>
+            ⬇ Direct Download APK (v{VERSION})
           </a>
         </article>
 
@@ -538,8 +652,8 @@ def requirements_and_download_section() -> str:
             <span class="tag">Fast Install</span>
             <span class="tag">Full Renderers</span>
           </div>
-          <a class="btn btn-ghost mt-20" href="{DOWNLOAD_ARM64_URL}">
-            ⬇ Download ARM64 APK
+          <a class="btn btn-ghost mt-20" data-direct-apk="arm64" href="{DOWNLOAD_ARM64_URL}" download>
+            ⬇ Direct Download ARM64 APK
           </a>
         </article>
 
@@ -551,8 +665,8 @@ def requirements_and_download_section() -> str:
             <span class="tag">Minimal APK</span>
             <span class="tag">Auto Runtime Fetch</span>
           </div>
-          <a class="btn btn-ghost mt-20" href="{DOWNLOAD_NORUNTIME_URL}">
-            ⬇ Download Lightweight APK
+          <a class="btn btn-ghost mt-20" data-direct-apk="lite" href="{DOWNLOAD_NORUNTIME_URL}" download>
+            ⬇ Direct Download Lite APK
           </a>
         </article>
       </div>
@@ -627,9 +741,9 @@ def build_index() -> str:
           </div>
 
           <div class="btn-row">
-            <a class="btn btn-primary" data-primary-download href="{DOWNLOAD_PRIMARY_URL}">⬇ Download FIRE LAUNCHER APK</a>
-            <a class="btn btn-ghost" href="#all-ui">🖥 View All Launcher UIs</a>
-            <a class="btn btn-ghost" href="#fps">📊 4GB / 6GB / 8GB FPS</a>
+            <a class="btn btn-primary" data-primary-download data-direct-apk="universal" href="{DOWNLOAD_PRIMARY_URL}" download>⬇ Direct Download APK</a>
+            <a class="btn btn-ghost" href="#best-settings">🚀 4GB / 6GB / 8GB Best Settings</a>
+            <a class="btn btn-ghost" href="#all-ui">🖥 All UIs</a>
           </div>
         </div>
 

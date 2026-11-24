@@ -262,10 +262,15 @@ public class LauncherPreferences {
         // Limit the max for 32 bits devices more harshly
         if (is32BitsDevice()) return 696;
 
-        if (deviceRam < 3064) return 936;
-        if (deviceRam < 4096) return 1144;
-        if (deviceRam < 6144) return 1536;
-        return 2048; //Default RAM allocation for 64 bits
+        if (deviceRam < 3064) return 1024;
+        // 4 GB physical RAM phones (~3.5-4.3 GB usable Linux memory): sweet-spot 1728 MB
+        if (deviceRam <= 4400) return 1728;
+        // 6 GB physical RAM phones (~5.3-6.4 GB usable Linux memory): sweet-spot 2816 MB
+        if (deviceRam <= 6500) return 2816;
+        // 8 GB physical RAM phones (~7.1-8.6 GB usable Linux memory): sweet-spot 3840 MB
+        if (deviceRam <= 8700) return 3840;
+        // 12 GB+ physical RAM flagship phones & tablets: sweet-spot 4608 MB
+        return 4608;
     }
 
     /// Find a correct resolution for the device

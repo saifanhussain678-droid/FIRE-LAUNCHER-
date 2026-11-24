@@ -121,6 +121,8 @@ public class JavaRunner {
                 "-Dext.net.resolvPath=" +resolvFile,
                 "-Dlog4j2.formatMsgNoLookups=true", //Log4j RCE mitigation
                 "-Dfml.earlyprogresswindow=false", //Forge 1.14+ workaround
+                "-Dfml.readTimeout=90",
+                "-Dsodium.checks.issue2561=false",
                 "-Dloader.disable_forked_guis=true",
                 "-Djdk.lang.Process.launchMechanism=FORK" // Default is POSIX_SPAWN which requires starting jspawnhelper, which doesn't work on Android
         ));
@@ -142,7 +144,49 @@ public class JavaRunner {
 
         //Add all the arguments
         userArguments.addAll(additionalArguments);
+        applyFirePerformanceFlags(userArguments, memoryMb);
         return userArguments;
+    }
+
+    /**
+     * Adaptive mobile JVM FPS & frame-pacing flags for 4GB, 6GB, and 8GB+ Android devices.
+     * Eliminates hsperfdata flash storage I/O stalls and tunes G1GC pause targets unless the
+     * user already supplied custom GC collector flags.
+     */
+    private static void applyFirePerformanceFlags(List<String> args, int memoryMb) {
+        boolean hasCustomGc = false;
+        boolean hasPerfDisable = false;
+        boolean hasDisableExplicitGc = false;
+        for (String arg : args) {
+            if (arg.startsWith("-XX:+Use") && arg.endsWith("GC")) hasCustomGc = true;
+            if (arg.equals("-XX:+PerfDisableSharedMem") || arg.equals("-XX:-PerfDisableSharedMem")) hasPerfDisable = true;
+            if (arg.equals("-XX:+DisableExplicitGC") || arg.equals("-XX:-DisableExplicitGC")) hasDisableExplicitGc = true;
+        }
+        if (!hasPerfDisable) {
+            args.add("-XX:+PerfDisableSharedMem");
+        }
+        if (!hasDisableExplicitGc) {
+            args.add("-XX:+DisableExplicitGC");
+        }
+        if (!hasCustomGc && memoryMb >= 1024) {
+            int maxPauseMs = memoryMb <= 2048 ? 45 : (memoryMb <= 3584 ? 38 : 30);
+            int regionMb = memoryMb <= 2560 ? 8 : (memoryMb <= 4608 ? 16 : 32);
+            args.add("-XX:+UnlockExperimentalVMOptions");
+            args.add("-XX:+UseG1GC");
+            args.add("-XX:+ParallelRefProcEnabled");
+            args.add("-XX:MaxGCPauseMillis=" + maxPauseMs);
+            args.add("-XX:G1NewSizePercent=20");
+            args.add("-XX:G1ReservePercent=15");
+            args.add("-XX:G1HeapWastePercent=5");
+            args.add("-XX:G1MixedGCCountTarget=4");
+            args.add("-XX:InitiatingHeapOccupancyPercent=15");
+            args.add("-XX:G1MixedGCLiveThresholdPercent=90");
+            args.add("-XX:SurvivorRatio=32");
+            args.add("-XX:G1HeapRegionSize=" + regionMb + "M");
+            if (memoryMb >= 2560) {
+                args.add("-XX:+AlwaysPreTouch");
+            }
+        }
     }
 
     private static File getVmPath(File runtimeHomeDir, String arch, String flavor) {

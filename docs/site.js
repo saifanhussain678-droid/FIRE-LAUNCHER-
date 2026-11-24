@@ -316,5 +316,35 @@
     });
   }
 
+  // 1-Tap Copy for 4GB / 6GB / 8GB+ Best Settings Preset Cards
+  document.querySelectorAll('[data-copy-preset]').forEach((btn) => {
+    const orig = btn.textContent;
+    btn.addEventListener('click', () => {
+      const tier = btn.dataset.copyPreset;
+      const flags = RAM_PROFILES[tier]?.jvm || RAM_PROFILES['6'].jvm;
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(flags);
+        btn.textContent = `✓ Copied ${tier}GB Boost Flags!`;
+        setTimeout(() => { btn.textContent = orig; }, 1800);
+      }
+    });
+  });
+
+  // Auto-resolve direct APK asset if a custom release is published on FIRE-LAUNCHER-
+  fetch('https://api.github.com/repos/saifanhussain678-droid/FIRE-LAUNCHER-/releases/latest')
+    .then((r) => (r.ok ? r.json() : null))
+    .then((rel) => {
+      if (!rel || !Array.isArray(rel.assets)) return;
+      const apks = rel.assets.filter((a) => a.name && a.name.endsWith('.apk') && a.browser_download_url);
+      if (!apks.length) return;
+      const arm64 = apks.find((a) => a.name.includes('arm64')) || apks[0];
+      const lite = apks.find((a) => a.name.includes('noruntime')) || apks[0];
+      const univ = apks.find((a) => !a.name.includes('arm64') && !a.name.includes('armeabi') && !a.name.includes('noruntime')) || apks[0];
+      document.querySelectorAll('[data-direct-apk="universal"]').forEach((a) => { a.href = univ.browser_download_url; });
+      document.querySelectorAll('[data-direct-apk="arm64"]').forEach((a) => { a.href = arm64.browser_download_url; });
+      document.querySelectorAll('[data-direct-apk="lite"]').forEach((a) => { a.href = lite.browser_download_url; });
+    })
+    .catch(() => {});
+
   updateCalculator();
 })();
