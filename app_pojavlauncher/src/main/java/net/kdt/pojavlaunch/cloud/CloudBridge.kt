@@ -44,6 +44,11 @@ class CloudBridge(
     @Volatile private var cachedMojangVersions: List<Pair<String, String>> = emptyList()
 
     init {
+        CloudMusicPlayer.onStateChanged = {
+            val st = CloudMusicPlayer.getStatusJson().toString()
+            evalJs("window.CloudUI && CloudUI.onMusicStateUpdate($st)")
+        }
+
         // Warm up Mojang version manifest in background so Releases & Snapshots are always ready
         Thread({
             try {
@@ -935,5 +940,36 @@ class CloudBridge(
                 PojavSettingsBridge.touch()
             }
         }
+    }
+
+    @JavascriptInterface
+    fun searchMusicAsync(query: String) {
+        Thread({
+            val arr = try {
+                if (query == "__DEVICE__") {
+                    CloudMusicPlayer.scanDeviceSongsJson()
+                } else {
+                    CloudMusicPlayer.searchSongsJson(query)
+                }
+            } catch (_: Throwable) {
+                JSONArray()
+            }
+            evalJs("window.CloudUI && CloudUI.onMusicSearchResults(${JSONObject.quote(query)}, ${arr.toString()})")
+        }, "CloudMusicSearch").start()
+    }
+
+    @JavascriptInterface
+    fun playMusic(songId: String, title: String, artist: String, artwork: String, streamUrl: String) {
+        CloudMusicPlayer.playUrl(appCtx, songId, title, artist, artwork, streamUrl)
+    }
+
+    @JavascriptInterface
+    fun stopMusic() {
+        CloudMusicPlayer.stop()
+    }
+
+    @JavascriptInterface
+    fun getMusicStatusJson(): String {
+        return CloudMusicPlayer.getStatusJson().toString()
     }
 }

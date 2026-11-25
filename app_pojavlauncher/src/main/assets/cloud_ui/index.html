@@ -39,6 +39,12 @@
       </div>
 
       <div class="header-pills">
+        <button class="h-pill" data-nav="music" onclick="CloudUI.go('music')">
+          <span class="white-speaker-badge" style="width:17px;height:17px;border-radius:5px;">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="#ffffff"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>
+          </span>
+          MUSIC
+        </button>
         <button class="h-pill" data-nav="config" onclick="CloudUI.go('config')">⚙ CONFIG</button>
         <button class="h-pill" data-nav="ops" onclick="CloudUI.go('ops')">⚡ OPS</button>
         <button class="h-pill" data-nav="files" onclick="CloudUI.go('files')">📁 FILES</button>
@@ -516,6 +522,66 @@
           <pre id="console-output" style="flex:1;margin:0;padding:12px;border-radius:14px;background:#0f172a;color:#e2e8f0;font-size:10.5px;overflow:auto;white-space:pre-wrap;user-select:text;">Cloud Launcher Engine Initialized.</pre>
         </div>
       </section>
+
+      <!-- ===============================================================
+           NEW MUSIC SECTION (White Monochrome Speaker Logo + All Songs)
+           =============================================================== -->
+      <section class="screen" id="screen-music">
+        <div class="glass-panel music-shell">
+          <!-- Header + Live Search -->
+          <div class="music-top-header">
+            <div style="display:flex;align-items:center;gap:9px;">
+              <span class="white-speaker-badge lg" aria-hidden="true">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="#ffffff"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>
+              </span>
+              <div>
+                <div style="font-size:14px;font-weight:900;letter-spacing:0.06em;color:#0f172a;">MUSIC</div>
+                <div style="font-size:9.5px;font-weight:700;color:#64748b;">Search &amp; play any song in background</div>
+              </div>
+            </div>
+
+            <div class="music-search-wrap">
+              <input
+                id="music-search-input"
+                class="prism-input"
+                style="flex:1;"
+                placeholder="Search any song name, singer, movie, phonk..."
+                oninput="CloudUI.onMusicQueryInput(this.value)"
+                onkeydown="if(event.key==='Enter')CloudUI.searchMusicNow()">
+              <button class="music-play-btn" onclick="CloudUI.searchMusicNow()">SEARCH</button>
+              <button class="mini-btn" onclick="CloudUI.pickLocalSongFile()">+ MP3</button>
+            </div>
+          </div>
+
+          <!-- Quick Song Categories -->
+          <div class="music-chips-bar" id="music-chips-bar">
+            <button class="music-chip active" data-mq="Top Hindi &amp; Global Hits" onclick="CloudUI.selectMusicCategory(this, 'Top Hindi & Global Hits')">All Songs</button>
+            <button class="music-chip" data-mq="Latest Bollywood Hindi Songs" onclick="CloudUI.selectMusicCategory(this, 'Latest Bollywood Hindi Songs')">Hindi</button>
+            <button class="music-chip" data-mq="Top Punjabi Hits" onclick="CloudUI.selectMusicCategory(this, 'Top Punjabi Hits')">Punjabi</button>
+            <button class="music-chip" data-mq="Brazilian Phonk Drift" onclick="CloudUI.selectMusicCategory(this, 'Brazilian Phonk Drift')">Phonk</button>
+            <button class="music-chip" data-mq="NCS Gaming Music" onclick="CloudUI.selectMusicCategory(this, 'NCS Gaming Music')">Gaming &amp; NCS</button>
+            <button class="music-chip" data-mq="Top English Pop Hits" onclick="CloudUI.selectMusicCategory(this, 'Top English Pop Hits')">English</button>
+            <button class="music-chip" data-mq="Lofi Chill Beats" onclick="CloudUI.selectMusicCategory(this, 'Lofi Chill Beats')">Lofi</button>
+            <button class="music-chip" data-mq="C418 Minecraft Soundtrack" onclick="CloudUI.selectMusicCategory(this, 'C418 Minecraft Soundtrack')">Minecraft OST</button>
+            <button class="music-chip" data-mq="__DEVICE__" onclick="CloudUI.selectMusicCategory(this, '__DEVICE__')">Phone MP3s</button>
+          </div>
+
+          <!-- Active Background Now-Playing Banner -->
+          <div class="music-now-banner" id="music-now-banner">
+            <div style="display:flex;align-items:center;gap:9px;min-width:0;">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="#ffffff"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>
+              <div style="min-width:0;">
+                <div style="font-size:11.5px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" id="music-now-title">Playing Song</div>
+                <div style="font-size:9.5px;color:#94a3b8;" id="music-now-sub">Playing in background · Auto-stops on finish</div>
+              </div>
+            </div>
+            <button class="music-stop-btn" onclick="CloudUI.stopSong()">■ STOP</button>
+          </div>
+
+          <!-- 1-Box Song Rows: ( Song photo ) ( song name ) ( Play button   Stop button ) -->
+          <div class="music-songs-list" id="music-songs-list"></div>
+        </div>
+      </section>
     </main>
   </div>
 
@@ -526,6 +592,11 @@
       <button class="dock-btn active" data-dock="hq" onclick="CloudUI.go('hq')">🏠 HQ</button>
       <button class="dock-btn" data-dock="vault" onclick="CloudUI.go('vault')">🗄 VAULT</button>
       <button class="dock-btn" data-dock="forge" onclick="CloudUI.go('forge')">⚒ + FORGE</button>
+      <button class="dock-btn" data-dock="music" onclick="CloudUI.go('music')">
+        <span class="white-speaker-badge">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="#ffffff"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>
+        </span>MUSIC
+      </button>
       <button class="dock-btn" data-dock="armory" onclick="CloudUI.go('armory')">⚔ ARMORY</button>
       <button class="dock-btn" data-dock="packs" onclick="CloudUI.go('packs')">📦 PACKS</button>
       <button class="dock-btn" data-dock="accounts" onclick="CloudUI.go('accounts')">👤 ACCOUNTS</button>

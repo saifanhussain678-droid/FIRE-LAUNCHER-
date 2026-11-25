@@ -65,11 +65,24 @@
       { name: "MCC Island", addr: "play.mccisland.net", tag: "1.20+ · Fast Arenas" },
       { name: "Hoplite", addr: "hoplite.gg", tag: "1.20+ · Battle Royale" },
       { name: "PvP Legacy", addr: "play.pvplegacy.net", tag: "1.20+ · Duels" }
-    ]))
+    ])),
+    musicSongs: [],
+    musicLastQuery: "Top Hindi & Global Hits",
+    musicLoading: false,
+    musicStatus: {
+      playing: false,
+      preparing: false,
+      songId: "",
+      title: "",
+      artist: "",
+      artwork: ""
+    }
   };
 
   let hqSkinViewer = null;
   let accSkinViewer = null;
+  let webFallbackAudio = null;
+  let musicSearchTimer = null;
 
   function toast(msg) {
     const el = document.getElementById("cloud-toast");
@@ -238,6 +251,7 @@
       hq: "",
       forge: "· VERSION STUDIO",
       accounts: "· ACCOUNT STUDIO",
+      music: "· MUSIC",
       vault: "· INSTANCE VAULT",
       armory: "· MOD ARMORY",
       packs: "· SHADERS & PACKS",
@@ -742,6 +756,150 @@
     }
   }
 
+  function formatDur(sec) {
+    const n = parseInt(sec, 10) || 0;
+    if (n <= 0) return "";
+    const m = Math.floor(n / 60);
+    const s = n % 60;
+    return `${m}:${s < 10 ? "0" : ""}${s}`;
+  }
+
+  const WHITE_SPEAKER_SVG = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="#ffffff"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>`;
+
+  function renderMusicSection() {
+    const banner = document.getElementById("music-now-banner");
+    const st = state.musicStatus || {};
+    if (banner) {
+      const isAct = !!(st.playing || st.preparing);
+      banner.classList.toggle("active", isAct);
+      if (isAct) {
+        const nt = document.getElementById("music-now-title");
+        const ns = document.getElementById("music-now-sub");
+        if (nt) nt.textContent = (st.preparing ? "Loading: " : "Playing: ") + (st.title || "Song");
+        if (ns) ns.textContent = (st.artist ? st.artist + " · " : "") + "Playing in background · Ends automatically when song finishes";
+      }
+    }
+
+    const host = document.getElementById("music-songs-list");
+    if (!host) return;
+
+    if (state.musicLoading && !state.musicSongs.length) {
+      host.innerHTML = `<div class="music-song-box"><div class="music-song-photo">${WHITE_SPEAKER_SVG}</div><div class="music-song-info"><div class="music-song-title">Loading songs...</div><div class="music-song-sub">Fetching full song catalog</div></div></div>`;
+      return;
+    }
+
+    if (!state.musicSongs.length) {
+      host.innerHTML = `<div class="music-song-box"><div class="music-song-photo">${WHITE_SPEAKER_SVG}</div><div class="music-song-info"><div class="music-song-title">No songs found for this search</div><div class="music-song-sub">Type another song or artist name above, or tap + MP3 to load from phone</div></div></div>`;
+      return;
+    }
+
+    host.innerHTML = state.musicSongs.map((song, idx) => {
+      const isThisPlaying = !!(st.songId && st.songId === song.id && (st.playing || st.preparing));
+      const durTxt = formatDur(song.durationSec);
+      const subParts = [];
+      if (song.artist) subParts.push(song.artist);
+      if (durTxt) subParts.push(durTxt);
+      if (isThisPlaying) subParts.push(st.preparing ? "LOADING..." : "● PLAYING IN BACKGROUND");
+
+      const photoHtml = song.photo
+        ? `<img class="music-song-photo" src="${escapeAttr(song.photo)}" alt="" onerror="this.outerHTML='<div class=\\'music-song-photo\\'>${WHITE_SPEAKER_SVG.replace(/"/g, "&quot;")}</div>'">`
+        : `<div class="music-song-photo">${WHITE_SPEAKER_SVG}</div>`;
+
+      return `
+        <div class="music-song-box ${isThisPlaying ? "playing" : ""}">
+          ${photoHtml}
+          <div class="music-song-info">
+            <div class="music-song-title">${escapeHtml(song.title || "Song")}</div>
+            <div class="music-song-sub" style="${isThisPlaying ? "color:#059669;font-weight:800;" : ""}">${escapeHtml(subParts.join(" · ") || "Ready to Play")}</div>
+          </div>
+          <div class="music-song-controls">
+            <button class="music-play-btn ${isThisPlaying ? "active" : ""}" onclick="CloudUI.playSongByIndex(${idx})">
+              ▶ ${isThisPlaying ? "PLAYING" : "PLAY"}
+            </button>
+            <button class="music-stop-btn" onclick="CloudUI.stopSong()">
+              ■ STOP
+            </button>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  async function loadMusicCatalog(query) {
+    const q = (query || "").trim() || "Top Hindi & Global Hits";
+    state.musicLastQuery = q;
+    state.musicLoading = true;
+    renderMusicSection();
+
+    const nb = bridge();
+    if (nb && nb.searchMusicAsync) {
+      nb.searchMusicAsync(q);
+    }
+
+    if (q === "__DEVICE__") return;
+
+    // Parallel WebView search fallback so songs populate ultra-fast in both APK & browser
+    try {
+      const enc = encodeURIComponent(q);
+      let loaded = [];
+
+      // Try full-length JioSaavn JSON mirror first
+      try {
+        const r1 = await fetch(`https://saavn.sumit.co/api/search/songs?query=${enc}&limit=35`);
+        if (r1.ok) {
+          const j1 = await r1.json();
+          const res = j1 && j1.data && j1.data.results;
+          if (Array.isArray(res) && res.length) {
+            loaded = res.map((it, idx) => {
+              const dls = Array.isArray(it.downloadUrl) ? it.downloadUrl : [];
+              const best = dls.length ? dls[dls.length - 1].url : "";
+              const imgs = Array.isArray(it.image) ? it.image : [];
+              const photo = imgs.length ? imgs[imgs.length - 1].url : "";
+              const prim = it.artists && Array.isArray(it.artists.primary) ? it.artists.primary : [];
+              const artist = prim.length ? prim[0].name : "";
+              return {
+                id: "saavn_" + (it.id || idx),
+                title: it.name || "Song",
+                artist: artist || "",
+                photo: photo || "",
+                streamUrl: best || "",
+                durationSec: it.duration || 0
+              };
+            }).filter(x => !!x.streamUrl);
+          }
+        }
+      } catch (_) {}
+
+      // Fallback to Apple iTunes global catalog if mirror didn't respond
+      if (!loaded.length) {
+        const r2 = await fetch(`https://itunes.apple.com/search?term=${enc}&media=music&entity=song&limit=38&country=IN`);
+        if (r2.ok) {
+          const j2 = await r2.json();
+          const res2 = j2 && j2.results;
+          if (Array.isArray(res2) && res2.length) {
+            loaded = res2.filter(x => !!x.previewUrl).map((it, idx) => ({
+              id: "it_" + (it.trackId || idx),
+              title: it.trackName || "Song",
+              artist: it.artistName || "",
+              photo: String(it.artworkUrl100 || "").replace("100x100bb", "400x400bb"),
+              streamUrl: it.previewUrl,
+              durationSec: Math.round((it.trackTimeMillis || 0) / 1000)
+            }));
+          }
+        }
+      }
+
+      if (loaded.length && state.musicLastQuery === q && !state.musicSongs.length) {
+        state.musicSongs = loaded;
+        state.musicLoading = false;
+        renderMusicSection();
+      }
+    } catch (_) {
+      state.musicLoading = false;
+      renderMusicSection();
+    }
+  }
+
   function escapeHtml(s) {
     return String(s || "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   }
@@ -758,6 +916,11 @@
 
     syncFromNative() {
       refreshStateFromNative();
+      const nb = bridge();
+      if (nb && nb.getMusicStatusJson) {
+        const ms = safeParse(nb.getMusicStatusJson(), null);
+        if (ms) state.musicStatus = ms;
+      }
       renderHeaderAndHQ();
       init3DSkins();
       if (state.screen === "vault") renderVault();
@@ -765,6 +928,7 @@
       if (state.screen === "accounts") renderAccountStudio();
       if (state.screen === "config") renderSettings();
       if (state.screen === "client") renderClientModules();
+      if (state.screen === "music") renderMusicSection();
     },
 
     onBackPressed() {
@@ -799,6 +963,12 @@
       if (screen === "accounts") renderAccountStudio();
       if (screen === "config") renderSettings();
       if (screen === "client") renderClientModules();
+      if (screen === "music") {
+        renderMusicSection();
+        if (!state.musicSongs.length) {
+          loadMusicCatalog(state.musicLastQuery || "Top Hindi & Global Hits");
+        }
+      }
       if (screen === "armory" && !document.getElementById("armory-grid").children.length) {
         searchModrinth("mod", "", "armory-grid");
       }
@@ -1244,6 +1414,158 @@
       this.syncFromNative();
     },
 
+    // ===================================================================
+    // MUSIC SECTION HANDLERS (Search + Play in Background + Stop + Auto-End)
+    // ===================================================================
+    onMusicQueryInput(val) {
+      clearTimeout(musicSearchTimer);
+      const q = (val || "").trim();
+      document.querySelectorAll("#music-chips-bar .music-chip").forEach(c => c.classList.remove("active"));
+      musicSearchTimer = setTimeout(() => {
+        state.musicSongs = [];
+        loadMusicCatalog(q || "Top Hindi & Global Hits");
+      }, 280);
+    },
+
+    searchMusicNow() {
+      clearTimeout(musicSearchTimer);
+      const q = (document.getElementById("music-search-input")?.value || "").trim();
+      state.musicSongs = [];
+      loadMusicCatalog(q || "Top Hindi & Global Hits");
+    },
+
+    selectMusicCategory(btn, query) {
+      document.querySelectorAll("#music-chips-bar .music-chip").forEach(c => c.classList.remove("active"));
+      if (btn) btn.classList.add("active");
+      const inp = document.getElementById("music-search-input");
+      if (inp && query !== "__DEVICE__") inp.value = "";
+      state.musicSongs = [];
+      loadMusicCatalog(query);
+    },
+
+    onMusicSearchResults(query, arr) {
+      if (query !== state.musicLastQuery) return;
+      state.musicLoading = false;
+      if (Array.isArray(arr) && arr.length) {
+        state.musicSongs = arr;
+      }
+      renderMusicSection();
+    },
+
+    playSongByIndex(idx) {
+      const song = state.musicSongs[idx];
+      if (!song || !song.streamUrl) {
+        toast("Song stream unavailable");
+        return;
+      }
+
+      const nb = bridge();
+      if (nb && nb.playMusic) {
+        state.musicStatus = {
+          playing: true,
+          preparing: true,
+          songId: song.id,
+          title: song.title || "Song",
+          artist: song.artist || "",
+          artwork: song.photo || ""
+        };
+        renderMusicSection();
+        nb.playMusic(song.id || String(idx), song.title || "Song", song.artist || "", song.photo || "", song.streamUrl);
+        toast("Playing: " + (song.title || "Song"));
+        return;
+      }
+
+      // Browser fallback (non-looping — automatically ends when song finishes!)
+      try {
+        if (webFallbackAudio) {
+          webFallbackAudio.pause();
+          webFallbackAudio.src = "";
+          webFallbackAudio = null;
+        }
+        const audio = new Audio(song.streamUrl);
+        audio.loop = false;
+        webFallbackAudio = audio;
+        state.musicStatus = {
+          playing: true,
+          preparing: false,
+          songId: song.id,
+          title: song.title || "Song",
+          artist: song.artist || "",
+          artwork: song.photo || ""
+        };
+        renderMusicSection();
+        audio.onended = () => {
+          state.musicStatus = { playing: false, preparing: false, songId: "", title: "", artist: "", artwork: "" };
+          renderMusicSection();
+          toast("Song ended");
+        };
+        audio.play().catch(() => {});
+        toast("Playing: " + (song.title || "Song"));
+      } catch (_) {}
+    },
+
+    stopSong() {
+      const nb = bridge();
+      if (nb && nb.stopMusic) {
+        nb.stopMusic();
+      }
+      if (webFallbackAudio) {
+        try {
+          webFallbackAudio.pause();
+          webFallbackAudio.currentTime = 0;
+        } catch (_) {}
+        webFallbackAudio = null;
+      }
+      state.musicStatus = { playing: false, preparing: false, songId: "", title: "", artist: "", artwork: "" };
+      renderMusicSection();
+      toast("Music stopped");
+    },
+
+    onMusicStateUpdate(st) {
+      if (st && typeof st === "object") {
+        state.musicStatus = st;
+      }
+      renderMusicSection();
+    },
+
+    pickLocalSongFile() {
+      const inp = document.createElement("input");
+      inp.type = "file";
+      inp.accept = "audio/*";
+      inp.onchange = e => {
+        const f = e.target.files && e.target.files[0];
+        if (!f) return;
+        const objUrl = URL.createObjectURL(f);
+        const cleanTitle = f.name.replace(/\.[^.]+$/, "");
+        const added = {
+          id: "picked_" + Date.now(),
+          title: cleanTitle,
+          artist: "Local Audio File",
+          photo: "",
+          streamUrl: objUrl,
+          durationSec: 0
+        };
+        state.musicSongs.unshift(added);
+        renderMusicSection();
+        // Play local blob via HTML5 audio or data URI
+        if (webFallbackAudio) {
+          try { webFallbackAudio.pause(); } catch (_) {}
+        }
+        const a = new Audio(objUrl);
+        a.loop = false;
+        webFallbackAudio = a;
+        state.musicStatus = { playing: true, preparing: false, songId: added.id, title: cleanTitle, artist: "Local Audio", artwork: "" };
+        renderMusicSection();
+        a.onended = () => {
+          state.musicStatus = { playing: false, preparing: false, songId: "", title: "", artist: "", artwork: "" };
+          renderMusicSection();
+        };
+        a.play().catch(() => {});
+        toast("Playing " + cleanTitle);
+      };
+      inp.click();
+    },
+
     previewDownloader(customLabel) {
       this.onDownloadProgress(true, customLabel || "Downloading Minecraft 1.21.4 Assets...", 64);
       setTimeout(() => this.onDownloadProgress(false, "", 100), 3200);
@@ -1282,5 +1604,6 @@
     refreshStateFromNative();
     renderHeaderAndHQ();
     init3DSkins();
+    setTimeout(() => loadMusicCatalog("Top Hindi & Global Hits"), 200);
   });
 })();
