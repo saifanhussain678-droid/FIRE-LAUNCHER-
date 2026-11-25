@@ -69,6 +69,7 @@
     musicSongs: [],
     musicLastQuery: "Top Hindi & Global Hits",
     musicLoading: false,
+    musicSystemEnabled: localStorage.getItem("cloud_music_enabled") !== "0",
     musicStatus: {
       playing: false,
       preparing: false,
@@ -251,7 +252,7 @@
       hq: "",
       forge: "· VERSION STUDIO",
       accounts: "· ACCOUNT STUDIO",
-      music: "· MUSIC",
+      music: "· MUSIC SYSTEM",
       vault: "· INSTANCE VAULT",
       armory: "· MOD ARMORY",
       packs: "· SHADERS & PACKS",
@@ -767,29 +768,62 @@
   const WHITE_SPEAKER_SVG = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="#ffffff"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>`;
 
   function renderMusicSection() {
-    const banner = document.getElementById("music-now-banner");
-    const st = state.musicStatus || {};
-    if (banner) {
-      const isAct = !!(st.playing || st.preparing);
-      banner.classList.toggle("active", isAct);
-      if (isAct) {
-        const nt = document.getElementById("music-now-title");
-        const ns = document.getElementById("music-now-sub");
-        if (nt) nt.textContent = (st.preparing ? "Loading: " : "Playing: ") + (st.title || "Song");
-        if (ns) ns.textContent = (st.artist ? st.artist + " · " : "") + "Playing in background · Ends automatically when song finishes";
-      }
+    const sw = document.getElementById("header-music-sys-sw");
+    const swLbl = document.getElementById("header-music-sys-lbl");
+    if (sw && swLbl) {
+      sw.classList.toggle("on", !!state.musicSystemEnabled);
+      swLbl.textContent = state.musicSystemEnabled ? "ON" : "OFF";
     }
 
+    const st = state.musicStatus || {};
     const host = document.getElementById("music-songs-list");
     if (!host) return;
 
+    if (!state.musicSystemEnabled) {
+      host.innerHTML = `
+        <div class="music-song-row">
+          <div class="music-song-photo">${WHITE_SPEAKER_SVG}</div>
+          <div class="music-song-box">
+            <div class="music-song-info">
+              <div class="music-song-title">MUSIC SYSTEM IS OFF</div>
+              <div class="music-song-sub">Tap "Music System" toggle in the top header to turn ON background music</div>
+            </div>
+            <div class="music-song-controls">
+              <button class="music-play-btn" onclick="CloudUI.toggleMusicSystem()">TURN ON</button>
+            </div>
+          </div>
+        </div>
+      `;
+      return;
+    }
+
     if (state.musicLoading && !state.musicSongs.length) {
-      host.innerHTML = `<div class="music-song-box"><div class="music-song-photo">${WHITE_SPEAKER_SVG}</div><div class="music-song-info"><div class="music-song-title">Loading songs...</div><div class="music-song-sub">Fetching full song catalog</div></div></div>`;
+      host.innerHTML = `
+        <div class="music-song-row">
+          <div class="music-song-photo">${WHITE_SPEAKER_SVG}</div>
+          <div class="music-song-box">
+            <div class="music-song-info">
+              <div class="music-song-title">LOADING SONGS...</div>
+              <div class="music-song-sub">Fetching full song catalog</div>
+            </div>
+          </div>
+        </div>
+      `;
       return;
     }
 
     if (!state.musicSongs.length) {
-      host.innerHTML = `<div class="music-song-box"><div class="music-song-photo">${WHITE_SPEAKER_SVG}</div><div class="music-song-info"><div class="music-song-title">No songs found for this search</div><div class="music-song-sub">Type another song or artist name above, or tap + MP3 to load from phone</div></div></div>`;
+      host.innerHTML = `
+        <div class="music-song-row">
+          <div class="music-song-photo">${WHITE_SPEAKER_SVG}</div>
+          <div class="music-song-box">
+            <div class="music-song-info">
+              <div class="music-song-title">NO SONGS FOUND</div>
+              <div class="music-song-sub">Search another song or artist above, or tap + Import MP3</div>
+            </div>
+          </div>
+        </div>
+      `;
       return;
     }
 
@@ -799,26 +833,28 @@
       const subParts = [];
       if (song.artist) subParts.push(song.artist);
       if (durTxt) subParts.push(durTxt);
-      if (isThisPlaying) subParts.push(st.preparing ? "LOADING..." : "● PLAYING IN BACKGROUND");
 
       const photoHtml = song.photo
         ? `<img class="music-song-photo" src="${escapeAttr(song.photo)}" alt="" onerror="this.outerHTML='<div class=\\'music-song-photo\\'>${WHITE_SPEAKER_SVG.replace(/"/g, "&quot;")}</div>'">`
         : `<div class="music-song-photo">${WHITE_SPEAKER_SVG}</div>`;
 
       return `
-        <div class="music-song-box ${isThisPlaying ? "playing" : ""}">
+        <div class="music-song-row ${isThisPlaying ? "playing" : ""}">
           ${photoHtml}
-          <div class="music-song-info">
-            <div class="music-song-title">${escapeHtml(song.title || "Song")}</div>
-            <div class="music-song-sub" style="${isThisPlaying ? "color:#059669;font-weight:800;" : ""}">${escapeHtml(subParts.join(" · ") || "Ready to Play")}</div>
-          </div>
-          <div class="music-song-controls">
-            <button class="music-play-btn ${isThisPlaying ? "active" : ""}" onclick="CloudUI.playSongByIndex(${idx})">
-              ▶ ${isThisPlaying ? "PLAYING" : "PLAY"}
-            </button>
-            <button class="music-stop-btn" onclick="CloudUI.stopSong()">
-              ■ STOP
-            </button>
+          <div class="music-song-box">
+            ${isThisPlaying ? `<span class="playing-bg-pill">${st.preparing ? "LOADING SONG..." : "PLAYING IN BACKGROUND"}</span>` : ""}
+            <div class="music-song-info">
+              <div class="music-song-title">${escapeHtml(song.title || "Song")}</div>
+              <div class="music-song-sub">${escapeHtml(subParts.join(" · ") || "Ready to Play")}</div>
+            </div>
+            <div class="music-song-controls">
+              <button class="music-play-btn ${isThisPlaying ? "active" : ""}" onclick="CloudUI.playSongByIndex(${idx})">
+                ▶ ${isThisPlaying ? "PLAYING" : "PLAY"}
+              </button>
+              <button class="music-stop-btn" onclick="CloudUI.stopSong()">
+                ▣ STOP
+              </button>
+            </div>
           </div>
         </div>
       `;
@@ -941,6 +977,7 @@
 
     go(screen) {
       state.screen = screen;
+      document.body.classList.toggle("on-music-screen", screen === "music");
       document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
       const target = document.getElementById("screen-" + screen);
       if (target) target.classList.add("active");
@@ -1452,7 +1489,26 @@
       renderMusicSection();
     },
 
+    toggleMusicSystem() {
+      state.musicSystemEnabled = !state.musicSystemEnabled;
+      localStorage.setItem("cloud_music_enabled", state.musicSystemEnabled ? "1" : "0");
+      if (!state.musicSystemEnabled) {
+        this.stopSong();
+        toast("Music System: OFF");
+      } else {
+        renderMusicSection();
+        if (!state.musicSongs.length) {
+          loadMusicCatalog(state.musicLastQuery || "Top Hindi & Global Hits");
+        }
+        toast("Music System: ON");
+      }
+    },
+
     playSongByIndex(idx) {
+      if (!state.musicSystemEnabled) {
+        toast("Turn ON Music System first");
+        return;
+      }
       const song = state.musicSongs[idx];
       if (!song || !song.streamUrl) {
         toast("Song stream unavailable");

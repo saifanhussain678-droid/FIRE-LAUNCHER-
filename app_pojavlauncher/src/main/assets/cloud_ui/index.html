@@ -52,6 +52,13 @@
       </div>
 
       <div class="right-launch-cluster">
+        <div class="music-sys-pill" id="header-music-sys-pill" onclick="CloudUI.toggleMusicSystem()">
+          <span>Music System</span>
+          <span class="music-sys-toggle on" id="header-music-sys-sw">
+            <span class="knob"></span>
+            <span id="header-music-sys-lbl">ON</span>
+          </span>
+        </div>
         <div class="active-inst-pill" id="top-inst-pill" onclick="CloudUI.go('vault')">Fabric 1.21.4</div>
         <button class="ignite-btn" onclick="CloudUI.launchGame()">🔥 IGNITE</button>
       </div>
@@ -524,61 +531,39 @@
       </section>
 
       <!-- ===============================================================
-           NEW MUSIC SECTION (White Monochrome Speaker Logo + All Songs)
+           MUSIC SYSTEM (Selected Option 2 UI — Crystal Glass + White Speaker)
            =============================================================== -->
       <section class="screen" id="screen-music">
         <div class="glass-panel music-shell">
-          <!-- Header + Live Search -->
+          <!-- Option 2 Top Row: Glossy Dark Square White-Speaker Badge + Wide Rounded Pill Search Bar -->
           <div class="music-top-header">
-            <div style="display:flex;align-items:center;gap:9px;">
-              <span class="white-speaker-badge lg" aria-hidden="true">
-                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="#ffffff"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>
-              </span>
-              <div>
-                <div style="font-size:14px;font-weight:900;letter-spacing:0.06em;color:#0f172a;">MUSIC</div>
-                <div style="font-size:9.5px;font-weight:700;color:#64748b;">Search &amp; play any song in background</div>
-              </div>
-            </div>
+            <span class="white-speaker-badge lg" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="#ffffff"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>
+            </span>
 
-            <div class="music-search-wrap">
+            <div class="music-pill-search">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
               <input
                 id="music-search-input"
-                class="prism-input"
-                style="flex:1;"
-                placeholder="Search any song name, singer, movie, phonk..."
+                placeholder="Search any song, singer, phonk, gaming track..."
                 oninput="CloudUI.onMusicQueryInput(this.value)"
                 onkeydown="if(event.key==='Enter')CloudUI.searchMusicNow()">
-              <button class="music-play-btn" onclick="CloudUI.searchMusicNow()">SEARCH</button>
-              <button class="mini-btn" onclick="CloudUI.pickLocalSongFile()">+ MP3</button>
             </div>
           </div>
 
-          <!-- Quick Song Categories -->
+          <!-- Option 2 Category Pills -->
           <div class="music-chips-bar" id="music-chips-bar">
             <button class="music-chip active" data-mq="Top Hindi &amp; Global Hits" onclick="CloudUI.selectMusicCategory(this, 'Top Hindi & Global Hits')">All Songs</button>
-            <button class="music-chip" data-mq="Latest Bollywood Hindi Songs" onclick="CloudUI.selectMusicCategory(this, 'Latest Bollywood Hindi Songs')">Hindi</button>
+            <button class="music-chip" data-mq="Latest Bollywood Hindi Songs" onclick="CloudUI.selectMusicCategory(this, 'Latest Bollywood Hindi Songs')">Hindi Hits</button>
             <button class="music-chip" data-mq="Top Punjabi Hits" onclick="CloudUI.selectMusicCategory(this, 'Top Punjabi Hits')">Punjabi</button>
             <button class="music-chip" data-mq="Brazilian Phonk Drift" onclick="CloudUI.selectMusicCategory(this, 'Brazilian Phonk Drift')">Phonk</button>
             <button class="music-chip" data-mq="NCS Gaming Music" onclick="CloudUI.selectMusicCategory(this, 'NCS Gaming Music')">Gaming &amp; NCS</button>
-            <button class="music-chip" data-mq="Top English Pop Hits" onclick="CloudUI.selectMusicCategory(this, 'Top English Pop Hits')">English</button>
             <button class="music-chip" data-mq="Lofi Chill Beats" onclick="CloudUI.selectMusicCategory(this, 'Lofi Chill Beats')">Lofi</button>
-            <button class="music-chip" data-mq="C418 Minecraft Soundtrack" onclick="CloudUI.selectMusicCategory(this, 'C418 Minecraft Soundtrack')">Minecraft OST</button>
-            <button class="music-chip" data-mq="__DEVICE__" onclick="CloudUI.selectMusicCategory(this, '__DEVICE__')">Phone MP3s</button>
+            <button class="music-chip" data-mq="__DEVICE__" onclick="CloudUI.selectMusicCategory(this, '__DEVICE__')">Phone MP3</button>
+            <button class="music-chip" onclick="CloudUI.pickLocalSongFile()">+ Import MP3</button>
           </div>
 
-          <!-- Active Background Now-Playing Banner -->
-          <div class="music-now-banner" id="music-now-banner">
-            <div style="display:flex;align-items:center;gap:9px;min-width:0;">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="#ffffff"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>
-              <div style="min-width:0;">
-                <div style="font-size:11.5px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" id="music-now-title">Playing Song</div>
-                <div style="font-size:9.5px;color:#94a3b8;" id="music-now-sub">Playing in background · Auto-stops on finish</div>
-              </div>
-            </div>
-            <button class="music-stop-btn" onclick="CloudUI.stopSong()">■ STOP</button>
-          </div>
-
-          <!-- 1-Box Song Rows: ( Song photo ) ( song name ) ( Play button   Stop button ) -->
+          <!-- Option 2 Song Rows: [ Rounded Cover Art ] + [ Wide White Song Box with PLAY & STOP ] -->
           <div class="music-songs-list" id="music-songs-list"></div>
         </div>
       </section>

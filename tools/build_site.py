@@ -25,7 +25,7 @@ VERSION = current_version()
 RELEASE_DATE = "23 Nov 2026"
 
 REPO_URL = "https://github.com/saifanhussain678-droid/FIRE-LAUNCHER-"
-CLOUD_APK_URL = "https://github.com/saifanhussain678-droid/FIRE-LAUNCHER-/raw/arena/e6e0cc14-fire-launcher/apk/Cloud-Launcher.apk?v=prism4"
+CLOUD_APK_URL = "https://github.com/saifanhussain678-droid/FIRE-LAUNCHER-/raw/arena/e6e0cc14-fire-launcher/apk/Cloud-Launcher.apk?v=prism5"
 RELEASES_LATEST_URL = f"{REPO_URL}/tree/arena/e6e0cc14-fire-launcher/apk"
 DOWNLOAD_PRIMARY_URL = CLOUD_APK_URL
 DOWNLOAD_ARM64_URL = CLOUD_APK_URL
@@ -782,7 +782,8 @@ def all_ui_gallery_section() -> str:
         ("assets/screenshots/fire-ui-instance-vault.png", "5. Instance Vault (Multi-Version Library)", "Left Active Instance Inspector (Prism PvP 1.21.4 · Fabric · OpenJDK 21 · MobileGlues) with IGNITE / Edit / Mods / Folder / Crash Logs + Right Multi-Instance Cartridge Grid."),
         ("assets/screenshots/fire-ui-accounts-client.png", "6. Accounts, 3D Skin/Cape Wardrobe & Cloud Client HUD", "3D Character & Rainbow Cape Studio, Account Vault (Microsoft Xbox Live, Ely.by, Offline Username), and Cloud Client PvP Toggles (120Hz FPS Pill, RGB Keystrokes + CPS, ToggleSprint, Zoom, 1080p60 Audio Recorder)."),
         ("assets/screenshots/fire-ui-controls-ingame.png", "7. In-Game Real FPS Box (Fps / Renderer / Ms) & Floating Menu", "Top-left color-shifting Real FPS Display Box (Fps - 144 / Renderer - MobileGlues / Ms - 6.9 ms), RGB Keystrokes + CPS, frosted touch controls, and floating CLOUD LAUNCHER MENU."),
-        ("assets/branding/fire-launcher-logo.png", "8. Official CLOUD LAUNCHER 3D Prismatic Flame + Cube Emblem", "Signature crystalline prism flame cradling an isometric Minecraft cube — installed across Android Adaptive Icons, Splash Screen, Top Header, Bottom Dock, and In-Game Menu."),
+        ("assets/screenshots/fire-ui-music-studio.png", "8. Music System — White Speaker Logo, Live Song Search & Background Play", "Music System ON/OFF header switch, pure-white monochrome speaker icon, instant song search (Hindi, Punjabi, Phonk, Gaming, Lofi, Local MP3), 1-box song cards with PLAY & STOP, background playback during Minecraft, and auto-end when song finishes."),
+        ("assets/branding/fire-launcher-logo.png", "9. Official CLOUD LAUNCHER 3D Prismatic Flame + Cube Emblem", "Signature crystalline prism flame cradling an isometric Minecraft cube — installed across Android Adaptive Icons, Splash Screen, Top Header, Bottom Dock, and In-Game Menu."),
     ]
     cards = []
     for src, title, desc in shots:
