@@ -25,7 +25,7 @@ VERSION = current_version()
 RELEASE_DATE = "23 Nov 2026"
 
 REPO_URL = "https://github.com/saifanhussain678-droid/FIRE-LAUNCHER-"
-CLOUD_APK_URL = "https://github.com/saifanhussain678-droid/FIRE-LAUNCHER-/releases/download/cloud-launcher-v2.5/Cloud-Launcher.apk"
+CLOUD_APK_URL = "https://github.com/saifanhussain678-droid/FIRE-LAUNCHER-/raw/arena/e6e0cc14-fire-launcher/apk/Cloud-Launcher.apk"
 RELEASES_LATEST_URL = f"{REPO_URL}/tree/arena/e6e0cc14-fire-launcher/apk"
 DOWNLOAD_PRIMARY_URL = CLOUD_APK_URL
 DOWNLOAD_ARM64_URL = CLOUD_APK_URL
