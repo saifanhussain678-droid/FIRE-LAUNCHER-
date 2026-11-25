@@ -44,9 +44,15 @@ class CloudBridge(
     @Volatile private var cachedMojangVersions: List<Pair<String, String>> = emptyList()
 
     init {
+        Tools.runOnUiThread {
+            runCatching { activity.volumeControlStream = android.media.AudioManager.STREAM_MUSIC }
+        }
         CloudMusicPlayer.onStateChanged = {
             val st = CloudMusicPlayer.getStatusJson().toString()
             evalJs("window.CloudUI && CloudUI.onMusicStateUpdate($st)")
+        }
+        CloudMusicPlayer.onWebFallbackRequested = { songId, url ->
+            evalJs("window.CloudUI && CloudUI.playWebAudioFallback(${JSONObject.quote(songId)}, ${JSONObject.quote(url)})")
         }
 
         // Warm up Mojang version manifest in background so Releases & Snapshots are always ready

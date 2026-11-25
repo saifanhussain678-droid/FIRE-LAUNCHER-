@@ -1515,6 +1515,14 @@
         return;
       }
 
+      if (webFallbackAudio) {
+        try {
+          webFallbackAudio.pause();
+          webFallbackAudio.src = "";
+        } catch (_) {}
+        webFallbackAudio = null;
+      }
+
       const nb = bridge();
       if (nb && nb.playMusic) {
         state.musicStatus = {
@@ -1579,9 +1587,42 @@
 
     onMusicStateUpdate(st) {
       if (st && typeof st === "object") {
-        state.musicStatus = st;
+        // Don't overwrite active webFallbackAudio if fallback is currently playing
+        if (!webFallbackAudio || st.playing || st.preparing) {
+          state.musicStatus = st;
+        }
       }
       renderMusicSection();
+    },
+
+    playWebAudioFallback(songId, url) {
+      if (!state.musicSystemEnabled || !url) return;
+      try {
+        if (webFallbackAudio) {
+          webFallbackAudio.pause();
+          webFallbackAudio.src = "";
+        }
+        const matched = state.musicSongs.find(s => s.id === songId);
+        const audio = new Audio(url);
+        audio.loop = false;
+        audio.volume = 1.0;
+        webFallbackAudio = audio;
+        state.musicStatus = {
+          playing: true,
+          preparing: false,
+          songId: songId,
+          title: matched ? matched.title : "Song",
+          artist: matched ? matched.artist : "",
+          artwork: matched ? matched.photo : ""
+        };
+        renderMusicSection();
+        audio.onended = () => {
+          webFallbackAudio = null;
+          state.musicStatus = { playing: false, preparing: false, songId: "", title: "", artist: "", artwork: "" };
+          renderMusicSection();
+        };
+        audio.play().catch(() => {});
+      } catch (_) {}
     },
 
     pickLocalSongFile() {
