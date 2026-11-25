@@ -553,6 +553,26 @@ class CloudBridge(
     }
 
     @JavascriptInterface
+    fun syncEquippedSkinAsset(skinUrl: String) {
+        Thread({
+            runCatching {
+                val out = File(appCtx.filesDir, "cloud_equipped_skin.png")
+                if (skinUrl.startsWith("data:image/")) {
+                    val b64 = skinUrl.substringAfter(",")
+                    val bytes = Base64.decode(b64, Base64.DEFAULT)
+                    if (bytes.size in 64..512_000) out.writeBytes(bytes)
+                } else {
+                    val clean = skinUrl.removePrefix("./").removePrefix("/")
+                    val assetPath = if (clean.startsWith("cloud_ui/")) clean else "cloud_ui/$clean"
+                    appCtx.assets.open(assetPath).use { inp ->
+                        out.writeBytes(inp.readBytes())
+                    }
+                }
+            }
+        }, "CloudSkinSync").start()
+    }
+
+    @JavascriptInterface
     fun launchGame(): String {
         val retMsg = "Igniting Minecraft..."
         Tools.runOnUiThread {
@@ -576,6 +596,53 @@ class CloudBridge(
                         PojavInstanceBridge.reload()
                     }
                 }
+
+                // Persist active username & equipped skin so GameActivity (:game process) displays them on Celestial Title Screen!
+                runCatching {
+                    val acc = PojavAccountBridge.current
+                    val uname = acc?.username ?: "Cloud_OP"
+                    prefs().edit().putString("cloud_active_username", uname).apply()
+                    val equippedOut = File(appCtx.filesDir, "cloud_equipped_skin.png")
+                    val customBytes = if (acc != null) runCatching { PojavAccountBridge.resolveCustomSkinBytes(acc) }.getOrNull() else null
+                    val localCustom = File(appCtx.filesDir, "cloud_custom_skin.png")
+                    if (customBytes != null && customBytes.isNotEmpty()) {
+                        equippedOut.writeBytes(customBytes)
+                    } else if (localCustom.isFile && localCustom.length() > 64) {
+                        localCustom.copyTo(equippedOut, overwrite = true)
+                    } else if (!equippedOut.isFile) {
+                        appCtx.assets.open("cloud_ui/skins/skin_cloud_op.png").use { equippedOut.writeBytes(it.readBytes()) }
+                    }
+                    Unit
+                }
+
+                // Ensure Cloud Client / Fabric instances have cloud_title_bridge.jar & Celestial pack ready
+                runCatching {
+                    val selInst = Instances.loadSelectedInstance()
+                    if (selInst != null) {
+                        val vid = selInst.versionId.orEmpty()
+                        val nm = selInst.name.orEmpty()
+                        if (nm.startsWith("Cloud Client", ignoreCase = true) || vid.contains("fabric", ignoreCase = true)) {
+                            val mcVer = nm.removePrefix("Cloud Client ").trim()
+                                .takeIf { it.matches(Regex("(?:1\\.\\d+(?:\\.\\d+)?|26\\.\\d+(?:\\.\\d+)?)")) }
+                                ?: vid.substringAfterLast("-", "1.21.11")
+                            val gDir = selInst.gameDirectory
+                            if (gDir != null) {
+                                Thread({
+                                    CloudClientPackBuilder.installPackAndBridge(appCtx, gDir, mcVer)
+                                }, "CloudPackPreLaunch").start()
+                                // Copy lightweight 17KB bridge jar synchronously so Fabric always loads it
+                                val modsDir = File(gDir, "mods").apply { mkdirs() }
+                                val bridgeJar = File(modsDir, CloudClientPackBuilder.BRIDGE_JAR_NAME)
+                                if (!bridgeJar.isFile) {
+                                    appCtx.assets.open("cloud_ui/${CloudClientPackBuilder.BRIDGE_JAR_NAME}").use { inp ->
+                                        bridgeJar.writeBytes(inp.readBytes())
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
                 PojavLaunchBridge.play(activity)
             } catch (t: Throwable) {
                 ExtraCore.setValue(ExtraConstants.LAUNCH_GAME, true)

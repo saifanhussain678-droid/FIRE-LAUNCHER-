@@ -330,21 +330,76 @@
     });
   });
 
-  // Auto-resolve direct APK asset if a custom release is published on FIRE-LAUNCHER-
-  fetch('https://api.github.com/repos/saifanhussain678-droid/FIRE-LAUNCHER-/releases/latest')
-    .then((r) => (r.ok ? r.json() : null))
-    .then((rel) => {
-      if (!rel || !Array.isArray(rel.assets)) return;
-      const apks = rel.assets.filter((a) => a.name && a.name.endsWith('.apk') && a.browser_download_url);
-      if (!apks.length) return;
-      const arm64 = apks.find((a) => a.name.includes('arm64')) || apks[0];
-      const lite = apks.find((a) => a.name.includes('noruntime')) || apks[0];
-      const univ = apks.find((a) => !a.name.includes('arm64') && !a.name.includes('armeabi') && !a.name.includes('noruntime')) || apks[0];
-      document.querySelectorAll('[data-direct-apk="universal"]').forEach((a) => { a.href = univ.browser_download_url; });
-      document.querySelectorAll('[data-direct-apk="arm64"]').forEach((a) => { a.href = arm64.browser_download_url; });
-      document.querySelectorAll('[data-direct-apk="lite"]').forEach((a) => { a.href = lite.browser_download_url; });
-    })
-    .catch(() => {});
+  // Clean Blue + White "Do you want to install Cloud Launcher?" Direct APK Installer Prompt
+  let installModal = document.getElementById('cloudInstallBackdrop');
+  if (!installModal) {
+    installModal = document.createElement('div');
+    installModal.id = 'cloudInstallBackdrop';
+    installModal.className = 'cloud-install-backdrop';
+    installModal.innerHTML = `
+      <div class="cloud-install-sheet" role="dialog" aria-modal="true" aria-labelledby="cloudInstallTitle">
+        <img src="assets/branding/fire-launcher-logo.png" alt="Cloud Launcher" class="cloud-install-icon">
+        <h3 class="cloud-install-title" id="cloudInstallTitle">Do you want to install Cloud Launcher?</h3>
+        <p class="cloud-install-sub" id="cloudInstallStatus">Cloud-Launcher.apk · Verified Android Package</p>
+        <div class="cloud-install-prog"><div class="cloud-install-prog-fill" id="cloudInstallFill" style="width:100%"></div></div>
+        <div class="cloud-install-actions">
+          <button type="button" class="cloud-install-cancel" id="cloudInstallCancelBtn">Cancel</button>
+          <a class="cloud-install-confirm" id="cloudInstallConfirmBtn" href="#" download="Cloud-Launcher.apk">Install</a>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(installModal);
+  }
+
+  const cancelInstallBtn = document.getElementById('cloudInstallCancelBtn');
+  const confirmInstallBtn = document.getElementById('cloudInstallConfirmBtn');
+  const installStatusEl = document.getElementById('cloudInstallStatus');
+  const installFillEl = document.getElementById('cloudInstallFill');
+
+  if (cancelInstallBtn) {
+    cancelInstallBtn.addEventListener('click', () => {
+      installModal.classList.remove('open');
+    });
+  }
+  installModal.addEventListener('click', (e) => {
+    if (e.target === installModal) installModal.classList.remove('open');
+  });
+
+  function triggerDirectApkDownload(apkUrl) {
+    const hiddenFrame = document.createElement('iframe');
+    hiddenFrame.style.display = 'none';
+    hiddenFrame.src = apkUrl;
+    document.body.appendChild(hiddenFrame);
+    setTimeout(() => { try { hiddenFrame.remove(); } catch (_) {} }, 45000);
+  }
+
+  document.querySelectorAll('[data-direct-apk]').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      const targetUrl = btn.getAttribute('href');
+      if (!targetUrl) return;
+      e.preventDefault();
+      if (confirmInstallBtn) confirmInstallBtn.setAttribute('href', targetUrl);
+      if (installStatusEl) installStatusEl.textContent = 'Downloading Cloud-Launcher.apk · Tap Install to install';
+      if (installFillEl) {
+        installFillEl.style.width = '35%';
+        setTimeout(() => { installFillEl.style.width = '78%'; }, 260);
+        setTimeout(() => {
+          installFillEl.style.width = '100%';
+          if (installStatusEl) installStatusEl.textContent = 'Cloud-Launcher.apk · Ready to install';
+        }, 700);
+      }
+      installModal.classList.add('open');
+      // Start direct APK download immediately on first tap!
+      triggerDirectApkDownload(targetUrl);
+    });
+  });
+
+  if (confirmInstallBtn) {
+    confirmInstallBtn.addEventListener('click', () => {
+      if (installStatusEl) installStatusEl.textContent = 'Opening Cloud-Launcher.apk installer...';
+      setTimeout(() => { installModal.classList.remove('open'); }, 900);
+    });
+  }
 
   // Interactive Real FPS Display Box Demo (Green / Yellow / Red + Settings ON/OFF)
   const fpsDemoState = { on: true, fps: 144, renderer: 'MobileGlues' };

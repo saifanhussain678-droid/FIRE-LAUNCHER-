@@ -94,6 +94,7 @@
         { key: "sodium", title: "Sodium (+300% FPS)" },
         { key: "lithium", title: "Lithium (Physics & Tick Boost)" },
         { key: "fpsdisplay", title: "FPS Display (Live FPS HUD)" },
+        { key: "ias", title: "In-Game Account Switcher" },
         { key: "ferrite-core", title: "FerriteCore (-45% RAM)" },
         { key: "immediatelyfast", title: "ImmediatelyFast" },
         { key: "entityculling", title: "EntityCulling" },
@@ -1158,6 +1159,10 @@
       state.skinIdx = (state.skinIdx + 1) % PRESET_SKINS.length;
       const p = PRESET_SKINS[state.skinIdx];
       state.slimModel = !!p.slim;
+      const nb = bridge();
+      if (nb && nb.syncEquippedSkinAsset) {
+        nb.syncEquippedSkinAsset(p.url);
+      }
       init3DSkins();
       renderAccountStudio();
       toast("Equipped " + p.name);

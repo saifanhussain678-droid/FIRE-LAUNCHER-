@@ -58,11 +58,12 @@ object CloudClientInstaller {
         val githubRepo: String? = null
     )
 
-    /** Curated FPS Boost Mod Pack shown in the Option 2 UI + auto-installed into mods/ */
+    /** Curated FPS Boost + Account Switcher Mod Pack shown in the Option 2 UI + auto-installed into mods/ */
     val MOD_PACK: List<ModSpec> = listOf(
         ModSpec("sodium", "Sodium (+300% FPS)", listOf("sodium"), "CaffeineMC/sodium"),
         ModSpec("lithium", "Lithium (Physics & Tick Boost)", listOf("lithium"), "CaffeineMC/lithium"),
         ModSpec("fpsdisplay", "FPS Display (Live FPS HUD)", listOf("fpsdisplay", "sodium-extra"), "FlashyReese/sodium-extra-fabric"),
+        ModSpec("ias", "In-Game Account Switcher", listOf("in-game-account-switcher"), "The-Fireplace-Minecraft-Mods/In-Game-Account-Switcher"),
         ModSpec("ferrite-core", "FerriteCore (-45% RAM)", listOf("ferrite-core"), null),
         ModSpec("immediatelyfast", "ImmediatelyFast", listOf("immediatelyfast"), "RaphiMC/ImmediatelyFast"),
         ModSpec("entityculling", "EntityCulling", listOf("entityculling"), "tr7zw/EntityCulling"),
@@ -523,12 +524,13 @@ object CloudClientInstaller {
                     }
                 }
 
-                // Bonus ultra-lightweight FPS boosters (Krypton & ModernFix) when published for mcVersion
-                for (extraSlug in listOf("krypton", "modernfix")) {
+                // Bonus ultra-lightweight FPS boosters + ModMenu when published for mcVersion
+                for (extraSlug in listOf("modmenu", "krypton", "modernfix")) {
                     runCatching { installModrinthProject(modsDir, extraSlug, mcVersion, visited) }
                 }
 
                 writeAutoActiveFpsConfigs(gameDir)
+                CloudClientPackBuilder.installPackAndBridge(appCtx, gameDir, mcVersion)
 
                 Instances.setSelectedInstance(clientInst)
                 PojavInstanceBridge.reload()

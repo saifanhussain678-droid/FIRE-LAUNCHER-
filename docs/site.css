@@ -963,3 +963,104 @@ table.spec-table {
     grid-template-columns: 1fr;
   }
 }
+
+/* ============================================================================
+ * CLEAN ANDROID-STYLE "DO YOU WANT TO INSTALL CLOUD LAUNCHER?" PROMPT
+ * ============================================================================ */
+.cloud-install-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(12, 34, 64, 0.42);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.cloud-install-backdrop.open {
+  display: flex;
+}
+.cloud-install-sheet {
+  width: min(410px, 100%);
+  border-radius: 26px;
+  padding: 24px 22px 20px;
+  background: linear-gradient(180deg, #FFFFFF 0%, #EDF7FF 100%);
+  border: 1.5px solid rgba(14, 165, 233, 0.34);
+  box-shadow: 0 24px 60px rgba(12, 34, 64, 0.24);
+  text-align: center;
+  animation: cloudPopIn 0.18s ease-out;
+}
+@keyframes cloudPopIn {
+  from { opacity: 0; transform: scale(0.94) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+.cloud-install-icon {
+  width: 68px;
+  height: 68px;
+  margin: 0 auto 12px;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 18px rgba(14, 165, 233, 0.35));
+}
+.cloud-install-title {
+  font-size: 19px;
+  font-weight: 900;
+  color: #0B223D;
+  line-height: 1.3;
+  margin: 0 0 6px;
+}
+.cloud-install-sub {
+  font-size: 13px;
+  font-weight: 600;
+  color: #365980;
+  margin: 0 0 14px;
+}
+.cloud-install-prog {
+  width: 100%;
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(14, 165, 233, 0.16);
+  overflow: hidden;
+  margin-bottom: 18px;
+}
+.cloud-install-prog-fill {
+  height: 100%;
+  width: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #38BDF8 0%, #0284C7 55%, #2563EB 100%);
+  transition: width 0.25s ease;
+}
+.cloud-install-actions {
+  display: flex;
+  gap: 10px;
+}
+.cloud-install-cancel {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(14, 165, 233, 0.28);
+  background: #FFFFFF;
+  color: #1E3A5F;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.cloud-install-confirm {
+  flex: 1.25;
+  padding: 12px 18px;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(135deg, #0EA5E9 0%, #0284C7 55%, #2563EB 100%);
+  color: #FFFFFF;
+  font-size: 14.5px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 24px rgba(2, 132, 199, 0.32);
+  cursor: pointer;
+}
+

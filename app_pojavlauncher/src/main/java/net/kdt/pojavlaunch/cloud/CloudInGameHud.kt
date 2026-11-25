@@ -335,6 +335,14 @@ object CloudInGameHud {
             }
         }
 
+        val titleHomeOverlay = CloudTitleHomeOverlay.createAndAttach(
+            activity = activity,
+            hudRoot = root,
+            onOpenCloudSettings = {
+                modalBackdrop.visibility = if (modalBackdrop.visibility == View.VISIBLE) View.GONE else View.VISIBLE
+            }
+        )
+
         root.addView(cloudMenuPill)
         root.addView(modalBackdrop)
         decor.addView(root)
@@ -377,11 +385,14 @@ object CloudInGameHud {
                 if (nowMs - lastUiUpdateMs >= 350L && frameCount > 0) {
                     lastUiUpdateMs = nowMs
 
+                    val onTitle = titleHomeOverlay.visibility == View.VISIBLE
+                    cloudMenuPill.visibility = if (onTitle) View.GONE else View.VISIBLE
+
                     val showFps = prefs.getBoolean("cloud_show_real_fps", true)
-                    fpsBox.visibility = if (showFps) View.VISIBLE else View.GONE
+                    fpsBox.visibility = if (showFps && !onTitle) View.VISIBLE else View.GONE
                     val showKs = prefs.getBoolean("cloud_keystrokes", true) || prefs.getBoolean("cloud_cps", true)
-                    cpsBadge.visibility = if (showKs) View.VISIBLE else View.GONE
-                    crosshairView.visibility = if (prefs.getBoolean("cloud_crosshair", false)) View.VISIBLE else View.GONE
+                    cpsBadge.visibility = if (showKs && !onTitle) View.VISIBLE else View.GONE
+                    crosshairView.visibility = if (prefs.getBoolean("cloud_crosshair", false) && !onTitle) View.VISIBLE else View.GONE
 
                     if (showFps) {
                         val avgNs = accumNs.toDouble() / frameCount.toDouble()
