@@ -155,6 +155,7 @@ class CloudBridge(
             val instList = PojavInstanceBridge.instances
             obj.put("selectedInstance", selInst?.name ?: "Fabric 1.21.4")
             obj.put("selectedVersion", selInst?.versionId ?: "1.21.4")
+            obj.put("selectedIsCloudClient", selInst?.name?.startsWith("Cloud Client", ignoreCase = true) == true)
 
             val instArr = JSONArray()
             for ((idx, inst) in instList.withIndex()) {
@@ -163,6 +164,7 @@ class CloudBridge(
                 io.put("id", idx.toString())
                 io.put("name", inst.name)
                 io.put("versionId", inst.versionId)
+                io.put("isCloudClient", inst.name.startsWith("Cloud Client", ignoreCase = true))
                 io.put("selected", selInst != null && selInst.source === inst.source)
                 instArr.put(io)
             }
@@ -408,9 +410,14 @@ class CloudBridge(
     }
 
     private fun installFabricOrQuiltDirect(isQuilt: Boolean, mcVersion: String, buildId: String): String {
-        val chosen = buildId.ifBlank { if (isQuilt) "0.27.1" else "0.16.10" }
-        // 1. Try Pojav's FabriclikeUtils first
         val utils = if (isQuilt) FabriclikeUtils.QUILT_UTILS else FabriclikeUtils.FABRIC_UTILS
+        val chosen = buildId.ifBlank {
+            val dynamic = runCatching { utils.downloadLoaderVersions(mcVersion) }.getOrNull()
+            dynamic?.firstOrNull { it.stable }?.version
+                ?: dynamic?.firstOrNull()?.version
+                ?: if (isQuilt) "0.27.1" else if (mcVersion.startsWith("26.")) "0.19.5" else "0.18.4"
+        }
+        // 1. Try Pojav's FabriclikeUtils first
         val viaPojav = runCatching { utils.install(mcVersion, chosen) }.getOrNull()
         if (!viaPojav.isNullOrBlank()) return viaPojav
 
@@ -977,5 +984,41 @@ class CloudBridge(
     @JavascriptInterface
     fun getMusicStatusJson(): String {
         return CloudMusicPlayer.getStatusJson().toString()
+    }
+
+    @JavascriptInterface
+    fun getCloudClientCatalogJson(): String {
+        return CloudClientInstaller.buildCatalogJson().toString()
+    }
+
+    @JavascriptInterface
+    fun selectCloudClient(mcVersion: String): Boolean {
+        val found = CloudClientInstaller.findInstalled(mcVersion) ?: return false
+        Instances.setSelectedInstance(found)
+        PojavInstanceBridge.reload()
+        evalJs("window.CloudUI && CloudUI.syncFromNative()")
+        return true
+    }
+
+    @JavascriptInterface
+    fun installCloudClient(mcVersion: String, autoLaunch: Boolean) {
+        CloudClientInstaller.installAsync(
+            context = appCtx,
+            mcVersion = mcVersion,
+            autoLaunch = autoLaunch,
+            onProgress = { active, text, pct, ver ->
+                customDlActive = active
+                customDlTitle = text
+                customDlPct = pct
+                evalJs("window.CloudUI && CloudUI.onDownloadProgress($active, ${JSONObject.quote(text)}, $pct)")
+                evalJs("window.CloudUI && CloudUI.onCloudClientProgress($active, ${JSONObject.quote(text)}, $pct, ${JSONObject.quote(ver)})")
+                if (!active) {
+                    evalJs("window.CloudUI && CloudUI.syncFromNative()")
+                }
+            },
+            onReadyToLaunch = {
+                launchGame()
+            }
+        )
     }
 }

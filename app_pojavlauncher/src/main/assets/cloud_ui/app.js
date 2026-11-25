@@ -77,6 +77,30 @@
       title: "",
       artist: "",
       artwork: ""
+    },
+    cloudClient: {
+      selectedVersion: "1.21.11",
+      installing: false,
+      installingVersion: "",
+      progress: 100,
+      status: "CLOUD CLIENT INSTALLER · Auto-Installing Sodium, Lithium, FPS Display + 6 Boost Mods for 1.21.11",
+      hudDrawerOpen: false,
+      versions: [
+        "26.3", "26.2", "26.1.2", "26.1.1", "26.1",
+        "1.21.11", "1.21.10", "1.21.9", "1.21.8", "1.21.7",
+        "1.21.6", "1.21.5", "1.21.4", "1.21.3", "1.21.2", "1.21.1"
+      ].map(v => ({ version: v, name: "Cloud Client " + v, installed: false, active: false, modsCount: 0 })),
+      mods: [
+        { key: "sodium", title: "Sodium (+300% FPS)" },
+        { key: "lithium", title: "Lithium (Physics & Tick Boost)" },
+        { key: "fpsdisplay", title: "FPS Display (Live FPS HUD)" },
+        { key: "ferrite-core", title: "FerriteCore (-45% RAM)" },
+        { key: "immediatelyfast", title: "ImmediatelyFast" },
+        { key: "entityculling", title: "EntityCulling" },
+        { key: "moreculling", title: "MoreCulling" },
+        { key: "dynamic-fps", title: "Dynamic FPS" },
+        { key: "fabric-api", title: "Fabric API" }
+      ]
     }
   };
 
@@ -151,10 +175,31 @@
         index: typeof inst.index === "number" ? inst.index : idx,
         name: inst.name || "Instance",
         versionId: inst.versionId || "1.21.4",
+        isCloudClient: !!(inst.isCloudClient || String(inst.name || "").toLowerCase().startsWith("cloud client")),
         selected: !!inst.selected
       }));
     }
     state.selectedInstance = state.instances.find(i => i.selected) || state.instances[0] || null;
+
+    if (nb.getCloudClientCatalogJson) {
+      const cat = safeParse(nb.getCloudClientCatalogJson(), null);
+      if (cat && typeof cat === "object") {
+        if (Array.isArray(cat.versions) && cat.versions.length) {
+          state.cloudClient.versions = cat.versions;
+          const actVer = cat.versions.find(v => v.active);
+          if (actVer && !state.cloudClient._userPicked) {
+            state.cloudClient.selectedVersion = actVer.version;
+          }
+        }
+        if (Array.isArray(cat.mods) && cat.mods.length) {
+          state.cloudClient.mods = cat.mods;
+        }
+        state.cloudClient.installing = !!cat.installing;
+        if (cat.installingVersion) state.cloudClient.installingVersion = cat.installingVersion;
+        if (cat.installing && cat.status) state.cloudClient.status = cat.status;
+        if (typeof cat.progress === "number" && cat.installing) state.cloudClient.progress = cat.progress;
+      }
+    }
 
     const vers = safeParse(nb.getVersionsJson(), []);
     if (Array.isArray(vers) && vers.length) {
@@ -263,9 +308,11 @@
 
     const instName = state.selectedInstance ? state.selectedInstance.name : "Install Version";
     const instVer = state.selectedInstance ? state.selectedInstance.versionId : "Tap + FORGE to create";
-    document.getElementById("top-inst-pill").textContent = instName;
-    document.getElementById("hq-active-name").textContent = instName;
-    document.getElementById("hq-active-ver").textContent = "Minecraft " + instVer + " · Ready to Launch";
+    const selIsCC = !!(state.selectedInstance && (state.selectedInstance.isCloudClient || String(instName).toLowerCase().startsWith("cloud client")));
+    const ccLogoHtml = selIsCC ? `<img src="logo.png" class="inline-cloud-logo" alt="">` : "";
+    document.getElementById("top-inst-pill").innerHTML = ccLogoHtml + escapeHtml(instName);
+    document.getElementById("hq-active-name").innerHTML = ccLogoHtml + escapeHtml(instName);
+    document.getElementById("hq-active-ver").textContent = (selIsCC ? "Cloud Client · " : "Minecraft ") + instVer + " · Ready to Launch";
 
     const rObj = (state.settings.renderers || []).find(r => r.id === state.settings.renderer);
     const rShort = rObj ? rObj.name.split("(")[0].trim().toUpperCase() : "MOBILEGLUES";
@@ -279,15 +326,23 @@
     const rack = document.getElementById("hq-rack-list");
     if (rack) {
       if (!state.instances.length) {
-        rack.innerHTML = `<div style="font-size:11px;color:#64748b;padding:8px;">No instances yet — tap <b>+ INSTALL VERSION</b> to install Vanilla, Fabric, or Forge!</div>`;
+        rack.innerHTML = `<div style="font-size:11px;color:#64748b;padding:8px;">No instances yet — tap <b>CLIENT</b> or <b>+ INSTALL VERSION</b>!</div>`;
       } else {
-        rack.innerHTML = state.instances.map((inst, idx) => `
+        rack.innerHTML = state.instances.map((inst, idx) => {
+          const isCC = !!(inst.isCloudClient || String(inst.name || "").toLowerCase().startsWith("cloud client"));
+          return `
           <div class="rack-item ${inst.selected ? "selected" : ""}" onclick="CloudUI.selectInstance(${idx})">
-            <div class="rack-badge">${escapeHtml((inst.name || "M").slice(0, 2).toUpperCase())}</div>
-            <div class="rack-name">${escapeHtml(inst.name)} <span style="color:#64748b;font-weight:600;font-size:10px;">(${escapeHtml(inst.versionId)})</span></div>
+            <div class="rack-badge" style="${isCC ? "background:linear-gradient(135deg,#e0f2fe,#ede9fe);padding:2px;" : ""}">
+              ${isCC ? `<img src="logo.png" alt="" style="width:20px;height:20px;object-fit:contain;">` : escapeHtml((inst.name || "M").slice(0, 2).toUpperCase())}
+            </div>
+            <div class="rack-name">
+              ${isCC ? `<img src="logo.png" class="inline-cloud-logo" alt="">` : ""}${escapeHtml(inst.name)}
+              ${isCC ? `<span class="cc-badge" style="font-size:8px;padding:1px 6px;margin-left:4px;">CLOUD CLIENT</span>` : `<span style="color:#64748b;font-weight:600;font-size:10px;">(${escapeHtml(inst.versionId)})</span>`}
+            </div>
             <span style="font-size:10px;font-weight:800;color:#0284c7;">${inst.selected ? "ACTIVE" : "SELECT"}</span>
           </div>
-        `).join("");
+        `;
+        }).join("");
       }
     }
   }
@@ -510,16 +565,25 @@
     const grid = document.getElementById("vault-grid");
     if (!grid) return;
     if (!state.instances.length) {
-      grid.innerHTML = `<div class="item-card"><div class="setting-title">No Instances Created Yet</div><div class="setting-sub">Open Version Studio (+ FORGE) to install Minecraft Vanilla, Fabric, Forge, NeoForge, or Quilt.</div><button class="mini-btn primary" onclick="CloudUI.go('forge')">+ OPEN VERSION STUDIO</button></div>`;
+      grid.innerHTML = `<div class="item-card"><div class="setting-title">No Instances Created Yet</div><div class="setting-sub">Open CLOUD CLIENT or Version Studio (+ FORGE) to install Minecraft!</div><button class="mini-btn primary" onclick="CloudUI.go('client')">OPEN CLOUD CLIENT</button></div>`;
       return;
     }
-    grid.innerHTML = state.instances.map((inst, idx) => `
+    grid.innerHTML = state.instances.map((inst, idx) => {
+      const isCC = !!(inst.isCloudClient || String(inst.name || "").toLowerCase().startsWith("cloud client"));
+      return `
       <div class="item-card" style="${inst.selected ? "border:2px solid #38bdf8;" : ""}">
         <div class="item-card-head">
-          <div class="item-icon">${escapeHtml((inst.name || "M").slice(0, 2).toUpperCase())}</div>
-          <div style="min-width:0;">
-            <div class="setting-title" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(inst.name)}</div>
-            <div class="setting-sub">Version: ${escapeHtml(inst.versionId)}</div>
+          ${isCC
+            ? `<div class="item-icon" style="background:linear-gradient(135deg,#e0f2fe,#ede9fe);padding:4px;"><img src="logo.png" alt="Cloud" style="width:100%;height:100%;object-fit:contain;"></div>`
+            : `<div class="item-icon">${escapeHtml((inst.name || "M").slice(0, 2).toUpperCase())}</div>`
+          }
+          <div style="min-width:0;flex:1;">
+            <div class="setting-title" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+              ${isCC ? `<img src="logo.png" class="inline-cloud-logo" alt="">` : ""}${escapeHtml(inst.name)}
+            </div>
+            <div class="setting-sub">
+              ${isCC ? `<span class="cc-badge" style="font-size:8.5px;padding:1px 7px;margin-right:4px;">CLOUD CLIENT</span>` : ""}Version: ${escapeHtml(inst.versionId)}
+            </div>
           </div>
         </div>
         <div class="item-actions">
@@ -529,7 +593,8 @@
           <button class="mini-btn danger" onclick="CloudUI.deleteInstance(${idx})">DELETE</button>
         </div>
       </div>
-    `).join("");
+    `;
+    }).join("");
   }
 
   function renderSettings() {
@@ -663,7 +728,70 @@
   }
 
   function renderClientModules() {
+    const cc = state.cloudClient;
+    const selVer = cc.selectedVersion || "1.21.11";
+    const verListEl = document.getElementById("cc-versions-list");
+    const modListEl = document.getElementById("cc-mods-list");
     const modHost = document.getElementById("client-modules-list");
+    const statusEl = document.getElementById("cc-installer-status");
+    const fillEl = document.getElementById("cc-installer-fill");
+    const ctaTextEl = document.getElementById("cc-cta-text");
+
+    const curVerObj = (cc.versions || []).find(v => v.version === selVer) || { version: selVer, installed: false, modsCount: 0 };
+
+    if (statusEl) {
+      if (cc.installing) {
+        statusEl.textContent = cc.status || `CLOUD CLIENT INSTALLER · Installing Cloud Client ${selVer}...`;
+      } else if (curVerObj.installed) {
+        statusEl.textContent = `CLOUD CLIENT READY · Cloud Client ${selVer} Installed (${curVerObj.modsCount || 9} FPS Boost Mods Active on Launch)`;
+      } else {
+        statusEl.textContent = `CLOUD CLIENT INSTALLER · Auto-Installing Sodium, Lithium, FPS Display + 6 Boost Mods for ${selVer}`;
+      }
+    }
+    if (fillEl) {
+      fillEl.style.width = (cc.installing ? Math.max(8, Math.min(100, cc.progress || 25)) : 100) + "%";
+    }
+    if (ctaTextEl) {
+      if (cc.installing && cc.installingVersion === selVer) {
+        ctaTextEl.textContent = `INSTALLING CLOUD CLIENT ${selVer}... (${Math.round(cc.progress || 15)}%)`;
+      } else if (curVerObj.installed) {
+        ctaTextEl.textContent = `LAUNCH CLOUD CLIENT ${selVer} (MODS ACTIVE)`;
+      } else {
+        ctaTextEl.textContent = `INSTALL & LAUNCH CLOUD CLIENT ${selVer}`;
+      }
+    }
+
+    if (verListEl) {
+      verListEl.innerHTML = (cc.versions || []).map(v => {
+        const isSel = v.version === selVer;
+        return `
+          <div class="cc-version-row ${isSel ? "selected" : ""}" onclick="CloudUI.selectCloudClientVersion('${escapeAttr(v.version)}')">
+            <div class="cc-ver-left">
+              <img class="cc-ver-logo" src="logo.png" alt="Cloud Client">
+              <span class="cc-ver-title">Cloud Client ${escapeHtml(v.version)}</span>
+              ${isSel ? `<span class="cc-selected-tag">[SELECTED <span class="cc-green-dot">✓</span>]</span>` : ""}
+              ${v.installed ? `<span class="cc-installed-tag">✓ INSTALLED</span>` : ""}
+            </div>
+            <span class="cc-badge">CLOUD CLIENT</span>
+          </div>
+        `;
+      }).join("");
+    }
+
+    if (modListEl && modHost) {
+      modListEl.style.display = cc.hudDrawerOpen ? "none" : "flex";
+      modHost.style.display = cc.hudDrawerOpen ? "flex" : "none";
+      modListEl.innerHTML = (cc.mods || []).map(m => `
+        <div class="cc-mod-pill">
+          <div class="cc-mod-left">
+            <span class="cc-mod-check">✓</span>
+            <span class="cc-mod-name">${escapeHtml(m.title)}</span>
+          </div>
+          <span class="cc-mod-tag">${curVerObj.installed ? "ACTIVE ✓" : "AUTO-INSTALL"}</span>
+        </div>
+      `).join("");
+    }
+
     if (!modHost) return;
     const mods = [
       { key: "fpsBoxEnabled", nKey: "showRealFps", name: "Real FPS Display Box", sub: "Fps - | Renderer - | Ms - (Green / Yellow / Red)" },
@@ -1666,6 +1794,107 @@
     previewDownloader(customLabel) {
       this.onDownloadProgress(true, customLabel || "Downloading Minecraft 1.21.4 Assets...", 64);
       setTimeout(() => this.onDownloadProgress(false, "", 100), 3200);
+    },
+
+    syncState() {
+      this.syncFromNative();
+    },
+
+    selectCloudClientVersion(ver) {
+      state.cloudClient.selectedVersion = ver;
+      state.cloudClient._userPicked = true;
+      const nb = bridge();
+      const vObj = (state.cloudClient.versions || []).find(v => v.version === ver);
+      if (vObj && vObj.installed && nb && nb.selectCloudClient) {
+        nb.selectCloudClient(ver);
+      }
+      renderClientModules();
+    },
+
+    toggleClientHudDrawer() {
+      state.cloudClient.hudDrawerOpen = !state.cloudClient.hudDrawerOpen;
+      renderClientModules();
+    },
+
+    launchSelectedCloudClient() {
+      const ver = state.cloudClient.selectedVersion || "1.21.11";
+      const vObj = (state.cloudClient.versions || []).find(v => v.version === ver);
+      const nb = bridge();
+      if (vObj && vObj.installed && nb && nb.selectCloudClient) {
+        nb.selectCloudClient(ver);
+        this.launchGame();
+      } else {
+        this.installAndLaunchCloudClient(true);
+      }
+    },
+
+    installAndLaunchCloudClient(autoLaunch) {
+      const ver = state.cloudClient.selectedVersion || "1.21.11";
+      if (state.cloudClient.installing) {
+        toast("Cloud Client installer is already running...");
+        return;
+      }
+      const vObj = (state.cloudClient.versions || []).find(v => v.version === ver);
+      const nb = bridge();
+      if (autoLaunch && vObj && vObj.installed && nb && nb.selectCloudClient) {
+        nb.selectCloudClient(ver);
+        toast("Launching Cloud Client " + ver + " with FPS Boost Mods!");
+        this.launchGame();
+        return;
+      }
+
+      state.cloudClient.installing = true;
+      state.cloudClient.installingVersion = ver;
+      state.cloudClient.progress = 8;
+      state.cloudClient.status = `CLOUD CLIENT INSTALLER · Auto-Installing Sodium, Lithium, FPS Display + 6 Boost Mods for ${ver}...`;
+      renderClientModules();
+
+      if (nb && nb.installCloudClient) {
+        toast((autoLaunch ? "Installing & Launching " : "Installing ") + "Cloud Client " + ver + "...");
+        nb.installCloudClient(ver, !!autoLaunch);
+        return;
+      }
+
+      // Browser preview simulation
+      let p = 15;
+      const timer = setInterval(() => {
+        p += 25;
+        if (p >= 100) {
+          clearInterval(timer);
+          state.cloudClient.installing = false;
+          state.cloudClient.progress = 100;
+          if (vObj) { vObj.installed = true; vObj.modsCount = 9; }
+          state.instances.unshift({
+            index: 0,
+            name: "Cloud Client " + ver,
+            versionId: "fabric-loader-0.19.5-" + ver,
+            isCloudClient: true,
+            selected: true
+          });
+          state.selectedInstance = state.instances[0];
+          renderHeaderAndHQ();
+          renderClientModules();
+          toast("Cloud Client " + ver + " Installed with 9 FPS Boost Mods!");
+        } else {
+          state.cloudClient.progress = p;
+          renderClientModules();
+        }
+      }, 350);
+    },
+
+    onCloudClientProgress(active, text, pct, ver) {
+      state.cloudClient.installing = !!active;
+      if (ver) state.cloudClient.installingVersion = ver;
+      if (text) state.cloudClient.status = text;
+      if (typeof pct === "number") state.cloudClient.progress = pct;
+      if (!active) {
+        refreshStateFromNative();
+        renderHeaderAndHQ();
+        if (text) toast(text);
+      }
+      if (state.screen === "client") {
+        renderClientModules();
+      }
     },
 
     onDownloadProgress(active, label, pct) {
