@@ -85,7 +85,9 @@ object RecordingOptions {
             codec.isEncoder && codec.supportedTypes.any { it.equals("video/avc", true) } && runCatching {
                 val caps = codec.getCapabilitiesForType("video/avc")
                 MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface in caps.colorFormats &&
-                    caps.videoCapabilities.areSizeAndRateSupported(config.width, config.height, config.fps.toDouble())
+                    (caps.videoCapabilities?.areSizeAndRateSupported(
+                        config.width, config.height, config.fps.toDouble()
+                    ) ?: false)
             }.getOrDefault(false)
         }
         val sorted = all.sortedBy { codec ->
