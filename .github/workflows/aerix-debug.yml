@@ -286,9 +286,7 @@ jobs:
               while IFS= read -r chunk || [ -n "$chunk" ]; do echo "::error title=build-log-gzip-base64::$chunk"; done
             # TEMPORARY diagnostic: readable error excerpt in small annotations so the
             # failure reason is visible on the run page without the remote log host.
-            grep -E "^e: |error:|What went wrong|FAILURE:|> Task .* FAILED|Caused by:|Could not resolve|Could not find|Unresolved reference|Execution failed|requires libraries and applications" build.log | tail -40 | tr '\n' '|' > /tmp/errlines.txt
-            awk '/What went wrong/{p=1} p' build.log | tail -25 | tr '\n' '|' > /tmp/errdetail.txt
-            cat /tmp/errlines.txt /tmp/errdetail.txt | tr '|' '\n' | grep -v '^$' | tr '\n' '|' > /tmp/errlines.txt
+            tail -120 build.log | tr '\n' '|' > /tmp/errlines.txt
             split -b 1100 -d -a 1 /tmp/errlines.txt /tmp/errchunk. && for f in /tmp/errchunk.*; do echo "::error title=gradle-error-readable::$(cat "$f")"; done
           fi
           exit "$code"
