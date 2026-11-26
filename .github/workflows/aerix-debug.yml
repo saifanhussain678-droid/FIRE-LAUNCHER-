@@ -286,8 +286,8 @@ jobs:
               while IFS= read -r chunk || [ -n "$chunk" ]; do echo "::error title=build-log-gzip-base64::$chunk"; done
             # TEMPORARY diagnostic: readable error excerpt in small annotations so the
             # failure reason is visible on the run page without the remote log host.
-            tail -120 build.log | tr '\n' '|' > /tmp/errlines.txt
-            split -b 1100 -d -a 1 /tmp/errlines.txt /tmp/errchunk. && for f in /tmp/errchunk.*; do echo "::error title=gradle-error-readable::$(cat "$f")"; done
+            tail -60 build.log | tr '\n' '|' | fold -w 1100 |
+              while IFS= read -r chunk || [ -n "$chunk" ]; do echo "::error title=gradle-error-readable::$chunk"; done
           fi
           exit "$code"
 
