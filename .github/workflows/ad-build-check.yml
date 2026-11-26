@@ -1,0 +1,55 @@
+name: Ad Build Check (debug)
+
+# Diagnostic-only workflow: builds the launcher app module (Java compilation +
+# dependency resolution) and reports the real Gradle error as small annotations,
+# so the failure reason is readable without downloading the (large) run log.
+# Not part of the release pipeline; safe to delete once the build is green.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.14.3"
+
+      - name: Compile launcher app (Java)
+        shell: bash
+        run: |
+          set +e
+          ./gradlew :app_pojavlauncher:compileNoruntimeNightlyJavaWithJavac --console=plain > build.log 2>&1
+          code=$?
+          echo "gradle exit code: $code"
+          if [ "$code" -ne 0 ]; then
+            # Chunk the interesting log lines into small annotations that are fully
+            # readable on the run page (long annotations get truncated by GitHub).
+            awk '/^e: |error:|What went wrong|FAILURE:|> Task .*FAILED|Caused by:|Could not resolve|Could not find|Unresolved reference/ {print}' build.log \
+              | tail -60 > errors.txt
+            wc -c errors.txt
+            chunk=$(cut -c1-1400 errors.txt)
+            echo "::error title=gradle-error-1::$chunk"
+            rest=$(cut -c1401- errors.txt)
+            if [ -n "$rest" ]; then
+              echo "::error title=gradle-error-2::$(echo "$rest" | cut -c1-1400)"
+            fi
+            exit 1
+          fi
+          echo "::notice title=ad-build-check::Compilation succeeded"
