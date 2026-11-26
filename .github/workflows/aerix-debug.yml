@@ -282,7 +282,7 @@ jobs:
           if [ "$code" -ne 0 ]; then
             # TEMPORARY diagnostic: readable error excerpt in small annotations so the
             # failure reason is visible on the run page without the remote log host.
-            grep -nE "^e: |FAILED|What went wrong|Caused by|Execution failed|^> Task.*FAILED" build.log | tail -60 | tr '\n' '|' | fold -w 1200 |
+            grep -nE "^e: |error:|FAILED|What went wrong|Caused by|Execution failed|^> Task.*FAILED" build.log | tail -60 | tr '\n' '|' | fold -w 1200 |
               while IFS= read -r chunk || [ -n "$chunk" ]; do echo "::error title=gradle-error-readable::$chunk"; done
           fi
           exit "$code"
