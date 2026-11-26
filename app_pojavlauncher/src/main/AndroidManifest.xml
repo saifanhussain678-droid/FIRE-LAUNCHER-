@@ -57,7 +57,7 @@
         tools:ignore="UnusedAttribute">
         <!-- Start.io (formerly StartApp) ads: app ID 210869947 for the Cloud Launcher APK.
              With this meta-data the SDK can initialise itself; PojavApplication also passes the
-             same ID to StartAppSDK.initParams explicitly (see StartIoAds). -->
+             same ID to StartAppSDK.init explicitly (see StartIoAds). -->
         <meta-data
             android:name="com.startapp.sdk.APPLICATION_ID"
             android:value="210869947" />

@@ -233,6 +233,8 @@ public class LauncherActivity extends BaseActivity {
         // Must run before BaseActivity.onCreate, which reads setFullscreen()
         AerixPreferences.INSTANCE.init(getApplicationContext());
         super.onCreate(savedInstanceState);
+        // Start.io splash ad: must be requested before setContentView (per SDK docs).
+        StartIoAds.showSplash(this, savedInstanceState);
         net.kdt.pojavlaunch.aerix.social.SocialBackend.attach(getApplicationContext());
         net.kdt.pojavlaunch.aerix.social.SocialMessagingService.markLauncherSessionOpened(getApplicationContext());
         handleSocialSignIn(getIntent());
