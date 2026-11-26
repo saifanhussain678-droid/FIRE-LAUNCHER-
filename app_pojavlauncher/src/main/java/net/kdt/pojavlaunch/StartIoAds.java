@@ -11,7 +11,6 @@ import androidx.annotation.Nullable;
 import com.startapp.sdk.adsbase.Ad;
 import com.startapp.sdk.adsbase.StartAppAd;
 import com.startapp.sdk.adsbase.StartAppSDK;
-import com.startapp.sdk.adsbase.SplashConfig;
 import com.startapp.sdk.adsbase.adlisteners.AdEventListener;
 
 /**
@@ -38,19 +37,18 @@ public final class StartIoAds {
     private StartIoAds() {}
 
     /**
-     * Initialise the Start.io SDK with the Cloud Launcher's app ID and report the user
-     * consent flag right after initialisation, as the SDK requires.
+     * Initialise the Start.io SDK with the Cloud Launcher's app ID and enable consent
+     * right after initialisation, as the SDK requires consent to serve ads.
      * Safe to call more than once; only the first call does work.
      */
     public static void init(Context context) {
         if (sInitialised) return;
         sInitialised = true;
         try {
-            StartAppSDK.init(context.getApplicationContext(), APP_ID);
-            // Report the user consent flag ("pas") immediately after init: without it the
-            // SDK will not target (and may not serve) ads.
-            StartAppSDK.setUserConsent(context.getApplicationContext(),
-                    "pas", System.currentTimeMillis(), true);
+            StartAppSDK.initParams(context.getApplicationContext(), APP_ID).init();
+            // Enable the Start.io consent flag; without it the SDK will not target
+            // (and may not serve) ads.
+            StartAppSDK.enableConsent(context.getApplicationContext(), true);
             Log.i(TAG, "Start.io SDK initialised with app ID " + APP_ID);
         } catch (Throwable t) {
             // Roll the flag back so a later entry point can try again.
@@ -65,7 +63,7 @@ public final class StartIoAds {
      */
     public static void showSplash(Activity activity, @Nullable Bundle savedInstanceState) {
         try {
-            StartAppAd.showSplash(activity, savedInstanceState, new SplashConfig());
+            StartAppAd.showSplash(activity, savedInstanceState);
             Log.d(TAG, "Splash ad requested");
         } catch (Throwable t) {
             Log.w(TAG, "Splash ad show failed", t);
