@@ -2,7 +2,6 @@ package net.kdt.pojavlaunch;
 
 import android.app.Activity;
 import android.content.Context;
-import android.os.Bundle;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -18,9 +17,8 @@ import com.startapp.sdk.adsbase.adlisteners.AdEventListener;
  *
  * <p>App ID 210869947 is the publisher app registered for this APK on the Start.io portal.
  * The SDK is initialised once from {@link PojavApplication}; splash ads are shown automatically
- * by the SDK on app start, the interstitial is preloaded while the launcher sits idle and then
- * shown at natural break points (before a game launch), and the exit ad is shown when the user
- * leaves through the back button.
+ * by the SDK on app start, and the interstitial is preloaded while the launcher sits idle and
+ * then shown at natural break points (before a game launch).
  *
  * <p>Every call is defensive: ads are an income stream, not a launcher feature, and a failure
  * anywhere here must never break launching or navigation.
@@ -101,34 +99,5 @@ public final class StartIoAds {
         } catch (Throwable t) {
             Log.w(TAG, "Interstitial ad show failed", t);
         }
-    }
-
-    /** Show the exit ad, if one is available, before the activity finishes. */
-    public static void onBackPressed(Activity activity) {
-        try {
-            ad(activity).onBackPressed();
-        } catch (Throwable t) {
-            Log.w(TAG, "Exit ad failed", t);
-        }
-    }
-
-    /**
-     * Forward the activity lifecycle to the ad instance so it keeps its state across pauses,
-     * configuration changes and restores.
-     */
-    public static void onResume(Activity activity) {
-        try { ad(activity).onResume(); } catch (Throwable ignored) {}
-    }
-
-    public static void onPause(Activity activity) {
-        try { ad(activity).onPause(); } catch (Throwable ignored) {}
-    }
-
-    public static void onSaveInstanceState(Activity activity, Bundle outState) {
-        try { ad(activity).onSaveInstanceState(outState); } catch (Throwable ignored) {}
-    }
-
-    public static void onRestoreInstanceState(Activity activity, Bundle savedInstanceState) {
-        try { ad(activity).onRestoreInstanceState(savedInstanceState); } catch (Throwable ignored) {}
     }
 }

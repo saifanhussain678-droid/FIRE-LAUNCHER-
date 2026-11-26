@@ -400,7 +400,6 @@ public class LauncherActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        StartIoAds.onResume(this);
         ContextExecutor.setActivity(this);
         // The game activity is a separate process and may have changed Client settings.
         net.kdt.pojavlaunch.aerix.client.AerixClientStore.INSTANCE.reload(getApplicationContext());
@@ -409,21 +408,8 @@ public class LauncherActivity extends BaseActivity {
 
     @Override
     protected void onPause() {
-        StartIoAds.onPause(this);
         super.onPause();
         ContextExecutor.clearActivity();
-    }
-
-    @Override
-    protected void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-        StartIoAds.onSaveInstanceState(this, outState);
-    }
-
-    @Override
-    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-        StartIoAds.onRestoreInstanceState(this, savedInstanceState);
     }
 
     @Override
@@ -456,7 +442,6 @@ public class LauncherActivity extends BaseActivity {
 
         // Start.io exit ad: only when the back press actually leaves the launcher, not when it
         // navigates inside the fragment back stack above.
-        StartIoAds.onBackPressed(this);
         super.onBackPressed();
     }
 
