@@ -156,6 +156,9 @@ public class PojavApplication extends MGApplication {
 			startActivity(ferrorIntent);
 		}
 		initRendererPlugins();
+		// Start.io ads for the Cloud Launcher APK. Only the main (":launcher") process carries
+		// the ad UI; the recorder and mgquery processes returned above.
+		StartIoAds.init(this);
 		try {
 			net.kdt.pojavlaunch.aerix.discord.AerixDiscordPresence.captureApplicationContext(this);
 			// Passive load ONLY: never auto-open WebSockets or background services until an Activity opens.

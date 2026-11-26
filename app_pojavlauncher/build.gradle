@@ -513,6 +513,10 @@ dependencies {
     implementation 'net.sourceforge.htmlcleaner:htmlcleaner:2.29'
     implementation 'com.bytedance:bytehook:1.1.1'
 
+    // Start.io (formerly StartApp) ads for the Cloud Launcher APK. App ID 210869947 is
+    // configured in AndroidManifest.xml and net.kdt.pojavlaunch.StartIoAds.
+    implementation 'com.startapp:inapp-sdk:5.3.2'
+
     implementation 'com.github.MojoLauncher:alsoft-android-aar:f369161d5f'
 
     implementation project(":glfw:jni_bindings")

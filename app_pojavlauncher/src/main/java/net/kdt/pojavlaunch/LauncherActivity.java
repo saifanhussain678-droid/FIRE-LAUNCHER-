@@ -140,6 +140,9 @@ public class LauncherActivity extends BaseActivity {
         }
         String normalizedVersionId = MoJsonExtras.normalizeVersionId(selectedInstance.versionId);
         JVersionList.Version mcVersion = MoJsonExtras.getListedVersion(normalizedVersionId);
+        // Start.io interstitial: a game launch is a natural break point. showAd is
+        // non-blocking, so the launch pipeline proceeds whether or not an ad is ready.
+        StartIoAds.showInterstitial(this);
         new MoJsonDownloader().start(
                 this.getAssets(),
                 mcVersion,
@@ -256,6 +259,8 @@ public class LauncherActivity extends BaseActivity {
             return insets;
         });
         setContentView(R.layout.activity_pojav_launcher);
+        // Start.io interstitial: load early so it is ready at the next natural break point.
+        StartIoAds.preload(this);
         MoJsonDownloader.prepareSubstitutionMap(getAssets());
 
         try {
@@ -395,6 +400,7 @@ public class LauncherActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        StartIoAds.onResume(this);
         ContextExecutor.setActivity(this);
         // The game activity is a separate process and may have changed Client settings.
         net.kdt.pojavlaunch.aerix.client.AerixClientStore.INSTANCE.reload(getApplicationContext());
@@ -403,8 +409,21 @@ public class LauncherActivity extends BaseActivity {
 
     @Override
     protected void onPause() {
+        StartIoAds.onPause(this);
         super.onPause();
         ContextExecutor.clearActivity();
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        StartIoAds.onSaveInstanceState(this, outState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        StartIoAds.onRestoreInstanceState(this, savedInstanceState);
     }
 
     @Override
@@ -435,6 +454,9 @@ public class LauncherActivity extends BaseActivity {
             }
         }
 
+        // Start.io exit ad: only when the back press actually leaves the launcher, not when it
+        // navigates inside the fragment back stack above.
+        StartIoAds.onBackPressed(this);
         super.onBackPressed();
     }
 
