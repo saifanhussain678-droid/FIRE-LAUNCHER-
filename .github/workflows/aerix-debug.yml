@@ -276,12 +276,7 @@ jobs:
       - name: Build debug APK and the Aerix client mod JAR
         shell: bash
         run: |
-          ./gradlew :aerix_client_mod:jar :app_pojavlauncher:assembleNoruntimeNightly --console=plain 2>&1 | tee /tmp/gradle-build.log
-          if ! grep -qiE "BUILD SUCCESSFUL" /tmp/gradle-build.log; then
-            echo "::error title=Gradle build failed::Last 80 lines of build log"
-            tail -n 80 /tmp/gradle-build.log | sed 's/^/  /' || true
-            exit 1
-          fi
+          ./gradlew :aerix_client_mod:jar :app_pojavlauncher:assembleNoruntimeNightly --console=plain
 
       - name: Check it is really the Aerix Nightly build
         id: verify
