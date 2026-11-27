@@ -2,7 +2,6 @@ package net.kdt.pojavlaunch;
 
 import android.app.Activity;
 import android.content.Context;
-import android.os.Bundle;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -11,15 +10,22 @@ import androidx.annotation.Nullable;
 import com.startapp.sdk.adsbase.Ad;
 import com.startapp.sdk.adsbase.StartAppAd;
 import com.startapp.sdk.adsbase.StartAppSDK;
+import com.startapp.sdk.adsbase.adlisteners.AdDisplayListener;
 import com.startapp.sdk.adsbase.adlisteners.AdEventListener;
 
 /**
  * Start.io (formerly StartApp) ads for the Cloud Launcher APK.
  *
  * <p>App ID 210869947 is the publisher app registered for this APK on the Start.io portal.
- * The SDK is initialised once from {@link PojavApplication}; the splash ad is shown from
- * {@link LauncherActivity#onCreate}, and the interstitial is shown at natural break points
- * (a game launch), loading on demand so it appears even if the cached ad expired.
+ * The SDK is initialised once from {@link PojavApplication}. On launch, {@link SplashActivity}
+ * requests a full-screen interstitial ad through {@link #showInterstitial(Activity, AdDisplayListener)}
+ * and only routes to the launcher once the ad has been shown and dismissed (or failed, with a
+ * safety-net timeout). A second interstitial is shown at natural break points such as a game
+ * launch.
+ *
+ * <p>Note: the SDK's {@code showSplash} API is deprecated in 5.3.2 and is a silent no-op when the
+ * publisher has not enabled a splash placement, so the launch ad is driven as an interstitial
+ * with explicit display listeners instead — that is the supported, reliable path.
  *
  * <p>Every call is defensive: ads are an income stream, not a launcher feature, and a failure
  * anywhere here must never break launching or navigation.
@@ -57,19 +63,6 @@ public final class StartIoAds {
         }
     }
 
-    /**
-     * Show the Start.io splash ad with the default template. Call from the launcher's
-     * {@code onCreate} before {@code setContentView}.
-     */
-    public static void showSplash(Activity activity, @Nullable Bundle savedInstanceState) {
-        try {
-            StartAppAd.showSplash(activity, savedInstanceState);
-            Log.d(TAG, "Splash ad requested");
-        } catch (Throwable t) {
-            Log.w(TAG, "Splash ad show failed", t);
-        }
-    }
-
     /** The shared interstitial ad instance, created lazily after {@link #init}. */
     @Nullable
     private static StartAppAd ad(Context context) {
@@ -98,19 +91,56 @@ public final class StartIoAds {
         return instance;
     }
 
-    /** Preload the interstitial so it is ready at a natural break point. */
-    public static void preload(Activity activity) {
+    /**
+     * Show the interstitial ad now, with explicit display callbacks. Used by {@link SplashActivity}
+     * so it knows exactly when the ad is displayed, dismissed or failed — letting it hold the
+     * launcher behind the ad without any deprecated splash API.
+     *
+     * <p>If a loaded ad is cached it is shown immediately; otherwise a fresh ad is requested and
+     * shown the moment it arrives. {@code listener.adNotDisplayed} is always invoked if the ad
+     * cannot be shown, so the caller never waits forever.
+     */
+    public static void showInterstitial(Activity activity, AdDisplayListener listener) {
         try {
-            ad(activity);
+            StartAppAd existing = ad(activity);
+            if (existing != null && existing.showAd(listener)) {
+                Log.d(TAG, "Interstitial shown from cached ad");
+                return;
+            }
+            // No cached, ready ad: load on demand and show when it arrives.
+            StartAppAd onDemand = new StartAppAd(activity.getApplicationContext());
+            sAd = onDemand;
+            onDemand.loadAd(new AdEventListener() {
+                @Override
+                public void onReceiveAd(@NonNull Ad ad) {
+                    try {
+                        if (onDemand.showAd(listener)) {
+                            Log.d(TAG, "Interstitial shown from on-demand load");
+                        }
+                    } catch (Throwable t) {
+                        Log.w(TAG, "Interstitial show after load failed", t);
+                        listener.adNotDisplayed(ad);
+                    }
+                }
+
+                @Override
+                public void onFailedToReceiveAd(@Nullable Ad ad) {
+                    Log.w(TAG, "Interstitial on-demand load failed: "
+                            + (ad == null ? "unknown error" : ad.getErrorMessage()));
+                    listener.adNotDisplayed(ad);
+                }
+            });
+            Log.d(TAG, "Interstitial not ready; requested on demand");
         } catch (Throwable t) {
-            Log.w(TAG, "Interstitial preload failed", t);
+            Log.w(TAG, "Interstitial show failed", t);
+            listener.adNotDisplayed(null);
         }
     }
 
     /**
-     * Show the interstitial now. If a loaded ad is cached it is shown immediately;
-     * otherwise a fresh ad is requested and shown the moment it arrives, so the ad
-     * still appears even if the cached one expired before this call.
+     * Show the interstitial now with no display listener (used at natural break points such as a
+     * game launch). If a loaded ad is cached it is shown immediately; otherwise a fresh ad is
+     * requested and shown the moment it arrives.
      */
     public static void showInterstitial(Activity activity) {
         try {
@@ -119,7 +149,6 @@ public final class StartIoAds {
                 Log.d(TAG, "Interstitial shown from cached ad");
                 return;
             }
-            // No cached, ready ad: load on demand and show when it arrives.
             StartAppAd onDemand = new StartAppAd(activity.getApplicationContext());
             sAd = onDemand;
             onDemand.loadAd(new AdEventListener() {
@@ -143,6 +172,15 @@ public final class StartIoAds {
             Log.d(TAG, "Interstitial not ready; requested on demand");
         } catch (Throwable t) {
             Log.w(TAG, "Interstitial show failed", t);
+        }
+    }
+
+    /** Preload the interstitial so it is ready at a natural break point. */
+    public static void preload(Activity activity) {
+        try {
+            ad(activity);
+        } catch (Throwable t) {
+            Log.w(TAG, "Interstitial preload failed", t);
         }
     }
 }

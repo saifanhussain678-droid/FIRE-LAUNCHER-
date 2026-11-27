@@ -8,8 +8,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -21,51 +19,29 @@ import net.kdt.pojavlaunch.tasks.AsyncAssetManager;
 
 import net.kdt.pojavlaunch.R;
 
+/**
+ * Runs the storage-permission check and, once storage is confirmed, launches the main
+ * {@link LauncherActivity}. The Start.io launch ad is shown one step earlier by
+ * {@link SplashActivity}, so this activity keeps only the storage-gate + hand-off flow.
+ */
 public class TestStorageActivity extends Activity {
     private final int REQUEST_STORAGE_REQUEST_CODE = 1;
     private AlertDialog mPermissionRequestDialog;
     private boolean mPermsRequired = false;
     private boolean mPermsDialogShown = false;
 
-    // Start.io splash-ad gating. The splash ad is shown on this entry activity first;
-    // the launcher only opens once the ad has been dismissed. mSplashWasShown records that
-    // the ad covered the activity (we paused for it); the gate opens on the following resume.
-    private boolean mSplashGateOpen = false;
-    private boolean mSplashWasShown = false;
-    private final Handler mHandler = new Handler(Looper.getMainLooper());
-    /** Safety net: if no splash ad ever shows, don't block the launcher indefinitely. */
-    private static final long SPLASH_FALLBACK_MS = 6000L;
-    private Runnable mFallback;
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mPermsDialogShown = false;
-        // Show the Start.io splash ad on the entry activity, before anything else happens,
-        // so the ad is the first thing the user sees when they tap the launcher icon.
-        StartIoAds.showSplash(this, savedInstanceState);
         if(Build.VERSION.SDK_INT >= 23 && Build.VERSION.SDK_INT < 29 && !isStorageAllowed(this)) {
             mPermsRequired = true;
         }
-        mFallback = () -> {
-            // No splash ad ever appeared (no pause happened): proceed so the launcher still opens.
-            if (!mSplashGateOpen && !mSplashWasShown) proceedAfterSplash();
-        };
-        mHandler.postDelayed(mFallback, SPLASH_FALLBACK_MS);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if (!mSplashGateOpen) {
-            if (mSplashWasShown) {
-                // The splash ad was shown (we paused for it) and has now been dismissed.
-                mSplashGateOpen = true;
-            } else {
-                // First resume right after onCreate; the splash is still being requested.
-                return;
-            }
-        }
         if(!mPermsRequired) {
             // Storage is fine: go to the launcher.
             exit();
@@ -78,28 +54,7 @@ public class TestStorageActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
-        if (!mSplashGateOpen) {
-            // The splash ad is covering the activity -> remember it was shown.
-            mSplashWasShown = true;
-        }
         if(mPermissionRequestDialog != null) mPermissionRequestDialog.dismiss();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        mHandler.removeCallbacks(mFallback);
-    }
-
-    private void proceedAfterSplash() {
-        mHandler.removeCallbacks(mFallback);
-        mSplashGateOpen = true;
-        if(!mPermsRequired) {
-            exit();
-            return;
-        }
-        if(!mPermsDialogShown) requestStoragePermission();
-        else showRerequestDialog();
     }
 
     private void showRerequestDialog() {
