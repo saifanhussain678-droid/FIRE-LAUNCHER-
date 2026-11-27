@@ -55,6 +55,14 @@ public final class StartIoAds {
             // Enable the Start.io consent flag; without it the SDK will not target
             // (and may not serve) ads.
             StartAppSDK.enableConsent(context.getApplicationContext(), true);
+            // Test ads for debug/nightly builds. Without this the SDK requests real ads;
+            // if the app is not yet approved for production on the Start.io portal (or has
+            // no inventory), the request fails and no ad ever shows. Test ads let the
+            // integration be verified end-to-end. Remove/disable for a production release.
+            if (BuildConfig.DEBUG) {
+                StartAppSDK.setTestAdsEnabled(true);
+                Log.i(TAG, "Start.io test ads enabled (debug build)");
+            }
             Log.i(TAG, "Start.io SDK initialised with app ID " + APP_ID);
         } catch (Throwable t) {
             // Roll the flag back so a later entry point can try again.
