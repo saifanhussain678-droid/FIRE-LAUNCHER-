@@ -6,8 +6,9 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.view.View;
+import android.view.Gravity;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
@@ -42,16 +43,16 @@ public class SplashActivity extends Activity implements AdDisplayListener {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // A minimal placeholder so the screen is never blank while the ad loads or fails.
-        View placeholder = new View(this);
-        placeholder.setBackgroundColor(Color.BLACK);
-        placeholder.setLayoutParams(new ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        setContentView(placeholder);
+        FrameLayout root = new FrameLayout(this);
+        root.setBackgroundColor(Color.BLACK);
+        setContentView(root);
 
         TextView label = new TextView(this);
         label.setText(R.string.aerix_app_label);
         label.setTextColor(Color.WHITE);
-        ((ViewGroup) placeholder).addView(label);
+        label.setGravity(Gravity.CENTER);
+        root.addView(label, new ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
         mFallback = this::proceed;
         mHandler.postDelayed(mFallback, FALLBACK_MS);
