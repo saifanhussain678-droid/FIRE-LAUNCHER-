@@ -115,6 +115,33 @@ public class LauncherActivity extends BaseActivity {
         Tools.backToMainMenu(this);
     };
 
+    /** Fields and helpers gating a game launch behind the Start.io interstitial ad. */
+    private final Handler mLaunchHandler = new Handler(Looper.getMainLooper());
+    /** Safety net: if no ad shows during a game launch, start the game after this window. */
+    private static final long LAUNCH_AD_FALLBACK_MS = 8000L;
+    private boolean mLaunchGateOpen;
+    private boolean mLaunchAdShown;
+    private Runnable mLaunchFallback;
+    private Instance mLaunchGameInstance;
+    private String mLaunchGameVersionId;
+    private JVersionList.Version mLaunchGameVersion;
+
+    /** Start the actual game download/launch once the ad gate is clear, exactly once. */
+    private void proceedLaunchGame(LauncherActivity activity) {
+        if (mLaunchGateOpen) return;
+        mLaunchGateOpen = true;
+        activity.mLaunchHandler.removeCallbacks(mLaunchFallback);
+        if (mLaunchGameInstance == null) return;
+        new MoJsonDownloader().start(
+                activity.getAssets(),
+                mLaunchGameVersion,
+                mLaunchGameVersionId,
+                new ContextAwareDoneListener(activity, mLaunchGameVersionId,
+                        mLaunchGameInstance.getInstanceId(),
+                        LauncherPreferences.PREF_RENDERER)
+        );
+    }
+
     private final ExtraListener<Boolean> mLaunchGameListener = (key, value) -> {
         if(mProgressLayout.hasProcesses()){
             Toast.makeText(this, R.string.tasks_ongoing, Toast.LENGTH_LONG).show();
@@ -184,33 +211,6 @@ public class LauncherActivity extends BaseActivity {
         });
         return false;
     };
-
-    /** Fields and helpers gating a game launch behind the Start.io interstitial ad. */
-    private final Handler mLaunchHandler = new Handler(Looper.getMainLooper());
-    /** Safety net: if no ad shows during a game launch, start the game after this window. */
-    private static final long LAUNCH_AD_FALLBACK_MS = 8000L;
-    private boolean mLaunchGateOpen;
-    private boolean mLaunchAdShown;
-    private Runnable mLaunchFallback;
-    private Instance mLaunchGameInstance;
-    private String mLaunchGameVersionId;
-    private JVersionList.Version mLaunchGameVersion;
-
-    /** Start the actual game download/launch once the ad gate is clear, exactly once. */
-    private void proceedLaunchGame(LauncherActivity activity) {
-        if (mLaunchGateOpen) return;
-        mLaunchGateOpen = true;
-        activity.mLaunchHandler.removeCallbacks(mLaunchFallback);
-        if (mLaunchGameInstance == null) return;
-        new MoJsonDownloader().start(
-                activity.getAssets(),
-                mLaunchGameVersion,
-                mLaunchGameVersionId,
-                new ContextAwareDoneListener(activity, mLaunchGameVersionId,
-                        mLaunchGameInstance.getInstanceId(),
-                        LauncherPreferences.PREF_RENDERER)
-        );
-    }
 
     private final TaskCountListener mDoubleLaunchPreventionListener = taskCount -> {
         // Hide the notification that starts the game if there are tasks executing.
