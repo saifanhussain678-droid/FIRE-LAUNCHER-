@@ -9,10 +9,15 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.system.Os;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
+
+import com.startapp.sdk.adsbase.Ad;
+import com.startapp.sdk.adsbase.adlisteners.AdDisplayListener;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -140,18 +145,72 @@ public class LauncherActivity extends BaseActivity {
         }
         String normalizedVersionId = MoJsonExtras.normalizeVersionId(selectedInstance.versionId);
         JVersionList.Version mcVersion = MoJsonExtras.getListedVersion(normalizedVersionId);
-        // Start.io interstitial: a game launch is a natural break point. showAd is
-        // non-blocking, so the launch pipeline proceeds whether or not an ad is ready.
-        StartIoAds.showInterstitial(this);
-        new MoJsonDownloader().start(
-                this.getAssets(),
-                mcVersion,
-                normalizedVersionId,
-                new ContextAwareDoneListener(this, normalizedVersionId, selectedInstance.getInstanceId(),
-                        LauncherPreferences.PREF_RENDERER)
-        );
+        // Start.io interstitial: a game launch is a natural break point. The launch is
+        // gated behind the ad — the game only downloads/starts once the ad has been
+        // dismissed (adHidden), failed to appear (adNotDisplayed), or the fallback timer
+        // fires. This guarantees the ad shows first, then the game launches.
+        mLaunchGameInstance = selectedInstance;
+        mLaunchGameVersionId = normalizedVersionId;
+        mLaunchGameVersion = mcVersion;
+        final LauncherActivity self = this;
+        mLaunchGateOpen = false;
+        mLaunchAdShown = false;
+        mLaunchFallback = () -> {
+            if (!mLaunchGateOpen) proceedLaunchGame(self);
+        };
+        mLaunchHandler.removeCallbacks(mLaunchFallback);
+        mLaunchHandler.postDelayed(mLaunchFallback, LAUNCH_AD_FALLBACK_MS);
+        StartIoAds.showInterstitial(this, new AdDisplayListener() {
+            @Override
+            public void adDisplayed(Ad ad) {
+                mLaunchAdShown = true;
+            }
+
+            @Override
+            public void adHidden(Ad ad) {
+                proceedLaunchGame(self);
+            }
+
+            @Override
+            public void adClicked(Ad ad) {
+                // Clicking the ad is fine; adHidden fires afterwards and launches the game.
+            }
+
+            @Override
+            public void adNotDisplayed(Ad ad) {
+                // Ad failed to load/show: don't block the game launch.
+                proceedLaunchGame(self);
+            }
+        });
         return false;
     };
+
+    /** Fields and helpers gating a game launch behind the Start.io interstitial ad. */
+    private final Handler mLaunchHandler = new Handler(Looper.getMainLooper());
+    /** Safety net: if no ad shows during a game launch, start the game after this window. */
+    private static final long LAUNCH_AD_FALLBACK_MS = 8000L;
+    private boolean mLaunchGateOpen;
+    private boolean mLaunchAdShown;
+    private Runnable mLaunchFallback;
+    private Instance mLaunchGameInstance;
+    private String mLaunchGameVersionId;
+    private JVersionList.Version mLaunchGameVersion;
+
+    /** Start the actual game download/launch once the ad gate is clear, exactly once. */
+    private void proceedLaunchGame(LauncherActivity activity) {
+        if (mLaunchGateOpen) return;
+        mLaunchGateOpen = true;
+        activity.mLaunchHandler.removeCallbacks(mLaunchFallback);
+        if (mLaunchGameInstance == null) return;
+        new MoJsonDownloader().start(
+                activity.getAssets(),
+                mLaunchGameVersion,
+                mLaunchGameVersionId,
+                new ContextAwareDoneListener(activity, mLaunchGameVersionId,
+                        mLaunchGameInstance.getInstanceId(),
+                        LauncherPreferences.PREF_RENDERER)
+        );
+    }
 
     private final TaskCountListener mDoubleLaunchPreventionListener = taskCount -> {
         // Hide the notification that starts the game if there are tasks executing.
