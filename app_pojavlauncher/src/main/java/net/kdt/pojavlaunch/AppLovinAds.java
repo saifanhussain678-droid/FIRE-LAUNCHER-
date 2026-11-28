@@ -46,7 +46,6 @@ public final class AppLovinAds {
     private static final String TAG = "AppLovinAds";
 
     private static volatile boolean sInitialised;
-    private static volatile MaxInterstitialAd sInterstitial;
 
     /** Minimal callback for the ad lifecycle so callers can gate on show/hide/fail. */
     public interface InterstitialCallback {
@@ -84,35 +83,21 @@ public final class AppLovinAds {
         }
     }
 
-    /** The shared interstitial ad instance, created lazily after {@link #init}. */
-    @NonNull
-    private static MaxInterstitialAd interstitial(Context context) {
-        MaxInterstitialAd instance = sInterstitial;
-        if (instance == null) {
-            synchronized (AppLovinAds.class) {
-                instance = sInterstitial;
-                if (instance == null) {
-                    instance = new MaxInterstitialAd(INTERSTITIAL_AD_UNIT_ID,
-                            context.getApplicationContext());
-                    sInterstitial = instance;
-                }
-            }
-        }
-        return instance;
-    }
-
     /**
      * Show the interstitial ad now, with explicit display callbacks. Used by {@link SplashActivity}
      * so it knows exactly when the ad is displayed, dismissed or failed — letting it hold the
      * launcher behind the ad.
      *
-     * <p>If a loaded ad is cached it is shown immediately; otherwise a fresh ad is requested and
-     * shown the moment it arrives. {@code callback.onAdFailed} is always invoked if the ad cannot
-     * be shown, so the caller never waits forever.
+     * <p>A fresh {@link MaxInterstitialAd} is created against the given activity each call
+     * (the constructor requires an {@code Activity}, and the launcher's two ad moments live in
+     * different activities, so a single shared instance would hold a stale context). If a loaded
+     * ad is ready it is shown immediately; otherwise a fresh ad is requested and shown the moment
+     * it arrives. {@code callback.onAdFailed} is always invoked if the ad cannot be shown, so the
+     * caller never waits forever.
      */
     public static void showInterstitial(Activity activity, InterstitialCallback callback) {
         try {
-            MaxInterstitialAd ad = interstitial(activity);
+            MaxInterstitialAd ad = new MaxInterstitialAd(INTERSTITIAL_AD_UNIT_ID, activity);
             ad.setListener(new MaxAdListener() {
                 @Override
                 public void onAdLoaded(@NonNull MaxAd ad) {
@@ -166,12 +151,12 @@ public final class AppLovinAds {
 
     /**
      * Show the interstitial now with no callback (used at natural break points such as a game
-     * launch). If a loaded ad is cached it is shown immediately; otherwise a fresh ad is requested
+     * launch). If a loaded ad is ready it is shown immediately; otherwise a fresh ad is requested
      * and shown the moment it arrives.
      */
     public static void showInterstitial(Activity activity) {
         try {
-            MaxInterstitialAd ad = interstitial(activity);
+            MaxInterstitialAd ad = new MaxInterstitialAd(INTERSTITIAL_AD_UNIT_ID, activity);
             ad.setListener(new MaxAdListener() {
                 @Override
                 public void onAdLoaded(@NonNull MaxAd ad) {
@@ -211,7 +196,33 @@ public final class AppLovinAds {
     /** Preload the interstitial so it is ready at a natural break point. */
     public static void preload(Activity activity) {
         try {
-            interstitial(activity).loadAd();
+            MaxInterstitialAd ad = new MaxInterstitialAd(INTERSTITIAL_AD_UNIT_ID, activity);
+            ad.setListener(new MaxAdListener() {
+                @Override
+                public void onAdLoaded(@NonNull MaxAd ad) {
+                    Log.d(TAG, "Interstitial preloaded and ready");
+                }
+
+                @Override
+                public void onAdLoadFailed(@NonNull String adUnitId, @NonNull MaxError error) {
+                    Log.w(TAG, "Interstitial preload failed: " + error.getMessage());
+                }
+
+                @Override
+                public void onAdDisplayed(@NonNull MaxAd ad) {}
+
+                @Override
+                public void onAdClicked(@NonNull MaxAd ad) {}
+
+                @Override
+                public void onAdHidden(@NonNull MaxAd ad) {}
+
+                @Override
+                public void onAdDisplayFailed(@NonNull MaxAd ad, @NonNull MaxError error) {
+                    ad.loadAd();
+                }
+            });
+            ad.loadAd();
         } catch (Throwable t) {
             Log.w(TAG, "Interstitial preload failed", t);
         }
