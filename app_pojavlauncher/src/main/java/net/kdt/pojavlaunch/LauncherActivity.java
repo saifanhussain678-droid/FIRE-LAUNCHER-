@@ -16,9 +16,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
-import com.startapp.sdk.adsbase.Ad;
-import com.startapp.sdk.adsbase.adlisteners.AdDisplayListener;
-
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -172,9 +169,9 @@ public class LauncherActivity extends BaseActivity {
         }
         String normalizedVersionId = MoJsonExtras.normalizeVersionId(selectedInstance.versionId);
         JVersionList.Version mcVersion = MoJsonExtras.getListedVersion(normalizedVersionId);
-        // Start.io interstitial: a game launch is a natural break point. The launch is
+        // AppLovin interstitial: a game launch is a natural break point. The launch is
         // gated behind the ad — the game only downloads/starts once the ad has been
-        // dismissed (adHidden), failed to appear (adNotDisplayed), or the fallback timer
+        // dismissed (onAdHidden), failed to appear (onAdFailed), or the fallback timer
         // fires. This guarantees the ad shows first, then the game launches.
         mLaunchGameInstance = selectedInstance;
         mLaunchGameVersionId = normalizedVersionId;
@@ -187,24 +184,19 @@ public class LauncherActivity extends BaseActivity {
         };
         mLaunchHandler.removeCallbacks(mLaunchFallback);
         mLaunchHandler.postDelayed(mLaunchFallback, LAUNCH_AD_FALLBACK_MS);
-        StartIoAds.showInterstitial(this, new AdDisplayListener() {
+        AppLovinAds.showInterstitial(this, new AppLovinAds.InterstitialCallback() {
             @Override
-            public void adDisplayed(Ad ad) {
+            public void onAdDisplayed() {
                 mLaunchAdShown = true;
             }
 
             @Override
-            public void adHidden(Ad ad) {
+            public void onAdHidden() {
                 proceedLaunchGame(self);
             }
 
             @Override
-            public void adClicked(Ad ad) {
-                // Clicking the ad is fine; adHidden fires afterwards and launches the game.
-            }
-
-            @Override
-            public void adNotDisplayed(Ad ad) {
+            public void onAdFailed() {
                 // Ad failed to load/show: don't block the game launch.
                 proceedLaunchGame(self);
             }
@@ -320,8 +312,8 @@ public class LauncherActivity extends BaseActivity {
             return insets;
         });
         setContentView(R.layout.activity_pojav_launcher);
-        // Start.io interstitial: load early so it is ready at the next natural break point.
-        StartIoAds.preload(this);
+        // AppLovin interstitial: load early so it is ready at the next natural break point.
+        AppLovinAds.preload(this);
         MoJsonDownloader.prepareSubstitutionMap(getAssets());
 
         try {

@@ -24,16 +24,12 @@
 # Option screens
  -keep class net.kdt.pojavlaunch.prefs.screens** {*;}
 
-# Start.io (formerly StartApp) ads - required by the inapp-sdk when minification is on
-# (nightly builds). Rules follow Start.io's official integration guide.
--keep class com.startapp.** {
-      *;
-}
--keep class com.truenet.** {
-      *;
-}
+# AppLovin (MAX) ads - required by the applovin-sdk when minification is on
+# (nightly builds). Rules follow AppLovin's official integration guide.
+-keep class com.applovin.** { *; }
+-keep class com.applovin.mediation.** { *; }
 -keepattributes Exceptions, InnerClasses, Signature, Deprecated, SourceFile,
 LineNumberTable, *Annotation*, EnclosingMethod
 -dontwarn android.webkit.JavascriptInterface
--dontwarn com.startapp.**
+-dontwarn com.applovin.**
 -dontwarn org.jetbrains.annotations.**

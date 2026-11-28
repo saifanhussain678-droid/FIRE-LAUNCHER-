@@ -29,6 +29,7 @@
     <uses-permission android:name="android.permission.AD_ID" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
@@ -55,12 +56,8 @@
         android:networkSecurityConfig="@xml/netconfig"
         android:enableOnBackInvokedCallback="false"
         tools:ignore="UnusedAttribute">
-        <!-- Start.io (formerly StartApp) ads: app ID 210869947 for the Cloud Launcher APK.
-             With this meta-data the SDK can initialise itself; PojavApplication also passes the
-             same ID to StartAppSDK.init explicitly (see StartIoAds). -->
-        <meta-data
-            android:name="com.startapp.sdk.APPLICATION_ID"
-            android:value="210869947" />
+        <!-- AppLovin (MAX) ads: the App Key is passed to AppLovinSdk.initializeSdk() in
+             AppLovinAds (no meta-data required by the SDK). -->
 
         <activity
             android:name="net.kdt.pojavlaunch.MissingStorageActivity"

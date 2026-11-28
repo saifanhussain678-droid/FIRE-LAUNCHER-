@@ -13,28 +13,22 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 
-import com.startapp.sdk.adsbase.Ad;
-import com.startapp.sdk.adsbase.adlisteners.AdDisplayListener;
-
 /**
  * Entry point shown the moment the launcher icon is tapped.
  *
- * <p>This activity immediately requests a full-screen Start.io interstitial ad and holds the
+ * <p>This activity immediately requests a full-screen AppLovin interstitial ad and holds the
  * launcher behind it: the launcher is only started once the ad has been dismissed
- * ({@link #adHidden}) or has failed to appear ({@link #adNotDisplayed}). A safety-net timer
- * guarantees the launcher opens even if no ad is ever served, so the user is never stranded.
- *
- * <p>The SDK's deprecated {@code showSplash} API is deliberately not used here; the reliable,
- * supported path is an interstitial driven through an {@link AdDisplayListener}.
+ * ({@link AppLovinAds.InterstitialCallback#onAdHidden()}) or has failed to appear
+ * ({@link AppLovinAds.InterstitialCallback#onAdFailed()}). A safety-net timer guarantees the
+ * launcher opens even if no ad is ever served, so the user is never stranded.
  */
-public class SplashActivity extends Activity implements AdDisplayListener {
+public class SplashActivity extends Activity {
 
     private static final String TAG = "SplashActivity";
 
     /** Safety net: if no ad is displayed within this window, proceed to the launcher anyway. */
     private static final long FALLBACK_MS = 10000L;
 
-    private boolean mAdShown;
     private boolean mProceeded;
     private final Handler mHandler = new Handler(Looper.getMainLooper());
     private Runnable mFallback;
@@ -57,29 +51,24 @@ public class SplashActivity extends Activity implements AdDisplayListener {
         mFallback = this::proceed;
         mHandler.postDelayed(mFallback, FALLBACK_MS);
 
-        // Request the launch ad. The display listener drives the gate.
-        StartIoAds.showInterstitial(this, this);
-    }
+        // Request the launch ad. The callback drives the gate.
+        AppLovinAds.showInterstitial(this, new AppLovinAds.InterstitialCallback() {
+            @Override
+            public void onAdDisplayed() {
+                // Ad is up; wait for it to be hidden.
+            }
 
-    @Override
-    public void adDisplayed(Ad ad) {
-        mAdShown = true;
-    }
+            @Override
+            public void onAdHidden() {
+                proceed();
+            }
 
-    @Override
-    public void adHidden(Ad ad) {
-        proceed();
-    }
-
-    @Override
-    public void adClicked(Ad ad) {
-        // Clicking the ad is fine; the ad will hide itself and fire adHidden afterwards.
-    }
-
-    @Override
-    public void adNotDisplayed(Ad ad) {
-        // Ad failed to load or could not be shown: don't block the launcher.
-        proceed();
+            @Override
+            public void onAdFailed() {
+                // Ad failed to load or could not be shown: don't block the launcher.
+                proceed();
+            }
+        });
     }
 
     @Override
@@ -100,11 +89,7 @@ public class SplashActivity extends Activity implements AdDisplayListener {
 
     @Override
     public void onBackPressed() {
-        // If the ad is up, let it handle the back press; otherwise allow leaving straight to launcher.
-        if (mAdShown) {
-            super.onBackPressed();
-        } else {
-            proceed();
-        }
+        // No ad is tracking a back press here (AppLovin handles its own); allow leaving.
+        proceed();
     }
 }
